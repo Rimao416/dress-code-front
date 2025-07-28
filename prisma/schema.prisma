@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Enums
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+// Prisma client generator
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// Models
+
+model User {
+  id                   String                @id @default(uuid())
+  email                String                @unique
+  password             String
+  role                 Role
+
+  admin                Admin?                @relation("UserAdmin")
+  client               Client?               @relation("UserClient")
+  twoFactorCodes       TwoFactorCode?
+  passwordResetTokens  PasswordResetToken[]
+
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+}
+
+model Admin {
+  id    String @id
+  user  User   @relation("UserAdmin", fields: [id], references: [id])
+}
+
+model Client {
+  id                String   @id
+  user              User     @relation("UserClient", fields: [id], references: [id])
+  firstName         String
+  lastName          String
+  phone             String
+  dateOfBirth       DateTime?
+  gender            Gender?
+  acceptedTerms     Boolean  @default(false)
+  acceptedMarketing Boolean  @default(false)
+  country           String?
+  address           String?
+  postalCode        String?
+  city              String?
+  addressComplement String?
+}
+
+model TwoFactorCode {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("two_factor_codes")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+model PasswordResetAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  ipAddress String?
+
+  @@index([email, createdAt])
+  @@index([createdAt])
+  @@map("password_reset_attempts")
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  images      String[]
+  categoryId  String
+  stock       Int
+  available   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  category    Category  @relation(fields: [categoryId], references: [id])
+  variants    Variant[]
+}
+
+model Category {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  slug        String        @unique
+  products    Product[]
+  subCategories SubCategory[]
+}
+
+model SubCategory {
+  id          String    @id @default(cuid())
+  name        String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  String
+}
+model Variant {
+  id        String  @id @default(cuid())
+  productId String
+  size      String
+  color     String
+  quantity  Int
+  product   Product @relation(fields: [productId], references: [id])
+}
