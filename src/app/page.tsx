@@ -1,44 +1,22 @@
 "use client"
 import React, { useState } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
+import { DropdownContent, FeaturedItem, navigationData, NavLink, NavSection } from '@/components/Header/NavigationData';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
+import { sliderData } from '@/constant/data';
 
-// Types
-interface NavLink {
-  title: string;
-  link: string;
-}
+// Données du slider
 
-interface NavSection {
-  title: string;
-  items?: NavLink[];
-}
-
-interface FeaturedItem {
-  title: string;
-  description: string;
-  image: string;
-}
-
-interface DropdownContent {
-  left: NavLink[];
-  right: NavSection[];
-  featured?: FeaturedItem | FeaturedItem[];
-}
-
-interface NavigationItem {
-  hasDropdown: boolean;
-  content?: DropdownContent;
-  link?: string;
-}
-
-interface NavigationData {
-  [key: string]: NavigationItem;
-}
-
-const Header = () => {
+const HomePage = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   const handleMouseEnter = (menu: string) => {
     setActiveDropdown(menu);
@@ -57,248 +35,8 @@ const Header = () => {
     setExpandedMobileSection(expandedMobileSection === section ? null : section);
   };
 
-  const navigationData: NavigationData = {
-    'Vêtements': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: 'Tous les vêtements', link: '/clothing' },
-          { title: 'Tous les vêtements de détente', link: '/clothing/loungewear' },
-          { title: 'Guide des tissus', link: '/clothing/fabric-guide' }
-        ],
-        right: [
-          {
-            title: 'Style',
-            items: [
-              { title: 'T-shirts & débardeurs', link: '/clothing/tees-tanks' },
-              { title: 'Robes', link: '/clothing/dresses' },
-              { title: 'Bodys', link: '/clothing/bodysuits' },
-              { title: 'Bas', link: '/clothing/bottoms' },
-              { title: 'Sweats à capuche et sweatshirts', link: '/clothing/hoodies' },
-              { title: 'Pyjamas', link: '/clothing/pajamas' },
-              { title: 'Maternité', link: '/clothing/maternity' }
-            ]
-          }
-        ],
-        featured: {
-          title: 'La boutique des robes',
-          description: 'Robes signature pour toutes les occasions',
-          image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=300&h=200&fit=crop'
-        }
-      }
-    },
-    'Soutiens-gorge': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: 'Tous les soutiens-gorge', link: '/bras' },
-          { title: 'Tous les brassières', link: '/bras/bralettes' },
-          { title: 'Lingerie', link: '/bras/lingerie' },
-          { title: 'Le guide des soutiens-gorge', link: '/bras/guide' }
-        ],
-        right: [
-          {
-            title: 'Silhouette',
-            items: [
-              { title: 'T-shirt', link: '/bras/t-shirt' },
-              { title: 'Sans bretelles', link: '/bras/strapless' },
-              { title: 'Couverture intégrale', link: '/bras/full-coverage' },
-              { title: 'Décolleté', link: '/bras/scoop' },
-              { title: 'Plongeant', link: '/bras/plunge' },
-              { title: 'Balconnet', link: '/bras/balconette' },
-              { title: 'Triangle', link: '/bras/triangle' },
-              { title: 'Demi', link: '/bras/demi' },
-              { title: 'Maternité', link: '/bras/maternity' }
-            ]
-          },
-          {
-            title: 'Doublure',
-            items: [
-              { title: 'Push-up', link: '/bras/push-up' },
-              { title: 'Non doublé', link: '/bras/unlined' },
-              { title: 'Légèrement doublé', link: '/bras/lightly-lined' }
-            ]
-          }
-        ],
-        featured: [
-          {
-            title: 'Soutiens-gorge T-shirt',
-            description: 'Modèles du quotidien avec soutien et couverture indétectable',
-            image: 'https://images.unsplash.com/photo-1571513722275-4b8c0290cd54?w=150&h=120&fit=crop'
-          },
-          {
-            title: 'Soutiens-gorge Push-up',
-            description: 'Styles sexy qui mettent en valeur le décolleté, soulèvent et soutiennent',
-            image: 'https://images.unsplash.com/photo-1594736797933-d0c44efab1eb?w=150&h=120&fit=crop'
-          }
-        ]
-      }
-    },
-    'Sous-vêtements': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: 'Tous les sous-vêtements', link: '/underwear' },
-          { title: 'Kits économiques', link: '/underwear/bundles' },
-          { title: 'Lingerie', link: '/underwear/lingerie' }
-        ],
-        right: [
-          {
-            title: 'Style',
-            items: [
-              { title: 'Strings', link: '/underwear/thongs' },
-              { title: 'Shorty', link: '/underwear/cheeky' },
-              { title: 'Slips', link: '/underwear/briefs' },
-              { title: 'Culottes boy short', link: '/underwear/boy-shorts' },
-              { title: 'Boxers', link: '/underwear/boxers' },
-              { title: 'Maternité', link: '/underwear/maternity' }
-            ]
-          }
-        ],
-        featured: {
-          title: 'Kits économiques',
-          description: 'Videz vos tiroirs ! Obtenez plus de sous-vêtements que vous adorerez, pour moins cher',
-          image: 'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=300&h=200&fit=crop'
-        }
-      }
-    },
-    'Gainage': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: 'Tous les vêtements de gainage', link: '/shapewear' },
-          { title: 'Solutions pour occasions', link: '/shapewear/occasions' },
-          { title: 'Le guide du gainage', link: '/shapewear/guide' }
-        ],
-        right: [
-          {
-            title: 'Style',
-            items: [
-              { title: 'Bodys', link: '/shapewear/bodysuits' },
-              { title: 'Sous-vêtements', link: '/shapewear/underwear' },
-              { title: 'Shorts & leggings', link: '/shapewear/shorts-leggings' },
-              { title: 'Redresseurs de taille', link: '/shapewear/waist-trainers' },
-              { title: 'Sans dos', link: '/shapewear/backless' },
-              { title: 'Brassières', link: '/shapewear/bralettes' }
-            ]
-          },
-          {
-            title: 'Niveau de compression',
-            items: [
-              { title: 'Léger', link: '/shapewear/light' },
-              { title: 'Moyen', link: '/shapewear/mid' },
-              { title: 'Fort', link: '/shapewear/strong' },
-              { title: 'Très fort', link: '/shapewear/extra-strong' }
-            ]
-          }
-        ],
-        featured: [
-          {
-            title: 'Bodys',
-            description: 'Styles galbants qui lissent, sculptent et soutiennent',
-            image: 'https://images.unsplash.com/photo-1595348020949-87cdfbb44174?w=150&h=120&fit=crop'
-          },
-          {
-            title: 'La boutique des solutions',
-            description: 'Le soutien-gorge qui fait tout, nos bodys viraux et autres solutions indispensables',
-            image: 'https://images.unsplash.com/photo-1582142306909-195724d44209?w=150&h=120&fit=crop'
-          }
-        ]
-      }
-    },
-    'Maillots de bain': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: 'Tous les maillots de bain', link: '/swim' }
-        ],
-        right: [
-          {
-            title: 'Style',
-            items: [
-              { title: 'Bikinis deux pièces', link: '/swim/two-piece' },
-              { title: 'Maillots une pièce', link: '/swim/one-piece' },
-              { title: 'Paréos', link: '/swim/cover-ups' },
-              { title: 'Accessoires de plage', link: '/swim/accessories' }
-            ]
-          }
-        ],
-        featured: [
-          {
-            title: 'Bikinis deux pièces',
-            description: 'Hauts et bas de bikini indispensables',
-            image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=150&h=120&fit=crop'
-          },
-          {
-            title: 'Maillots une pièce',
-            description: 'Silhouettes signature pour un look de plage complet',
-            image: 'https://images.unsplash.com/photo-1544966503-7521ac882d5a?w=150&h=120&fit=crop'
-          }
-        ]
-      }
-    },
-    'Homme': {
-      hasDropdown: false,
-      link: '/mens'
-    },
-    'Collections': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: 'Toutes les collections', link: '/collections' }
-        ],
-        right: [
-          {
-            title: 'Collections phares',
-            items: [
-              { title: 'Fits Everybody', link: '/collections/fits-everybody' },
-              { title: 'Collection coton', link: '/collections/cotton' },
-              { title: 'Soft Lounge', link: '/collections/soft-lounge' },
-              { title: 'DRESSCODE Body', link: '/collections/dresscode-body' },
-              { title: 'Seamless Sculpt', link: '/collections/seamless-sculpt' },
-              { title: 'Coton polaire', link: '/collections/cotton-fleece' }
-            ]
-          },
-          {
-            title: 'Boutiques',
-            items: [
-              { title: 'La collection vacances', link: '/shops/vacation' },
-              { title: 'La boutique été', link: '/shops/summer' },
-              { title: 'Transparences', link: '/shops/sheer' },
-              { title: 'Lingerie d\'été', link: '/shops/intimates' },
-              { title: 'Perfection imprimée', link: '/shops/prints' },
-              { title: 'Nuances d\'été', link: '/shops/shades' },
-              { title: 'Boutique mariage', link: '/shops/wedding' },
-              { title: 'Ensembles deux pièces', link: '/shops/two-piece-sets' },
-              { title: 'La boutique nuit', link: '/shops/sleep' },
-              { title: 'Sélection de Kim', link: '/shops/kims-picks' }
-            ]
-          }
-        ]
-      }
-    },
-    'Plus': {
-      hasDropdown: true,
-      content: {
-        left: [],
-        right: [
-          {
-            title: 'Plus de DRESSCODE à aimer',
-            items: [
-              { title: 'Accessoires', link: '/more/accessories' },
-              { title: 'Chaussettes & collants', link: '/more/socks-hosiery' },
-              { title: 'Chaussures', link: '/more/footwear' },
-              { title: 'Cartes cadeaux', link: '/more/gift-cards' }
-            ]
-          }
-        ]
-      }
-    }
-  };
-
   const renderDropdownContent = (content: DropdownContent) => {
     if (!content) return null;
-
     return (
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -319,7 +57,6 @@ const Header = () => {
                 </div>
               </div>
             )}
-
             {/* Center Columns */}
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
@@ -343,7 +80,6 @@ const Header = () => {
                 ))}
               </div>
             </div>
-
             {/* Right Column - Featured */}
             <div className="col-span-4">
               {content.featured && !Array.isArray(content.featured) && (
@@ -408,7 +144,6 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMobileMenu}></div>
         )}
-
         {/* Mobile Menu */}
         <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
@@ -420,7 +155,6 @@ const Header = () => {
                 <X className="h-6 w-6" />
               </button>
             </div>
-
             {/* Menu Items */}
             <div className="space-y-0">
               {mobileMenuItems.map((item) => (
@@ -436,7 +170,7 @@ const Header = () => {
                           expandedMobileSection === item.key ? 'rotate-180' : ''
                         }`} />
                       </button>
-                      
+                     
                       {expandedMobileSection === item.key && navigationData[item.key]?.content && (
                         <div className="pb-4">
                           {/* Left section items */}
@@ -449,7 +183,7 @@ const Header = () => {
                               {linkItem.title}
                             </a>
                           ))}
-                          
+                         
                           {/* Right section items */}
                           {navigationData[item.key].content!.right.map((section, sectionIndex) => (
                             <div key={sectionIndex} className="mt-4">
@@ -488,87 +222,188 @@ const Header = () => {
   };
 
   return (
-    <>
-      <header className="bg-white border-b border-gray-200 relative">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <a href="/" className="text-2xl font-bold text-black tracking-tight">
-                DressCode
-              </a>
-            </div>
+    <div className="min-h-screen">
+      {/* Hero Section avec slider */}
+      <div className="relative h-screen w-full overflow-hidden">
+        
+        <Swiper
+          modules={[Navigation, Pagination, Autoplay, EffectFade]}
+          spaceBetween={0}
+          slidesPerView={1}
+          effect="fade"
+          fadeEffect={{
+            crossFade: true
+          }}
+          navigation={{
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          }}
+          pagination={{
+            el: '.swiper-pagination',
+            clickable: true,
+            bulletClass: 'swiper-pagination-bullet',
+            bulletActiveClass: 'swiper-pagination-bullet-active',
+          }}
+          autoplay={{
+            delay: 5000,
+            disableOnInteraction: false,
+          }}
+          onSlideChange={(swiper) => setActiveSlide(swiper.activeIndex)}
+          className="h-full w-full"
+        >
+     {sliderData.map((slide, index) => (
+  <SwiperSlide key={index}>
+    <div className="relative h-full w-full">
+      {/* Image de fond - Version corrigée */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('${slide.image}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Overlay réduit pour moins d'assombrissement */}
+        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      </div>
+     
+      {/* Alternative avec balise img si le background ne fonctionne pas */}
+      {/* 
+      <img 
+        src={slide.image}
+        alt={slide.title}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      */}
+     
+      {/* Contenu du slide */}
+      <div className="absolute bottom-8 left-8 z-20 text-white max-w-sm">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 uppercase tracking-wide transform transition-all duration-700 delay-300">
+          {slide.title}
+        </h2>
+        <p className="text-lg mb-6 opacity-90 font-light transform transition-all duration-700 delay-500">
+          {slide.subtitle}
+        </p>
+        <a
+          href={slide.buttonLink}
+          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium transform transition-all duration-700 delay-700"
+        >
+          {slide.buttonText}
+        </a>
+      </div>
+    </div>
+  </SwiperSlide>
+))}
+        </Swiper>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
-                <div
-                  key={key}
-                  className="relative"
-                  onMouseEnter={() => nav.hasDropdown && handleMouseEnter(key)}
-                  onMouseLeave={() => nav.hasDropdown && handleMouseLeave()}
+        {/* Navigation personnalisée */}
+        <div className="swiper-button-prev !text-white !text-2xl !left-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="swiper-button-next !text-white !text-2xl !right-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
+        
+        {/* Pagination personnalisée */}
+        <div className="swiper-pagination !bottom-8 !right-8 !left-auto !w-auto flex space-x-2"></div>
+
+        {/* Header avec fond transparent/translucide */}
+        <header className="absolute top-0 left-0 right-0 z-30 bg-black bg-opacity-20 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex-shrink-0">
+                <a href="/" className="text-2xl font-bold text-white tracking-tight">
+                  DressCode
+                </a>
+              </div>
+              {/* Desktop Navigation */}
+              <nav className="hidden md:flex items-center space-x-8">
+                {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
+                  <div
+                    key={key}
+                    className="relative"
+                    onMouseEnter={() => nav.hasDropdown && handleMouseEnter(key)}
+                    onMouseLeave={() => nav.hasDropdown && handleMouseLeave()}
+                  >
+                    {nav.hasDropdown ? (
+                      <button className="flex items-center text-sm font-medium text-white hover:text-black hover:bg-white px-3 py-2 rounded transition-all duration-200">
+                        {key}
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      </button>
+                    ) : (
+                      <a
+                        href={nav.link}
+                        className="text-sm font-medium text-white hover:text-black hover:bg-white px-3 py-2 rounded transition-all duration-200"
+                      >
+                        {key}
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </nav>
+              {/* Right Icons */}
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <button className="p-2 text-white hover:text-gray-300 transition-colors duration-200">
+                  <Search className="h-5 w-5" />
+                </button>
+                <button className="hidden sm:block p-2 text-white hover:text-gray-300 transition-colors duration-200">
+                  <User className="h-5 w-5" />
+                </button>
+                <button className="p-2 text-white hover:text-gray-300 relative transition-colors duration-200">
+                  <Heart className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 bg-white text-black text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    1
+                  </span>
+                </button>
+                <button className="p-2 text-white hover:text-gray-300 transition-colors duration-200">
+                  <ShoppingBag className="h-5 w-5" />
+                </button>
+               
+                {/* Mobile Menu Button */}
+                <button
+                  className="md:hidden p-2 text-white hover:text-gray-300 transition-colors duration-200"
+                  onClick={toggleMobileMenu}
                 >
-                  {nav.hasDropdown ? (
-                    <button className="flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 py-2">
-                      {key}
-                      <ChevronDown className="ml-1 h-3 w-3" />
-                    </button>
-                  ) : (
-                    <a
-                      href={nav.link}
-                      className="text-sm font-medium text-gray-900 hover:text-gray-600 py-2"
-                    >
-                      {key}
-                    </a>
-                  )}
-                </div>
-              ))}
-            </nav>
-
-            {/* Right Icons */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <button className="p-2 text-gray-600 hover:text-gray-900">
-                <Search className="h-5 w-5" />
-              </button>
-              <button className="hidden sm:block p-2 text-gray-600 hover:text-gray-900">
-                <User className="h-5 w-5" />
-              </button>
-              <button className="p-2 text-gray-600 hover:text-gray-900 relative">
-                <Heart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  1
-                </span>
-              </button>
-              <button className="p-2 text-gray-600 hover:text-gray-900">
-                <ShoppingBag className="h-5 w-5" />
-              </button>
-              
-              {/* Mobile Menu Button */}
-              <button 
-                className="md:hidden p-2 text-gray-600 hover:text-gray-900"
-                onClick={toggleMobileMenu}
-              >
-                <Menu className="h-5 w-5" />
-              </button>
+                  <Menu className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Desktop Dropdown Menus */}
-        {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
-          <div
-            onMouseEnter={() => handleMouseEnter(activeDropdown)}
-            onMouseLeave={handleMouseLeave}
-          >
-            {renderDropdownContent(navigationData[activeDropdown].content!)}
-          </div>
-        )}
-      </header>
+          {/* Desktop Dropdown Menus */}
+          {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
+            <div
+              onMouseEnter={() => handleMouseEnter(activeDropdown)}
+              onMouseLeave={handleMouseLeave}
+            >
+              {renderDropdownContent(navigationData[activeDropdown].content!)}
+            </div>
+          )}
+        </header>
+      </div>
 
       {/* Mobile Menu */}
       {renderMobileMenu()}
-    </>
+
+      {/* Styles personnalisés pour Swiper */}
+      <style jsx global>{`
+        .swiper-pagination-bullet {
+          width: 12px !important;
+          height: 12px !important;
+          background: rgba(255, 255, 255, 0.5) !important;
+          opacity: 1 !important;
+        }
+        
+        .swiper-pagination-bullet-active {
+          background: white !important;
+        }
+        
+        .swiper-button-next:after,
+        .swiper-button-prev:after {
+          font-size: 20px !important;
+          font-weight: bold !important;
+        }
+      `}</style>
+    </div>
   );
 };
 
-export default Header;
+export default HomePage;
