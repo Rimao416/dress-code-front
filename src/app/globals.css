@@ -1,1 +1,10 @@
 @import "tailwindcss";
+@theme {
+  /* Redéfinir la police sans-serif par défaut avec Inter */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Appliquer Inter comme police par défaut sur tout le body */
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}

@@ -1,547 +1,574 @@
 "use client"
 import React, { useState } from 'react';
-import { Search, User, Heart, ShoppingBag, ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
 
-const LumeHomepage = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+// Types
+interface NavLink {
+  title: string;
+  link: string;
+}
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Barre supérieure */}
-      <div className="bg-gray-800 text-white text-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-10">
-            <div className="flex items-center space-x-2">
-              <span>📞</span>
-              <span>(+01) 1234 8888</span>
-            </div>
-            <div className="hidden md:block">
-              <span>Livraison gratuite, retour ou remboursement sous 30 jours.</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <span>FRANÇAIS</span>
-                <ChevronDown className="w-4 h-4" />
+interface NavSection {
+  title: string;
+  items?: NavLink[];
+}
+
+interface FeaturedItem {
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface DropdownContent {
+  left: NavLink[];
+  right: NavSection[];
+  featured?: FeaturedItem | FeaturedItem[];
+}
+
+interface NavigationItem {
+  hasDropdown: boolean;
+  content?: DropdownContent;
+  link?: string;
+}
+
+interface NavigationData {
+  [key: string]: NavigationItem;
+}
+
+const Header = () => {
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
+
+  const handleMouseEnter = (menu: string) => {
+    setActiveDropdown(menu);
+  };
+
+  const handleMouseLeave = () => {
+    setActiveDropdown(null);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setExpandedMobileSection(null);
+  };
+
+  const toggleMobileSection = (section: string) => {
+    setExpandedMobileSection(expandedMobileSection === section ? null : section);
+  };
+
+  const navigationData: NavigationData = {
+    'Vêtements': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: 'Tous les vêtements', link: '/clothing' },
+          { title: 'Tous les vêtements de détente', link: '/clothing/loungewear' },
+          { title: 'Guide des tissus', link: '/clothing/fabric-guide' }
+        ],
+        right: [
+          {
+            title: 'Style',
+            items: [
+              { title: 'T-shirts & débardeurs', link: '/clothing/tees-tanks' },
+              { title: 'Robes', link: '/clothing/dresses' },
+              { title: 'Bodys', link: '/clothing/bodysuits' },
+              { title: 'Bas', link: '/clothing/bottoms' },
+              { title: 'Sweats à capuche et sweatshirts', link: '/clothing/hoodies' },
+              { title: 'Pyjamas', link: '/clothing/pajamas' },
+              { title: 'Maternité', link: '/clothing/maternity' }
+            ]
+          }
+        ],
+        featured: {
+          title: 'La boutique des robes',
+          description: 'Robes signature pour toutes les occasions',
+          image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=300&h=200&fit=crop'
+        }
+      }
+    },
+    'Soutiens-gorge': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: 'Tous les soutiens-gorge', link: '/bras' },
+          { title: 'Tous les brassières', link: '/bras/bralettes' },
+          { title: 'Lingerie', link: '/bras/lingerie' },
+          { title: 'Le guide des soutiens-gorge', link: '/bras/guide' }
+        ],
+        right: [
+          {
+            title: 'Silhouette',
+            items: [
+              { title: 'T-shirt', link: '/bras/t-shirt' },
+              { title: 'Sans bretelles', link: '/bras/strapless' },
+              { title: 'Couverture intégrale', link: '/bras/full-coverage' },
+              { title: 'Décolleté', link: '/bras/scoop' },
+              { title: 'Plongeant', link: '/bras/plunge' },
+              { title: 'Balconnet', link: '/bras/balconette' },
+              { title: 'Triangle', link: '/bras/triangle' },
+              { title: 'Demi', link: '/bras/demi' },
+              { title: 'Maternité', link: '/bras/maternity' }
+            ]
+          },
+          {
+            title: 'Doublure',
+            items: [
+              { title: 'Push-up', link: '/bras/push-up' },
+              { title: 'Non doublé', link: '/bras/unlined' },
+              { title: 'Légèrement doublé', link: '/bras/lightly-lined' }
+            ]
+          }
+        ],
+        featured: [
+          {
+            title: 'Soutiens-gorge T-shirt',
+            description: 'Modèles du quotidien avec soutien et couverture indétectable',
+            image: 'https://images.unsplash.com/photo-1571513722275-4b8c0290cd54?w=150&h=120&fit=crop'
+          },
+          {
+            title: 'Soutiens-gorge Push-up',
+            description: 'Styles sexy qui mettent en valeur le décolleté, soulèvent et soutiennent',
+            image: 'https://images.unsplash.com/photo-1594736797933-d0c44efab1eb?w=150&h=120&fit=crop'
+          }
+        ]
+      }
+    },
+    'Sous-vêtements': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: 'Tous les sous-vêtements', link: '/underwear' },
+          { title: 'Kits économiques', link: '/underwear/bundles' },
+          { title: 'Lingerie', link: '/underwear/lingerie' }
+        ],
+        right: [
+          {
+            title: 'Style',
+            items: [
+              { title: 'Strings', link: '/underwear/thongs' },
+              { title: 'Shorty', link: '/underwear/cheeky' },
+              { title: 'Slips', link: '/underwear/briefs' },
+              { title: 'Culottes boy short', link: '/underwear/boy-shorts' },
+              { title: 'Boxers', link: '/underwear/boxers' },
+              { title: 'Maternité', link: '/underwear/maternity' }
+            ]
+          }
+        ],
+        featured: {
+          title: 'Kits économiques',
+          description: 'Videz vos tiroirs ! Obtenez plus de sous-vêtements que vous adorerez, pour moins cher',
+          image: 'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=300&h=200&fit=crop'
+        }
+      }
+    },
+    'Gainage': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: 'Tous les vêtements de gainage', link: '/shapewear' },
+          { title: 'Solutions pour occasions', link: '/shapewear/occasions' },
+          { title: 'Le guide du gainage', link: '/shapewear/guide' }
+        ],
+        right: [
+          {
+            title: 'Style',
+            items: [
+              { title: 'Bodys', link: '/shapewear/bodysuits' },
+              { title: 'Sous-vêtements', link: '/shapewear/underwear' },
+              { title: 'Shorts & leggings', link: '/shapewear/shorts-leggings' },
+              { title: 'Redresseurs de taille', link: '/shapewear/waist-trainers' },
+              { title: 'Sans dos', link: '/shapewear/backless' },
+              { title: 'Brassières', link: '/shapewear/bralettes' }
+            ]
+          },
+          {
+            title: 'Niveau de compression',
+            items: [
+              { title: 'Léger', link: '/shapewear/light' },
+              { title: 'Moyen', link: '/shapewear/mid' },
+              { title: 'Fort', link: '/shapewear/strong' },
+              { title: 'Très fort', link: '/shapewear/extra-strong' }
+            ]
+          }
+        ],
+        featured: [
+          {
+            title: 'Bodys',
+            description: 'Styles galbants qui lissent, sculptent et soutiennent',
+            image: 'https://images.unsplash.com/photo-1595348020949-87cdfbb44174?w=150&h=120&fit=crop'
+          },
+          {
+            title: 'La boutique des solutions',
+            description: 'Le soutien-gorge qui fait tout, nos bodys viraux et autres solutions indispensables',
+            image: 'https://images.unsplash.com/photo-1582142306909-195724d44209?w=150&h=120&fit=crop'
+          }
+        ]
+      }
+    },
+    'Maillots de bain': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: 'Tous les maillots de bain', link: '/swim' }
+        ],
+        right: [
+          {
+            title: 'Style',
+            items: [
+              { title: 'Bikinis deux pièces', link: '/swim/two-piece' },
+              { title: 'Maillots une pièce', link: '/swim/one-piece' },
+              { title: 'Paréos', link: '/swim/cover-ups' },
+              { title: 'Accessoires de plage', link: '/swim/accessories' }
+            ]
+          }
+        ],
+        featured: [
+          {
+            title: 'Bikinis deux pièces',
+            description: 'Hauts et bas de bikini indispensables',
+            image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=150&h=120&fit=crop'
+          },
+          {
+            title: 'Maillots une pièce',
+            description: 'Silhouettes signature pour un look de plage complet',
+            image: 'https://images.unsplash.com/photo-1544966503-7521ac882d5a?w=150&h=120&fit=crop'
+          }
+        ]
+      }
+    },
+    'Homme': {
+      hasDropdown: false,
+      link: '/mens'
+    },
+    'Collections': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: 'Toutes les collections', link: '/collections' }
+        ],
+        right: [
+          {
+            title: 'Collections phares',
+            items: [
+              { title: 'Fits Everybody', link: '/collections/fits-everybody' },
+              { title: 'Collection coton', link: '/collections/cotton' },
+              { title: 'Soft Lounge', link: '/collections/soft-lounge' },
+              { title: 'DRESSCODE Body', link: '/collections/dresscode-body' },
+              { title: 'Seamless Sculpt', link: '/collections/seamless-sculpt' },
+              { title: 'Coton polaire', link: '/collections/cotton-fleece' }
+            ]
+          },
+          {
+            title: 'Boutiques',
+            items: [
+              { title: 'La collection vacances', link: '/shops/vacation' },
+              { title: 'La boutique été', link: '/shops/summer' },
+              { title: 'Transparences', link: '/shops/sheer' },
+              { title: 'Lingerie d\'été', link: '/shops/intimates' },
+              { title: 'Perfection imprimée', link: '/shops/prints' },
+              { title: 'Nuances d\'été', link: '/shops/shades' },
+              { title: 'Boutique mariage', link: '/shops/wedding' },
+              { title: 'Ensembles deux pièces', link: '/shops/two-piece-sets' },
+              { title: 'La boutique nuit', link: '/shops/sleep' },
+              { title: 'Sélection de Kim', link: '/shops/kims-picks' }
+            ]
+          }
+        ]
+      }
+    },
+    'Plus': {
+      hasDropdown: true,
+      content: {
+        left: [],
+        right: [
+          {
+            title: 'Plus de DRESSCODE à aimer',
+            items: [
+              { title: 'Accessoires', link: '/more/accessories' },
+              { title: 'Chaussettes & collants', link: '/more/socks-hosiery' },
+              { title: 'Chaussures', link: '/more/footwear' },
+              { title: 'Cartes cadeaux', link: '/more/gift-cards' }
+            ]
+          }
+        ]
+      }
+    }
+  };
+
+  const renderDropdownContent = (content: DropdownContent) => {
+    if (!content) return null;
+
+    return (
+      <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-12 gap-8">
+            {/* Left Column */}
+            {content.left && content.left.length > 0 && (
+              <div className="col-span-2">
+                <div className="space-y-2">
+                  {content.left.map((item: NavLink, index: number) => (
+                    <a
+                      key={index}
+                      href={item.link}
+                      className="block text-sm font-medium text-gray-900 hover:text-gray-600 py-1"
+                    >
+                      {item.title}
+                    </a>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-center space-x-1">
-                <span>EUR €</span>
-                <ChevronDown className="w-4 h-4" />
+            )}
+
+            {/* Center Columns */}
+            <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
+              <div className="grid grid-cols-2 gap-8">
+                {content.right?.map((section: NavSection, index: number) => (
+                  <div key={index}>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+                      {section.title}
+                    </h3>
+                    <div className="space-y-1">
+                      {section.items?.map((item: NavLink, itemIndex: number) => (
+                        <a
+                          key={itemIndex}
+                          href={item.link}
+                          className="block text-sm text-gray-700 hover:text-gray-900 py-1"
+                        >
+                          {item.title}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
+
+            {/* Right Column - Featured */}
+            <div className="col-span-4">
+              {content.featured && !Array.isArray(content.featured) && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <img
+                    src={content.featured.image}
+                    alt={content.featured.title}
+                    className="w-full h-32 object-cover rounded mb-3"
+                  />
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    {content.featured.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {content.featured.description}
+                  </p>
+                </div>
+              )}
+             
+              {content.featured && Array.isArray(content.featured) && (
+                <div className="space-y-4">
+                  {content.featured.map((item: FeaturedItem, index: number) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-24 object-cover rounded mb-2"
+                      />
+                      <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-gray-600">
+                        {item.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+    );
+  };
 
-      {/* En-tête */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            {/* Menu de navigation - Bureau */}
-            <nav className="hidden lg:flex space-x-8">
-              <div className="flex items-center space-x-1">
-                <span className="text-gray-900 font-medium">ACCUEIL</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
-              <div className="flex items-center space-x-1">
-                <span className="text-gray-900 font-medium">BOUTIQUE</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
-              <span className="text-gray-900 font-medium">BLOG</span>
-              <span className="text-gray-900 font-medium">CONTACT</span>
-              <div className="flex items-center space-x-1">
-                <span className="text-gray-900 font-medium">PAGES</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
+  const renderMobileMenu = () => {
+    const mobileMenuItems = [
+      { key: 'New', label: 'New', hasDropdown: false, link: '/new' },
+      { key: 'Best Sellers', label: 'Best Sellers', hasDropdown: false, link: '/best-sellers' },
+      { key: 'Vêtements', label: 'Clothing', hasDropdown: true },
+      { key: 'Soutiens-gorge', label: 'Bras', hasDropdown: true },
+      { key: 'Sous-vêtements', label: 'Underwear', hasDropdown: true },
+      { key: 'Gainage', label: 'Shapewear', hasDropdown: true },
+      { key: 'Maillots de bain', label: 'Swim', hasDropdown: true },
+      { key: 'Homme', label: 'Mens', hasDropdown: false, link: '/mens' },
+      { key: 'Collections', label: 'Collections', hasDropdown: true },
+      { key: 'Plus', label: 'More', hasDropdown: true }
+    ];
+
+    return (
+      <div className="md:hidden">
+        {/* Overlay */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMobileMenu}></div>
+        )}
+
+        {/* Mobile Menu */}
+        <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
+          <div className="p-4">
+            {/* Close Button */}
+            <div className="flex justify-end mb-6">
+              <button onClick={toggleMobileMenu} className="p-2">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Menu Items */}
+            <div className="space-y-0">
+              {mobileMenuItems.map((item) => (
+                <div key={item.key} className="border-b border-gray-200">
+                  {item.hasDropdown ? (
+                    <div>
+                      <button
+                        onClick={() => toggleMobileSection(item.key)}
+                        className="w-full flex items-center justify-between py-4 text-left text-gray-900 font-medium"
+                      >
+                        {item.label}
+                        <ChevronDown className={`h-4 w-4 transform transition-transform ${
+                          expandedMobileSection === item.key ? 'rotate-180' : ''
+                        }`} />
+                      </button>
+                      
+                      {expandedMobileSection === item.key && navigationData[item.key]?.content && (
+                        <div className="pb-4">
+                          {/* Left section items */}
+                          {navigationData[item.key].content!.left.map((linkItem, index) => (
+                            <a
+                              key={index}
+                              href={linkItem.link}
+                              className="block py-2 pl-4 text-sm text-gray-700 hover:text-gray-900"
+                            >
+                              {linkItem.title}
+                            </a>
+                          ))}
+                          
+                          {/* Right section items */}
+                          {navigationData[item.key].content!.right.map((section, sectionIndex) => (
+                            <div key={sectionIndex} className="mt-4">
+                              <h4 className="text-sm font-semibold text-gray-900 pl-4 mb-2 uppercase tracking-wide">
+                                {section.title}
+                              </h4>
+                              {section.items?.map((linkItem, linkIndex) => (
+                                <a
+                                  key={linkIndex}
+                                  href={linkItem.link}
+                                  className="block py-2 pl-6 text-sm text-gray-700 hover:text-gray-900"
+                                >
+                                  {linkItem.title}
+                                </a>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <a
+                      href={item.link}
+                      className="block py-4 text-gray-900 font-medium"
+                    >
+                      {item.label}
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <header className="bg-white border-b border-gray-200 relative">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <a href="/" className="text-2xl font-bold text-black tracking-tight">
+                DressCode
+              </a>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-8">
+              {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
+                <div
+                  key={key}
+                  className="relative"
+                  onMouseEnter={() => nav.hasDropdown && handleMouseEnter(key)}
+                  onMouseLeave={() => nav.hasDropdown && handleMouseLeave()}
+                >
+                  {nav.hasDropdown ? (
+                    <button className="flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 py-2">
+                      {key}
+                      <ChevronDown className="ml-1 h-3 w-3" />
+                    </button>
+                  ) : (
+                    <a
+                      href={nav.link}
+                      className="text-sm font-medium text-gray-900 hover:text-gray-600 py-2"
+                    >
+                      {key}
+                    </a>
+                  )}
+                </div>
+              ))}
             </nav>
 
-            {/* Bouton du menu mobile */}
-            <button
-              className="lg:hidden p-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-
-            {/* Logo */}
-            <div className="flex-1 lg:flex-none flex justify-center lg:justify-start">
-              <div className="text-3xl font-bold text-gray-900">
-                <span className="italic">D</span>RESSCODE
-              </div>
-            </div>
-
-            {/* Icônes de droite */}
-            <div className="flex items-center space-x-4">
-              <Search className="w-6 h-6 text-gray-600 cursor-pointer" />
-              <User className="w-6 h-6 text-gray-600 cursor-pointer" />
-              <div className="relative">
-                <Heart className="w-6 h-6 text-gray-600 cursor-pointer" />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
+            {/* Right Icons */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <button className="p-2 text-gray-600 hover:text-gray-900">
+                <Search className="h-5 w-5" />
+              </button>
+              <button className="hidden sm:block p-2 text-gray-600 hover:text-gray-900">
+                <User className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-900 relative">
+                <Heart className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  1
                 </span>
-              </div>
-              <div className="relative">
-                <ShoppingBag className="w-6 h-6 text-gray-600 cursor-pointer" />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
-              </div>
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-900">
+                <ShoppingBag className="h-5 w-5" />
+              </button>
+              
+              {/* Mobile Menu Button */}
+              <button 
+                className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+                onClick={toggleMobileMenu}
+              >
+                <Menu className="h-5 w-5" />
+              </button>
             </div>
           </div>
-
-          {/* Menu mobile */}
-          {mobileMenuOpen && (
-            <div className="lg:hidden bg-white border-t">
-              <div className="py-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-900 font-medium">ACCUEIL</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-900 font-medium">BOUTIQUE</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-                <span className="text-gray-900 font-medium block">BLOG</span>
-                <span className="text-gray-900 font-medium block">CONTACT</span>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-900 font-medium">PAGES</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Desktop Dropdown Menus */}
+        {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
+          <div
+            onMouseEnter={() => handleMouseEnter(activeDropdown)}
+            onMouseLeave={handleMouseLeave}
+          >
+            {renderDropdownContent(navigationData[activeDropdown].content!)}
+          </div>
+        )}
       </header>
 
-      {/* Section Hero */}
-      <main className="relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center min-h-[600px]">
-            {/* Contenu de gauche */}
-            <div className="lg:w-1/2 text-center lg:text-left py-12 lg:py-0">
-              <div className="mb-4">
-                <span className="text-gray-600 text-sm">Soldes jusqu à 30% de réduction</span>
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-                Style décontracté<br />
-                avec impact
-              </h1>
-              <button className="bg-white text-gray-900 px-8 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors border border-gray-300">
-                ACHETER MAINTENANT
-              </button>
-            </div>
-
-            {/* Contenu de droite - Image */}
-            <div className="lg:w-1/2 w-full">
-              <div className="relative">
-                {/* Image principale */}
-                <div className="bg-gradient-to-br from-amber-100 to-orange-200 rounded-lg h-[400px] sm:h-[500px] lg:h-[600px] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-64 h-80 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                    <p className="text-gray-600">Image des modèles masculins</p>
-                  </div>
-                </div>
-
-                {/* Éléments flottants */}
-               
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Section Caractéristiques */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-                  <div className="w-6 h-6 border border-gray-400 rounded"></div>
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Livraison gratuite</h3>
-              <p className="text-gray-600">Livraison gratuite pour les commandes de plus de 65€.</p>
-            </div>
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-                  <div className="w-6 h-4 border border-gray-400 rounded-sm"></div>
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Retours gratuits</h3>
-              <p className="text-gray-600">Politique de retour sous 30 jours.</p>
-            </div>
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-                  <div className="w-6 h-4 border border-gray-400 rounded-sm"></div>
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Paiements sécurisés</h3>
-              <p className="text-gray-600">Nous acceptons toutes les cartes bancaires</p>
-            </div>
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-                  <div className="w-6 h-6 border border-gray-400 rounded-full"></div>
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Service client</h3>
-              <p className="text-gray-600">Service client de haute qualité</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section À propos */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            {/* Image de gauche */}
-            <div className="lg:w-1/2">
-              <div className="relative">
-                <div className="bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg h-[500px] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-80 h-96 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                    <p className="text-gray-600">Couple en tenue décontractée</p>
-                  </div>
-                </div>
-                {/* Badge Collection Design */}
-                <div className="absolute top-4 right-4 bg-white rounded-full p-4">
-                  <div className="w-16 h-16 border-2 border-gray-300 rounded-full flex items-center justify-center">
-                    <div className="text-xs text-gray-600 text-center">
-                      <div>COLLECTION</div>
-                      <div>DESIGNER</div>
-                      <div>NOUVEAU</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Contenu de droite */}
-            <div className="lg:w-1/2">
-              <div className="mb-4">
-                <span className="text-gray-600 text-sm">À propos de nous</span>
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Exprimez-vous<br />
-                à travers la mode
-              </h2>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                Notre objectif est d aider les gens à exprimer librement leur personnalité à travers la mode. Notre équipe passionnée permet à nos clients d utiliser la mode comme moyen d expression en les inspirant avec une gamme variée de marques et de styles.
-              </p>
-              <button className="bg-gray-900 text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors">
-                LIRE PLUS
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section Catégories populaires */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Catégories populaires</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Chemises */}
-            <div className="relative group cursor-pointer">
-              <div className="bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg h-80 flex items-center justify-center overflow-hidden">
-                <div className="text-center">
-                  <div className="w-48 h-64 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                  <p className="text-gray-600">Chemise femme</p>
-                </div>
-              </div>
-              <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-lg px-3 py-1 text-sm">
-                15 Articles
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gray-900 text-white text-center py-4 rounded-b-lg">
-                <span className="font-medium">Chemises</span>
-              </div>
-            </div>
-
-            {/* Robe mi-longue */}
-            <div className="relative group cursor-pointer">
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg h-80 flex items-center justify-center overflow-hidden">
-                <div className="text-center">
-                  <div className="w-48 h-64 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                  <p className="text-gray-600">Robe mi-longue</p>
-                </div>
-              </div>
-              <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-lg px-3 py-1 text-sm">
-                15 Articles
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gray-900 text-white text-center py-4 rounded-b-lg">
-                <span className="font-medium">Robe mi-longue</span>
-              </div>
-            </div>
-
-            {/* Chemises */}
-            <div className="relative group cursor-pointer">
-              <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg h-80 flex items-center justify-center overflow-hidden">
-                <div className="text-center">
-                  <div className="w-48 h-64 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                  <p className="text-gray-600">Blazer femme</p>
-                </div>
-              </div>
-              <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-lg px-3 py-1 text-sm">
-                15 Articles
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gray-900 text-white text-center py-4 rounded-b-lg">
-                <span className="font-medium">Chemises</span>
-              </div>
-            </div>
-
-            {/* Vestes */}
-            <div className="relative group cursor-pointer">
-              <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-lg h-80 flex items-center justify-center overflow-hidden">
-                <div className="text-center">
-                  <div className="w-48 h-64 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                  <p className="text-gray-600">Veste homme</p>
-                </div>
-              </div>
-              <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-lg px-3 py-1 text-sm">
-                15 Articles
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gray-900 text-white text-center py-4 rounded-b-lg">
-                <span className="font-medium">Vestes</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section Avis clients */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Nos clients adorent</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Avis 1 */}
-            <div className="flex flex-col md:flex-row gap-6 bg-white rounded-lg p-8">
-              <div className="md:w-1/3">
-                <div className="bg-gradient-to-br from-teal-100 to-teal-200 rounded-lg h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-32 h-40 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                    <p className="text-gray-600">Homme en veste</p>
-                  </div>
-                </div>
-              </div>
-              <div className="md:w-2/3">
-                <div className="flex mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400 text-xl">★</span>
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Les résultats de l utilisation de cutegiz ont été immédiats pour moi, et ce sont d excellents résultats ! Je suis heureux d avoir trouvé la bonne crème, et en plus, elle est complètement naturelle. Bravo !
-                </p>
-                <div>
-                  <p className="font-semibold text-gray-900">Michael Smith</p>
-                  <p className="text-gray-600 text-sm">designer produit</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Avis 2 */}
-            <div className="flex flex-col md:flex-row gap-6 bg-white rounded-lg p-8">
-              <div className="md:w-1/3">
-                <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-32 h-40 bg-white/20 rounded-lg mb-4 mx-auto"></div>
-                    <p className="text-gray-600">Homme en cuir</p>
-                  </div>
-                </div>
-              </div>
-              <div className="md:w-2/3">
-                <div className="flex mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400 text-xl">★</span>
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Les résultats de l utilisation de cutegiz ont été immédiats pour moi, et ce sont d excellents résultats ! Je suis heureux d avoir trouvé la bonne crème, et en plus, elle est complètement naturelle. Bravo !
-                </p>
-                <div>
-                  <p className="font-semibold text-gray-900">Janet Chua</p>
-                  <p className="text-gray-600 text-sm">Client</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section Instagram */}
-      <section className="py-16 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Suivez-nous sur Instagram</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            {/* Post Instagram 1 */}
-            <div className="aspect-square bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-24 bg-white/20 rounded mb-2 mx-auto"></div>
-                  <p className="text-xs text-gray-600">Homme casual</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Post Instagram 2 */}
-            <div className="aspect-square bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-24 bg-white/20 rounded mb-2 mx-auto"></div>
-                  <p className="text-xs text-gray-600">Femme blonde</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Post Instagram 3 */}
-            <div className="aspect-square bg-gradient-to-br from-mint-100 to-mint-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-24 bg-white/20 rounded mb-2 mx-auto"></div>
-                  <p className="text-xs text-gray-600">Femme pull</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Post Instagram 4 */}
-            <div className="aspect-square bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-24 bg-white/20 rounded mb-2 mx-auto"></div>
-                  <p className="text-xs text-gray-600">Homme lunettes</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Post Instagram 5 */}
-            <div className="aspect-square bg-gradient-to-br from-green-100 to-green-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-24 bg-white/20 rounded mb-2 mx-auto"></div>
-                  <p className="text-xs text-gray-600">Femme chapeau</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Post Instagram 6 */}
-            <div className="aspect-square bg-gradient-to-br from-rose-100 to-rose-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-24 bg-white/20 rounded mb-2 mx-auto"></div>
-                  <p className="text-xs text-gray-600">Femme manteau</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pied de page */}
-      <footer className="bg-gray-50 pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {/* Info entreprise */}
-            <div>
-              <div className="text-3xl font-bold text-gray-900 mb-6">
-                <span className="italic">D</span>RESSCODE
-              </div>
-              <p className="text-gray-600 mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-gray-400 rounded"></div>
-                  <span className="text-gray-600">123 rue principale, ville, CA 12345 - France.</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-gray-400 rounded"></div>
-                  <span className="text-gray-600">dresscode@example.com</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-gray-400 rounded"></div>
-                  <span className="text-gray-600">(012) 800 456 789-987</span>
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
-                  <span className="text-xs">f</span>
-                </div>
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
-                  <span className="text-xs">t</span>
-                </div>
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
-                  <span className="text-xs">ig</span>
-                </div>
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
-                  <span className="text-xs">yt</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Liens rapides */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Liens rapides</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Mon compte</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Panier</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Liste de souhaits</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Politique de confidentialité</a></li>
-              </ul>
-            </div>
-
-            {/* Informations */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Informations</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">À propos de nous</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Carrières</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Informations de livraison</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Politique de confidentialité</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Conditions générales</a></li>
-              </ul>
-            </div>
-
-            {/* Newsletter */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Rejoignez notre newsletter</h3>
-              <p className="text-gray-600 mb-6">
-                Recevez des e-mails sur nos dernières offres et promotions.
-              </p>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Entrez votre email"
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                />
-                <button className="bg-gray-900 text-white px-6 py-3 rounded-r-lg hover:bg-gray-800 transition-colors">
-                  S ABONNER
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bas de pied de page */}
-        <div className="bg-gray-900 text-white py-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-sm">Copyright © 2025 par spacingtech</p>
-              <div className="flex space-x-2 mt-4 md:mt-0">
-                <div className="w-8 h-5 bg-blue-600 rounded text-xs text-white flex items-center justify-center">VISA</div>
-                <div className="w-8 h-5 bg-red-600 rounded text-xs text-white flex items-center justify-center">MC</div>
-                <div className="w-8 h-5 bg-blue-700 rounded text-xs text-white flex items-center justify-center">AMEX</div>
-                <div className="w-8 h-5 bg-blue-500 rounded text-xs text-white flex items-center justify-center">PP</div>
-                <div className="w-8 h-5 bg-blue-800 rounded text-xs text-white flex items-center justify-center">DC</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      {/* Mobile Menu */}
+      {renderMobileMenu()}
+    </>
   );
 };
 
-export default LumeHomepage;
+export default Header;
