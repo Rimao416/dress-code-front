@@ -8,19 +8,26 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
-import {  newInData, productsData, sliderData } from '@/constant/data';
+import { newInData, productsData, sliderData } from '@/constant/data';
 import Input from '@/components/ui/input';
 
+type FormErrors = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  acceptTerms?: string;
+};
 // Données du slider
-
 const HomePage = () => {
   const toggleFavorite = (productId: number) => {
-  setFavorites(prev => 
-    prev.includes(productId) 
-      ? prev.filter(id => id !== productId)
-      : [...prev, productId]
-  );
-};
+    setFavorites(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -29,16 +36,18 @@ const HomePage = () => {
     acceptNewsletters: false,
     acceptTerms: false
   });
-  const [formErrors, setFormErrors] = useState({});
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
- const supportItems = [
+const [formErrors, setFormErrors] = useState<FormErrors>({});
+
+const handleInputChange = (field: keyof FormErrors, value: string) => {
+  setFormData(prev => ({ ...prev, [field]: value }));
+  // Effacer l'erreur quand l'utilisateur commence à taper
+  if (formErrors[field]) {
+    setFormErrors(prev => ({ ...prev, [field]: '' }));
+  }
+};
+
+  const supportItems = [
     {
       icon: <User className="w-8 h-8" />,
       title: "PASSER COMMANDE",
@@ -65,15 +74,16 @@ const HomePage = () => {
       description: "Contactez les conseillers de notre Service client"
     }
   ];
-const [favorites, setFavorites] = useState<number[]>([]);
+
+  const [favorites, setFavorites] = useState<number[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [newInSlideIndex, setNewInSlideIndex] = useState(0);
-const [newInSlidesCount, setNewInSlidesCount] = useState(0);
-const [isNewInBeginning, setIsNewInBeginning] = useState(true);
-const [isNewInEnd, setIsNewInEnd] = useState(false);
+  const [newInSlidesCount, setNewInSlidesCount] = useState(0);
+  const [isNewInBeginning, setIsNewInBeginning] = useState(true);
+  const [isNewInEnd, setIsNewInEnd] = useState(false);
 
   const handleMouseEnter = (menu: string) => {
     setActiveDropdown(menu);
@@ -98,7 +108,7 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-12 gap-8">
-            {/* Left Column */}
+            {/* Colonne de gauche */}
             {content.left && content.left.length > 0 && (
               <div className="col-span-2">
                 <div className="space-y-2">
@@ -114,7 +124,7 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
                 </div>
               </div>
             )}
-            {/* Center Columns */}
+            {/* Colonnes centrales */}
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
                 {content.right?.map((section: NavSection, index: number) => (
@@ -137,7 +147,7 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
                 ))}
               </div>
             </div>
-            {/* Right Column - Featured */}
+            {/* Colonne de droite - Mise en avant */}
             <div className="col-span-4">
               {content.featured && !Array.isArray(content.featured) && (
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -154,7 +164,7 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
                   </p>
                 </div>
               )}
-             
+
               {content.featured && Array.isArray(content.featured) && (
                 <div className="space-y-4">
                   {content.featured.map((item: FeaturedItem, index: number) => (
@@ -183,16 +193,16 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
 
   const renderMobileMenu = () => {
     const mobileMenuItems = [
-      { key: 'New', label: 'New', hasDropdown: false, link: '/new' },
-      { key: 'Best Sellers', label: 'Best Sellers', hasDropdown: false, link: '/best-sellers' },
-      { key: 'Vêtements', label: 'Clothing', hasDropdown: true },
-      { key: 'Soutiens-gorge', label: 'Bras', hasDropdown: true },
-      { key: 'Sous-vêtements', label: 'Underwear', hasDropdown: true },
-      { key: 'Gainage', label: 'Shapewear', hasDropdown: true },
-      { key: 'Maillots de bain', label: 'Swim', hasDropdown: true },
-      { key: 'Homme', label: 'Mens', hasDropdown: false, link: '/mens' },
+      { key: 'Nouveau', label: 'Nouveau', hasDropdown: false, link: '/nouveau' },
+      { key: 'Meilleures Ventes', label: 'Meilleures Ventes', hasDropdown: false, link: '/meilleures-ventes' },
+      { key: 'Vêtements', label: 'Vêtements', hasDropdown: true },
+      { key: 'Soutiens-gorge', label: 'Soutiens-gorge', hasDropdown: true },
+      { key: 'Sous-vêtements', label: 'Sous-vêtements', hasDropdown: true },
+      { key: 'Gainage', label: 'Gainage', hasDropdown: true },
+      { key: 'Maillots de bain', label: 'Maillots de bain', hasDropdown: true },
+      { key: 'Homme', label: 'Homme', hasDropdown: false, link: '/homme' },
       { key: 'Collections', label: 'Collections', hasDropdown: true },
-      { key: 'Plus', label: 'More', hasDropdown: true }
+      { key: 'Plus', label: 'Plus', hasDropdown: true }
     ];
 
     return (
@@ -524,75 +534,75 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
         </div>
       </section>
             {/* Full Screen Split Section */}
-      <section className="h-screen w-full">
-        <div className="flex h-full">
-          {/* Left Half - Trending Tops */}
-          <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-            <img
-              src="/images/trending-tops.jpg"
-              alt="Woman in purple knit top"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              onError={(e) => {
-                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
-              }}
-            />
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-            
-            {/* Content */}
-            <div className="absolute bottom-8 left-8 text-white z-10">
-              <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-                Trending Tops
-              </h3>
-              <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-                New Sheer Knit tops and signature tees for a perfect fit every time
-              </p>
-              <a
-                href="/trending-tops"
-                className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-              >
-                Shop Now
-              </a>
-            </div>
-          </div>
+<section className="h-screen w-full">
+  <div className="flex h-full">
+    {/* Moitié de gauche - Tops Tendances */}
+    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
+      <img
+        src="/images/trending-tops.jpg"
+        alt="Femme en haut tricoté violet"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        onError={(e) => {
+          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
+        }}
+      />
+      {/* Superposition Sombre */}
+      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
 
-          {/* Right Half - Must-Have Bottoms */}
-          <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-            <img
-              src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Woman in snake print skirt"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              onError={(e) => {
-                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
-              }}
-            />
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-            
-            {/* Content */}
-            <div className="absolute bottom-8 left-8 text-white z-10">
-              <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-                Must-Have <span className="text-gray-300">Bottoms</span>
-              </h3>
-              <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-                Complete your look with ultra-flattering skirts, pants, and more
-              </p>
-              <a
-                href="/must-have-bottoms"
-                className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-              >
-                Shop Now
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Contenu */}
+      <div className="absolute bottom-8 left-8 text-white z-10">
+        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
+          Tops Tendances
+        </h3>
+        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
+          Nouveaux hauts en tricot transparent et t-shirts signature pour un ajustement parfait à chaque fois
+        </p>
+        <a
+          href="/trending-tops"
+          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
+        >
+          Acheter Maintenant
+        </a>
+      </div>
+    </div>
+    {/* Moitié de droite - Bas Indispensables */}
+    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
+      <img
+        src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Femme en jupe imprimée serpent"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        onError={(e) => {
+          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
+        }}
+      />
+      {/* Superposition Sombre */}
+      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
+
+      {/* Contenu */}
+      <div className="absolute bottom-8 left-8 text-white z-10">
+        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
+          Bas <span className="text-gray-300">Indispensables</span>
+        </h3>
+        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
+          Complétez votre look avec des jupes, des pantalons ultra-flatteurs et plus encore
+        </p>
+        <a
+          href="/must-have-bottoms"
+          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
+        >
+          Acheter Maintenant
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
           <section className="py-16 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           {/* Section Title */}
           <div className="text-center mb-12">
             <h2 className="text-sm font-medium text-black tracking-[0.2em] uppercase">
-              The Brands On Our Radar
+              Les marques qui retiennent notre attention
             </h2>
           </div>
 
@@ -645,79 +655,78 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
           </div>
         </div>
       </section>
-            <section className="h-screen w-full">
-        <div className="flex h-full">
-          {/* Left Half - Trending Tops */}
-          <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-            <img
-              src="/images/trending-tops.jpg"
-              alt="Woman in purple knit top"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              onError={(e) => {
-                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
-              }}
-            />
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-            
-            {/* Content */}
-            <div className="absolute bottom-8 left-8 text-white z-10">
-              <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-                Dress Shop
-              </h3>
-              <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-                One-and-done stunners for every occasion
-              </p>
-              <a
-                href="/trending-tops"
-                className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-              >
-                Shop Now
-              </a>
-            </div>
-          </div>
+        <section className="h-screen w-full">
+  <div className="flex h-full">
+    {/* Moitié de gauche - Tops Tendances */}
+    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
+      <img
+        src="/images/trending-tops.jpg"
+        alt="Femme en haut tricoté violet"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        onError={(e) => {
+          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
+        }}
+      />
+      {/* Superposition Sombre */}
+      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
 
-          {/* Right Half - Must-Have Bottoms */}
-          <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-            <img
-              src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Woman in snake print skirt"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              onError={(e) => {
-                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
-              }}
-            />
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-            
-            {/* Content */}
-            <div className="absolute bottom-8 left-8 text-white z-10">
-              <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-                Occasion <span className="text-gray-300">Ready Solutions</span>
-              </h3>
-              <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-                No matter the look, our innovative bras and shapewear have you covered
-              </p>
-              <a
-                href="/must-have-bottoms"
-                className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-              >
-                Shop Now
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Contenu */}
+      <div className="absolute bottom-8 left-8 text-white z-10">
+        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
+          Boutique de Robes
+        </h3>
+        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
+          Des robes éblouissantes pour chaque occasion
+        </p>
+        <a
+          href="/trending-tops"
+          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
+        >
+          Acheter Maintenant
+        </a>
+      </div>
+    </div>
+    {/* Moitié de droite - Bas Indispensables */}
+    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
+      <img
+        src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        alt="Femme en jupe imprimée serpent"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        onError={(e) => {
+          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
+        }}
+      />
+      {/* Superposition Sombre */}
+      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
+
+      {/* Contenu */}
+      <div className="absolute bottom-8 left-8 text-white z-10">
+        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
+          Solutions Prêtes pour les <span className="text-gray-300">Occasions</span>
+        </h3>
+        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
+          Peu importe le look, nos soutiens-gorge innovants et nos vêtements de forme vous couvrent
+        </p>
+        <a
+          href="/must-have-bottoms"
+          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
+        >
+          Acheter Maintenant
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 <section className="py-16 px-4 bg-white">
   <div className="max-w-7xl mx-auto">
-    {/* Title */}
+    {/* Titre */}
     <div className="text-center mb-12">
-      <h2 className="text-4xl lg:text-5xl font-serif text-black mb-4">Shop By Category</h2>
-      <p className="text-gray-600 text-lg">Discover premium essentials with style</p>
+      <h2 className="text-4xl lg:text-5xl font-serif text-black mb-4">Parcourir par catégorie</h2>
+      <p className="text-gray-600 text-lg">Découvrez des essentiels premium avec style</p>
     </div>
-
-    {/* Creative Grid */}
+    {/* Grille Créative */}
     <div
       className="grid gap-4"
       style={{
@@ -733,15 +742,15 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
       }}
     >
       {[
-        { area: 'a', title: 'SHAPEWEAR', subtitle: 'Sculpt & Define', image: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?q=80&w=500&auto=format&fit=crop' },
-        { area: 'b', title: 'UNDERWEAR', image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?q=80&w=500&auto=format&fit=crop' },
-        { area: 'c', title: 'SLEEP', image: 'https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?q=80&w=500&auto=format&fit=crop' },
-        { area: 'd', title: 'MENS', image: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?q=80&w=500&auto=format&fit=crop' },
-        { area: 'e', title: 'BRAS', image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?q=80&w=500&auto=format&fit=crop' },
-        { area: 'f', title: 'SWIMWEAR', subtitle: 'Beach Ready', image: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5d?q=80&w=500&auto=format&fit=crop' },
-        { area: 'g', title: 'ACTIVEWEAR', image: 'https://images.unsplash.com/photo-1506629905607-d9dda7bed44b?q=80&w=500&auto=format&fit=crop' },
-        { area: 'h', title: 'ACCESSORIES', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=500&auto=format&fit=crop' },
-        { area: 'i', title: 'LUXE', subtitle: 'Limited Edition', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=500&auto=format&fit=crop' },
+        { area: 'a', title: 'GAINANTS', subtitle: 'Sculptez & Définissez', image: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?q=80&w=500&auto=format&fit=crop' },
+        { area: 'b', title: 'SOUS-VÊTEMENTS', image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?q=80&w=500&auto=format&fit=crop' },
+        { area: 'c', title: 'SOMMEIL', image: 'https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?q=80&w=500&auto=format&fit=crop' },
+        { area: 'd', title: 'HOMME', image: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?q=80&w=500&auto=format&fit=crop' },
+        { area: 'e', title: 'SOUTIENS-GORGE', image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?q=80&w=500&auto=format&fit=crop' },
+        { area: 'f', title: 'MAILLOTS DE BAIN', subtitle: 'Prêt pour la Plage', image: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5d?q=80&w=500&auto=format&fit=crop' },
+        { area: 'g', title: 'VÊTEMENTS DE SPORT', image: 'https://images.unsplash.com/photo-1506629905607-d9dda7bed44b?q=80&w=500&auto=format&fit=crop' },
+        { area: 'h', title: 'ACCESSOIRES', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=500&auto=format&fit=crop' },
+        { area: 'i', title: 'LUXE', subtitle: 'Édition Limitée', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=500&auto=format&fit=crop' },
       ].map((item, i) => (
         <div
           key={i}
@@ -767,6 +776,7 @@ const [isNewInEnd, setIsNewInEnd] = useState(false);
     </div>
   </div>
 </section>
+
  <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

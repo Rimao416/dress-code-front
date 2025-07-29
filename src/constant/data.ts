@@ -1,31 +1,31 @@
 export const sliderData = [
   {
     image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&h=1080&fit=crop&crop=center",
-    title: "The Bra Shop",
-    subtitle: "Perfect shape, lift, and support for every bust",
-    buttonText: "Shop Now",
-    buttonLink: "/bras"
+    title: "Le Magasin de Soutiens-gorge",
+    subtitle: "Forme, soulèvement et soutien parfaits pour chaque buste",
+    buttonText: "Acheter Maintenant",
+    buttonLink: "/soutiens-gorge"
   },
   {
     image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1920&h=1080&fit=crop&crop=center",
-    title: "Summer Collection",
-    subtitle: "Light, breathable fabrics for the perfect summer look",
-    buttonText: "Discover Now",
-    buttonLink: "/summer"
+    title: "Collection Été",
+    subtitle: "Tissus légers et respirants pour le look parfait de l'été",
+    buttonText: "Découvrir Maintenant",
+    buttonLink: "/ete"
   },
   {
     image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=1920&h=1080&fit=crop&crop=center",
-    title: "Luxury Lingerie",
-    subtitle: "Exquisite designs crafted for the modern woman",
-    buttonText: "Explore Collection",
-    buttonLink: "/luxury"
+    title: "Lingerie de Luxe",
+    subtitle: "Designs exquis conçus pour la femme moderne",
+    buttonText: "Explorer la Collection",
+    buttonLink: "/luxe"
   },
   {
     image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1920&h=1080&fit=crop&crop=center",
-    title: "Active Wear",
-    subtitle: "Performance meets style in our sportswear collection",
-    buttonText: "Shop Active",
-    buttonLink: "/activewear"
+    title: "Vêtements de Sport",
+    subtitle: "La performance rencontre le style dans notre collection de vêtements de sport",
+    buttonText: "Acheter des Vêtements de Sport",
+    buttonLink: "/vetements-sport"
   }
 ];
 
@@ -34,31 +34,31 @@ export const newInData = [
     id: 1,
     brand: "GUCCI",
     image: "/images/gucci-bag.jpg",
-    alt: "Gucci leather handbag"
+    alt: "Sac à main en cuir Gucci"
   },
   {
     id: 2,
     brand: "GIULIVA HERITAGE",
     image: "/images/giuliva-jacket.jpg",
-    alt: "Giuliva Heritage black leather jacket"
+    alt: "Veste en cuir noir Giuliva Heritage"
   },
   {
     id: 3,
     brand: "ISABEL MARANT",
     image: "/images/isabel-marant-top.jpg",
-    alt: "Isabel Marant floral print top"
+    alt: "Haut à motif floral Isabel Marant"
   },
   {
     id: 4,
     brand: "LE MONDE BERYL",
     image: "/images/le-monde-beryl-shoes.jpg",
-    alt: "Le Monde Beryl brown leather shoes"
+    alt: "Chaussures en cuir marron Le Monde Beryl"
   },
   {
     id: 5,
     brand: "BOTTEGA VENETA",
     image: "/images/bottega-veneta-bag.jpg",
-    alt: "Bottega Veneta woven bag"
+    alt: "Sac tissé Bottega Veneta"
   }
 ];
 
@@ -66,50 +66,49 @@ export const productsData = [
   {
     id: 1,
     brand: "Dries Van Noten",
-    name: "Relaxed Fit Cotton Jacket",
+    name: "Veste en Coton Coupe Décontractée",
     price: 890,
     image: "/images/products/dries-van-noten-jacket.jpg",
-    alt: "Dries Van Noten relaxed fit cotton jacket"
+    alt: "Veste en coton coupe décontractée Dries Van Noten"
   },
   {
     id: 2,
     brand: "Enfants Riches Déprimés",
-    name: "Logo Print Cotton T-Shirt",
+    name: "T-Shirt en Coton à Imprimé Logo",
     price: 320,
     image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Enfants Riches Déprimés logo t-shirt"
+    alt: "T-shirt à logo Enfants Riches Déprimés"
   },
   {
     id: 3,
     brand: "Loewe",
-    name: "Structured Wool Blazer",
+    name: "Veste en Laine Structurée",
     price: 1250,
     image: "/images/products/loewe-blazer.jpg",
-    alt: "Loewe structured wool blazer"
+    alt: "Veste en laine structurée Loewe"
   },
   {
     id: 4,
     brand: "Gallery Dept.",
-    name: "Distressed Graphic T-Shirt",
+    name: "T-Shirt Graphique Délavé",
     price: 285,
     image: "/images/products/gallery-dept-tshirt.jpg",
-    alt: "Gallery Dept. distressed graphic t-shirt"
+    alt: "T-shirt graphique délavé Gallery Dept."
   },
   {
     id: 5,
     brand: "Jacques Marie Mage",
-    name: "Aviator Sunglasses",
+    name: "Lunettes Aviateur",
     price: 650,
     image: "/images/products/jacques-marie-mage-sunglasses.jpg",
-    alt: "Jacques Marie Mage aviator sunglasses"
+    alt: "Lunettes aviateur Jacques Marie Mage"
   },
   {
     id: 6,
     brand: "CELINE HOMME",
-    name: "Oversized Cotton Hoodie",
+    name: "Sweat à Capuche en Coton Oversize",
     price: 890,
     image: "/images/products/celine-homme-hoodie.jpg",
-    alt: "Celine Homme oversized cotton hoodie"
+    alt: "Sweat à capuche en coton oversize Celine Homme"
   }
 ];
-
