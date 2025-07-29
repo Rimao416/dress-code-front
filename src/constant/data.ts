@@ -112,3 +112,4 @@ export const productsData = [
     alt: "Celine Homme oversized cotton hoodie"
   }
 ];
+
