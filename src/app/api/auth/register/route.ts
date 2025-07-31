@@ -69,23 +69,20 @@ export async function POST(request: NextRequest) {
       });
 
       // Créer le profil client
-      const client = await tx.client.create({
-        data: {
-          id: user.id,
-          firstName,
-          lastName,
-          phone,
-          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-          gender,
-          country: country || "France",
-          address: address || null,
-          postalCode: postalCode || null,
-          city: city || null,
-          addressComplement: addressComplement || null,
-          acceptedTerms: true,
-          acceptedMarketing: false,
-        },
-      });
+    const client = await tx.client.create({
+  data: {
+    id: user.id,
+    firstName,
+    lastName,
+    phone,
+    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+    gender,
+    acceptedTerms: true,
+    acceptedMarketing: false,
+    // Si tu veux créer l'adresse en même temps
+  
+  },
+});
 
       return { user, client };
     });
@@ -103,7 +100,6 @@ export async function POST(request: NextRequest) {
             firstName: true,
             lastName: true,
             phone: true,
-            country: true,
             dateOfBirth: true,
             gender: true,
           },

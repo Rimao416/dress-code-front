@@ -125,10 +125,9 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
   <SwiperSlide key={index}>
     <div className="relative h-full w-full">
       {/* Utiliser Image de Next.js */}
-      <Image
+      <img
         src={slide.image}
         alt={slide.title}
-        fill
         className="object-cover"
         onError={(e) => {
           console.error('Erreur de chargement de l\'image:', slide.image);
@@ -139,7 +138,7 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
       />
      
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      {/* <div className="absolute inset-0 bg-black bg-opacity-20"></div> */}
      
       {/* Contenu du slide */}
       <div className="absolute bottom-8 left-8 z-20 text-white max-w-sm">
@@ -342,37 +341,42 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
       }}
     >
       {[
-        { area: 'a', title: 'GAINANTS', subtitle: 'Sculptez & Définissez', image: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?q=80&w=500&auto=format&fit=crop' },
+        { area: 'a', title: 'GAINANTS', subtitle: 'Sculptez & Définissez', image: 'https://res.cloudinary.com/le-chretien/image/upload/v1753970628/uploads/people-wearing-high-fashion-clothing.jpg' },
         { area: 'b', title: 'SOUS-VÊTEMENTS', image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?q=80&w=500&auto=format&fit=crop' },
         { area: 'c', title: 'SOMMEIL', image: 'https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?q=80&w=500&auto=format&fit=crop' },
         { area: 'd', title: 'HOMME', image: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?q=80&w=500&auto=format&fit=crop' },
         { area: 'e', title: 'SOUTIENS-GORGE', image: 'https://images.unsplash.com/photo-1571513722275-4b41940f54b8?q=80&w=500&auto=format&fit=crop' },
-        { area: 'f', title: 'MAILLOTS DE BAIN', subtitle: 'Prêt pour la Plage', image: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5d?q=80&w=500&auto=format&fit=crop' },
-        { area: 'g', title: 'VÊTEMENTS DE SPORT', image: 'https://images.unsplash.com/photo-1506629905607-d9dda7bed44b?q=80&w=500&auto=format&fit=crop' },
+        { area: 'f', title: 'MAILLOTS DE BAIN', subtitle: 'Prêt pour la Plage', image: 'https://res.cloudinary.com/le-chretien/image/upload/v1753970622/uploads/beautiful-young-woman-with-shopping-bags.jpg' },
+        { area: 'g', title: 'VÊTEMENTS DE SPORT', image: 'https://res.cloudinary.com/le-chretien/image/upload/v1753973372/uploads/young-brutal-sportive-woman-sportswear-sitting-with-bit-white_kwiqrs.jpg' },
         { area: 'h', title: 'ACCESSOIRES', image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=500&auto=format&fit=crop' },
         { area: 'i', title: 'LUXE', subtitle: 'Édition Limitée', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=500&auto=format&fit=crop' },
       ].map((item, i) => (
-        <div
-          key={i}
-          className="relative overflow-hidden group cursor-pointer"
-          style={{ gridArea: item.area }}
-        >
-          <img
-            src={item.image}
-            alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
-          <div className="absolute left-5 bottom-5 text-white z-10">
-            <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wide">
-              {item.title}
-            </h3>
-            {item.subtitle && (
-              <p className="text-sm opacity-90 mt-1">{item.subtitle}</p>
-            )}
-          </div>
-        </div>
-      ))}
+  <div
+    key={i}
+    className="relative overflow-hidden group cursor-pointer"
+    style={{ gridArea: item.area }}
+  >
+    <img
+      src={item.image}
+      alt={item.title}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+    />
+    
+    {/* Dégradé sombre vers le bas */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10"></div>
+
+    {/* Texte au-dessus du dégradé */}
+    <div className="absolute left-5 bottom-5 text-white z-20">
+      <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wide">
+        {item.title}
+      </h3>
+      {item.subtitle && (
+        <p className="text-sm opacity-90 mt-1">{item.subtitle}</p>
+      )}
+    </div>
+  </div>
+))}
+
     </div>
   </div>
 </section>

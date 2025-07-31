@@ -7,7 +7,6 @@ export interface UserData {
   // Authentication information
   email: string;
   password: string;
-  confirmPassword?: string; // Pour le register uniquement
  
   // Personal information (step 3)
   firstName: string;
@@ -66,7 +65,6 @@ export interface AuthContextType {
 const initialUserData: UserData = {
   email: '',
   password: '',
-  confirmPassword: '',
   firstName: '',
   lastName: '',
   phone: '',

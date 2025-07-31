@@ -1,5 +1,5 @@
 // services/auth.service.ts
-import { CompleteRegistrationData } from '@/schemas/auth.schema';
+import { CompleteRegistrationData, SimpleRegistrationData } from '@/schemas/auth.schema';
 
 export interface EmailCheckResponse {
   exists: boolean;
@@ -105,7 +105,7 @@ class AuthService {
     }
   }
 
-  async register(userData: CompleteRegistrationData): Promise<ApiResponse> {
+  async register(userData: SimpleRegistrationData): Promise<ApiResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/auth/register`, {
         method: 'POST',

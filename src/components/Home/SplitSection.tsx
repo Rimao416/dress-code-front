@@ -29,8 +29,10 @@ const SplitSection: React.FC<SplitSectionProps> = ({ leftSection, rightSection }
           e.currentTarget.src = content.fallbackSvg;
         }}
       />
-      {/* Superposition Sombre */}
-      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
+      
+      {/* Dégradé noir léger pour améliorer la lisibilité du texte */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent group-hover:from-black/30 group-hover:via-black/5 transition-all duration-300"></div>
+      
       {/* Contenu */}
       <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-8 md:left-8 text-white z-10">
         <h3 

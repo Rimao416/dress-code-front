@@ -114,7 +114,6 @@ export const authenticatedUser = async (session: IronSessionWithData) => {
             firstName: true,
             lastName: true,
             phone: true,
-            country: true,
             dateOfBirth: true,
             gender: true,
           }

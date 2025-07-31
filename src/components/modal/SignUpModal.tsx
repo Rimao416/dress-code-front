@@ -1,100 +1,201 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { X, Gift, Truck, Crown } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { X, Gift, Truck, Crown, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import Input from "../ui/input";
 import Button from "../ui/button";
 import BottomSheet from "../common/BottomSheet";
+import { authService } from "@/services/auth.service";
+import { Gender } from '@/generated/prisma';
+import { useAuth } from "@/context/AuthContext";
 
 // Types pour les props du composant
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-// Type pour les données du formulaire
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  birthdayGift: boolean;
-}
-
-// Type pour les erreurs
-interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
+// Type pour le state de soumission
+interface SubmissionState {
+  isSubmitting: boolean;
+  isSuccess: boolean;
+  error: string | null;
 }
 
 // Modal d'inscription
-const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
-  const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    birthdayGift: false
+const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
+  const {
+    userData,
+    updateUserData,
+    resetUserData,
+    loading,
+    setLoading,
+    errors,
+    setError,
+    clearAllErrors
+  } = useAuth();
+
+  const [submissionState, setSubmissionState] = useState<SubmissionState>({
+    isSubmitting: false,
+    isSuccess: false,
+    error: null
   });
-  const [errors, setErrors] = useState<FormErrors>({});
+
   const [isMobile, setIsMobile] = useState(false);
 
-  // Détecter si on est sur mobile
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-    
-    return () => window.removeEventListener('resize', checkIsMobile);
+  // Détecter si on est sur mobile - avec useCallback pour éviter la re-création
+  const checkIsMobile = useCallback(() => {
+    setIsMobile(window.innerWidth < 768);
   }, []);
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
+  useEffect(() => {
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+   
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, [checkIsMobile]);
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-   
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'Le prénom est requis';
+  // Reset du state lors de l'ouverture/fermeture - FIXE: dépendances stables
+  useEffect(() => {
+    if (isOpen) {
+      setSubmissionState({
+        isSubmitting: false,
+        isSuccess: false,
+        error: null
+      });
+      clearAllErrors();
     }
-   
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Le nom est requis';
-    }
-   
-    if (!formData.email.trim()) {
-      newErrors.email = 'L\'email est requis';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email invalide';
-    }
-   
-    if (!formData.password.trim()) {
-      newErrors.password = 'Le mot de passe est requis';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Le mot de passe doit contenir au moins 8 caractères';
-    }
-   
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }, [isOpen]); // ENLEVÉ clearAllErrors des dépendances
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      console.log('Form submitted:', formData);
-      onClose();
-    }
-  };
+  // Fonction memoïsée pour éviter les re-créations - CORRIGÉE
+  const handleInputChange = useCallback((field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateUserData(field as keyof typeof userData, e.target.value);
+    // Clear submission error when user starts typing
+    setSubmissionState(prev => {
+      if (prev.error) {
+        return { ...prev, error: null };
+      }
+      return prev;
+    });
+  }, [updateUserData]);
 
-  // Contenu du formulaire pour mobile (inchangé)
-  const MobileFormContent = () => (
+  // Fonction de validation memoïsée
+  const validateForm = useCallback((): boolean => {
+    let hasErrors = false;
+
+    if (!userData.firstName.trim()) {
+      setError('firstName', 'Le prénom est requis');
+      hasErrors = true;
+    }
+
+    if (!userData.lastName.trim()) {
+      setError('lastName', 'Le nom est requis');
+      hasErrors = true;
+    }
+
+    if (!userData.email.trim()) {
+      setError('email', 'L\'email est requis');
+      hasErrors = true;
+    } else if (!/\S+@\S+\.\S+/.test(userData.email)) {
+      setError('email', 'Email invalide');
+      hasErrors = true;
+    }
+
+    if (!userData.password.trim()) {
+      setError('password', 'Le mot de passe est requis');
+      hasErrors = true;
+    } else if (userData.password.length < 8) {
+      setError('password', 'Le mot de passe doit contenir au moins 8 caractères');
+      hasErrors = true;
+    }
+
+    return !hasErrors;
+  }, [userData.firstName, userData.lastName, userData.email, userData.password, setError]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setSubmissionState(prev => ({ ...prev, isSubmitting: true, error: null }));
+    setLoading(true);
+
+    try {
+      // Préparer les données pour l'inscription
+      const registrationData = {
+        email: userData.email,
+        password: userData.password,
+        confirmPassword: userData.password, // Ajout du champ manquant
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      };
+
+      const response = await authService.register(registrationData);
+
+      if (response.success) {
+        setSubmissionState({
+          isSubmitting: false,
+          isSuccess: true,
+          error: null
+        });
+
+        // Attendre un peu pour montrer le succès
+        setTimeout(() => {
+          resetUserData();
+          onSuccess?.();
+          onClose();
+        }, 2000);
+      } else {
+        // Gestion des erreurs de validation du serveur
+        if (response.errors) {
+          Object.entries(response.errors).forEach(([field, message]) => {
+            setError(field, message);
+          });
+        }
+
+        setSubmissionState({
+          isSubmitting: false,
+          isSuccess: false,
+          error: response.message || 'Une erreur est survenue lors de l\'inscription'
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription:', error);
+      setSubmissionState({
+        isSubmitting: false,
+        isSuccess: false,
+        error: 'Une erreur inattendue est survenue. Veuillez réessayer.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [validateForm, userData, setLoading, setError, resetUserData, onSuccess, onClose]);
+
+  // Composant pour afficher les messages de statut - memoïsé
+  const StatusMessage = useCallback(() => {
+    if (submissionState.isSuccess) {
+      return (
+        <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          <CheckCircle className="h-4 w-4" />
+          <span>Inscription réussie ! Bienvenue dans DressCodeCLUB !</span>
+        </div>
+      );
+    }
+
+    if (submissionState.error) {
+      return (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <span>{submissionState.error}</span>
+        </div>
+      );
+    }
+
+    return null;
+  }, [submissionState.isSuccess, submissionState.error]);
+
+  // Contenu du formulaire pour mobile
+  const MobileFormContent = useCallback(() => (
     <>
       {/* Header */}
       <div className="relative bg-gradient-to-r from-red-800 to-red-700 text-white p-4 text-center rounded-t-3xl">
@@ -147,21 +248,25 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
       {/* Form */}
       <div className="p-4 pb-8">
         <div className="space-y-4">
+          <StatusMessage />
+          
           <Input
             label="Prénom"
             placeholder="Votre prénom"
-            value={formData.firstName}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
+            value={userData.firstName}
+            onChange={handleInputChange('firstName')}
             error={errors.firstName}
+            disabled={submissionState.isSubmitting || submissionState.isSuccess}
             required
           />
          
           <Input
             label="Nom"
             placeholder="Votre nom"
-            value={formData.lastName}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
+            value={userData.lastName}
+            onChange={handleInputChange('lastName')}
             error={errors.lastName}
+            disabled={submissionState.isSubmitting || submissionState.isSuccess}
             required
           />
          
@@ -169,9 +274,10 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
             label="E-mail"
             type="email"
             placeholder="votre@email.com"
-            value={formData.email}
-            onChange={(e) => handleInputChange('email', e.target.value)}
+            value={userData.email}
+            onChange={handleInputChange('email')}
             error={errors.email}
+            disabled={submissionState.isSubmitting || submissionState.isSuccess}
             required
           />
          
@@ -179,9 +285,10 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
             label="Mot de passe"
             type="password"
             placeholder="Votre mot de passe"
-            value={formData.password}
-            onChange={(e) => handleInputChange('password', e.target.value)}
+            value={userData.password}
+            onChange={handleInputChange('password')}
             error={errors.password}
+            disabled={submissionState.isSubmitting || submissionState.isSuccess}
             showPasswordToggle
             required
           />
@@ -191,14 +298,26 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
             les mots de passe couramment utilisés ou risqués ne sont pas autorisés.
           </div>
          
-         
           <Button
             variant="primary"
             size="lg"
             className="w-full mt-6"
             onClick={handleSubmit}
+            disabled={submissionState.isSubmitting || submissionState.isSuccess}
           >
-            S'inscrire maintenant
+            {submissionState.isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Inscription en cours...
+              </>
+            ) : submissionState.isSuccess ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Inscription réussie !
+              </>
+            ) : (
+              'S\'inscrire maintenant'
+            )}
           </Button>
          
           <p className="text-xs text-gray-500 text-center leading-relaxed">
@@ -207,15 +326,16 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
         </div>
       </div>
     </>
-  );
+  ), [userData, errors, submissionState, handleInputChange, handleSubmit, StatusMessage]);
 
-  // Nouveau contenu pour desktop avec disposition en colonnes
-  const DesktopFormContent = () => (
+  // Contenu pour desktop avec disposition en colonnes
+  const DesktopFormContent = useCallback(() => (
     <div className="flex h-full">
       {/* Bouton fermer */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 text-white/80 hover:text-white transition-colors"
+        disabled={submissionState.isSubmitting}
       >
         <X className="h-6 w-6" />
       </button>
@@ -228,7 +348,7 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
             DressCode<span className="text-red-200">CLUB</span>
           </div>
           <div className="text-sm font-medium mb-4">MEMBER PROGRAM</div>
-          
+         
           <p className="text-red-100 leading-relaxed">
             Rejoignez-nous et profitez dès maintenant de la livraison gratuite sur toutes vos commandes,
             d'une surprise pour votre anniversaire, de l'accès exclusif aux lancements de produits,
@@ -274,22 +394,26 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
       <div className="flex-1 bg-white p-6 overflow-y-auto">
         <div className="h-full flex flex-col justify-center">
           <div className="space-y-4">
+            <StatusMessage />
+            
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Prénom"
                 placeholder="Votre prénom"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                value={userData.firstName}
+                onChange={handleInputChange('firstName')}
                 error={errors.firstName}
+                disabled={submissionState.isSubmitting || submissionState.isSuccess}
                 required
               />
              
               <Input
                 label="Nom"
                 placeholder="Votre nom"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                value={userData.lastName}
+                onChange={handleInputChange('lastName')}
                 error={errors.lastName}
+                disabled={submissionState.isSubmitting || submissionState.isSuccess}
                 required
               />
             </div>
@@ -298,9 +422,10 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
               label="E-mail"
               type="email"
               placeholder="votre@email.com"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
+              value={userData.email}
+              onChange={handleInputChange('email')}
               error={errors.email}
+              disabled={submissionState.isSubmitting || submissionState.isSuccess}
               required
             />
            
@@ -308,9 +433,10 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
               label="Mot de passe"
               type="password"
               placeholder="Votre mot de passe"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
+              value={userData.password}
+              onChange={handleInputChange('password')}
               error={errors.password}
+              disabled={submissionState.isSubmitting || submissionState.isSuccess}
               showPasswordToggle
               required
             />
@@ -319,28 +445,26 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
               Les mots de passe doivent contenir au moins 8 caractères et être difficiles à deviner.
             </div>
            
-            <div className="flex items-start gap-3 pt-2">
-              <input
-                type="checkbox"
-                id="birthday-desktop"
-                checked={formData.birthdayGift}
-                onChange={(e) => handleInputChange('birthdayGift', e.target.checked)}
-                className="mt-1 w-4 h-4 text-red-700 border-gray-300 rounded focus:ring-red-700"
-              />
-              <label htmlFor="birthday-desktop" className="text-sm text-gray-700">
-                <span className="font-medium">Surprise d'anniversaire (facultatif)</span>
-                <br />
-                <span className="text-gray-500">Nous aimerions vous offrir quelque chose de spécial pour votre anniversaire.</span>
-              </label>
-            </div>
-           
             <Button
               variant="primary"
               size="lg"
               className="w-full mt-6"
               onClick={handleSubmit}
+              disabled={submissionState.isSubmitting || submissionState.isSuccess}
             >
-              S'inscrire maintenant
+              {submissionState.isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Inscription en cours...
+                </>
+              ) : submissionState.isSuccess ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Inscription réussie !
+                </>
+              ) : (
+                'S\'inscrire maintenant'
+              )}
             </Button>
            
             <p className="text-xs text-gray-500 text-center leading-relaxed">
@@ -350,7 +474,7 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
         </div>
       </div>
     </div>
-  );
+  ), [onClose, submissionState, userData, errors, handleInputChange, handleSubmit, StatusMessage]);
 
   if (!isOpen) return null;
 
@@ -360,10 +484,10 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
       <BottomSheet
         isOpen={isOpen}
         onClose={onClose}
-        snapLevels={[0,0.25,0.5, 1]}
+        snapLevels={[0, 0.25, 0.5, 1]}
         initialLevel={0.85}
         showHandle={true}
-        closeOnOverlayClick={true}
+        closeOnOverlayClick={!submissionState.isSubmitting}
         maxHeight="95vh"
       >
         <MobileFormContent />
@@ -380,7 +504,7 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={submissionState.isSubmitting ? undefined : onClose}
           className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         />
        

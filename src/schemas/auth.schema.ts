@@ -17,10 +17,6 @@ export const passwordSchema = z.object({
     .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
     .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
     .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
 });
 
 export const personalInfoSchema = z.object({
@@ -64,7 +60,22 @@ export const completeRegistrationSchema = emailSchema
   .merge(passwordSchema)
   .merge(personalInfoSchema)
   .merge(addressSchema);
+export const simpleRegistrationSchema = emailSchema
+  .merge(passwordSchema)
+  .merge(z.object({
+    firstName: z
+      .string()
+      .min(1, "Le prénom est obligatoire")
+      .min(2, "Le prénom doit contenir au moins 2 caractères")
+      .trim(),
+    lastName: z
+      .string()
+      .min(1, "Le nom est obligatoire")
+      .min(2, "Le nom doit contenir au moins 2 caractères")
+      .trim(),
+  }));
 
+export type SimpleRegistrationData = z.infer<typeof simpleRegistrationSchema>;
 export type EmailFormData = z.infer<typeof emailSchema>;
 export type PasswordFormData = z.infer<typeof passwordSchema>;
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
