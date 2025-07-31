@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import React from 'react'
 
 function Footer() {
@@ -8,10 +9,10 @@ function Footer() {
           <div className="max-w-7xl mx-auto px-4">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Moyens de paiement</h3>
             <div className="flex space-x-4">
-              <img src="https://via.placeholder.com/40x25/0052CC/FFFFFF?text=AMEX" alt="American Express" className="h-6" />
-              <img src="https://via.placeholder.com/40x25/EB001B/FFFFFF?text=MC" alt="Mastercard" className="h-6" />
-              <img src="https://via.placeholder.com/40x25/1A1F71/FFFFFF?text=VISA" alt="Visa" className="h-6" />
-              <img src="https://via.placeholder.com/40x25/003087/FFFFFF?text=PP" alt="PayPal" className="h-6" />
+              <Image src="https://via.placeholder.com/40x25/0052CC/FFFFFF?text=AMEX" alt="American Express" className="h-6" fill />
+              <Image src="https://via.placeholder.com/40x25/EB001B/FFFFFF?text=MC" alt="Mastercard" className="h-6" fill />
+              <Image src="https://via.placeholder.com/40x25/1A1F71/FFFFFF?text=VISA" alt="Visa" className="h-6" fill />
+              <Image src="https://via.placeholder.com/40x25/003087/FFFFFF?text=PP" alt="PayPal" className="h-6" fill />
             </div>
           </div>
         </div>

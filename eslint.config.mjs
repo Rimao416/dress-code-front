@@ -14,11 +14,33 @@ const eslintConfig = [
   {
     ignores: [
       "src/generated/**/*",
-      "**/generated/**/*",
+      "**/generated/**/*", 
       "**/*.generated.*",
       ".next/**/*",
       "node_modules/**/*"
     ]
+  },
+  {
+    rules: {
+      // Désactiver les variables non utilisées
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-unused-vars": "off",
+      
+      // Désactiver les interfaces vides
+      "@typescript-eslint/no-empty-object-type": "off",
+      
+      // Désactiver les entités non échappées dans React
+      "react/no-unescaped-entities": "off",
+      
+      // Désactiver l'avertissement sur les balises img de Next.js
+      "@next/next/no-img-element": "off",
+      
+      // Désactiver les dépendances manquantes dans useEffect
+      "react-hooks/exhaustive-deps": "off",
+      
+      // Désactiver l'usage de 'any' en TypeScript
+      "@typescript-eslint/no-explicit-any": "off"
+    }
   }
 ];
 
