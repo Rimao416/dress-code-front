@@ -1,5 +1,6 @@
 "use client";
-import { Gender } from '@/generated/prisma';
+
+import { Gender } from '../generated/prisma';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Types basés sur le schema Prisma

@@ -5,7 +5,6 @@ import Input from "../ui/input";
 import Button from "../ui/button";
 import BottomSheet from "../common/BottomSheet";
 import { authService } from "@/services/auth.service";
-import { Gender } from '@/generated/prisma';
 import { useAuth } from "@/context/AuthContext";
 
 // Types pour les props du composant

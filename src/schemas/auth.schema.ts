@@ -1,4 +1,4 @@
-import { Gender } from '@/generated/prisma';
+import { Gender } from '../generated/prisma';
 import { z } from 'zod';
 
 export const emailSchema = z.object({

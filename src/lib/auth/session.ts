@@ -1,6 +1,6 @@
 import { SessionOptions, getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
-import { Role } from '@/generated/prisma';
+import { Role } from '../../generated/prisma';
 import prisma from '../prisma';
 
 // Define the session data structure
