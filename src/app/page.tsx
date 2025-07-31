@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
 import { DropdownContent, FeaturedItem, navigationData, NavigationItem, NavLink, NavSection } from '@/components/Header/NavigationData';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -10,6 +10,10 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import { newInData, productsData, sliderData } from '@/constant/data';
 import Input from '@/components/ui/input';
+import Link from 'next/link';
+import Image from 'next/image';
+import Header from '@/components/common/Header';
+
 
 type FormErrors = {
   firstName?: string;
@@ -76,223 +80,18 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
   ];
 
   const [favorites, setFavorites] = useState<number[]>([]);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [newInSlideIndex, setNewInSlideIndex] = useState(0);
   const [newInSlidesCount, setNewInSlidesCount] = useState(0);
   const [isNewInBeginning, setIsNewInBeginning] = useState(true);
   const [isNewInEnd, setIsNewInEnd] = useState(false);
 
-  const handleMouseEnter = (menu: string) => {
-    setActiveDropdown(menu);
-  };
-
-  const handleMouseLeave = () => {
-    setActiveDropdown(null);
-  };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-    setExpandedMobileSection(null);
-  };
-
-  const toggleMobileSection = (section: string) => {
-    setExpandedMobileSection(expandedMobileSection === section ? null : section);
-  };
-
-  const renderDropdownContent = (content: DropdownContent) => {
-    if (!content) return null;
-    return (
-      <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-12 gap-8">
-            {/* Colonne de gauche */}
-            {content.left && content.left.length > 0 && (
-              <div className="col-span-2">
-                <div className="space-y-2">
-                  {content.left.map((item: NavLink, index: number) => (
-                    <a
-                      key={index}
-                      href={item.link}
-                      className="block text-sm font-medium text-gray-900 hover:text-gray-600 py-1"
-                    >
-                      {item.title}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* Colonnes centrales */}
-            <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
-              <div className="grid grid-cols-2 gap-8">
-                {content.right?.map((section: NavSection, index: number) => (
-                  <div key={index}>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
-                      {section.title}
-                    </h3>
-                    <div className="space-y-1">
-                      {section.items?.map((item: NavLink, itemIndex: number) => (
-                        <a
-                          key={itemIndex}
-                          href={item.link}
-                          className="block text-sm text-gray-700 hover:text-gray-900 py-1"
-                        >
-                          {item.title}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* Colonne de droite - Mise en avant */}
-            <div className="col-span-4">
-              {content.featured && !Array.isArray(content.featured) && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <img
-                    src={content.featured.image}
-                    alt={content.featured.title}
-                    className="w-full h-32 object-cover rounded mb-3"
-                  />
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    {content.featured.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {content.featured.description}
-                  </p>
-                </div>
-              )}
-
-              {content.featured && Array.isArray(content.featured) && (
-                <div className="space-y-4">
-                  {content.featured.map((item: FeaturedItem, index: number) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-24 object-cover rounded mb-2"
-                      />
-                      <h3 className="font-semibold text-gray-900 text-sm mb-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-gray-600">
-                        {item.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderMobileMenu = () => {
-    const mobileMenuItems = [
-      { key: 'Nouveau', label: 'Nouveau', hasDropdown: false, link: '/nouveau' },
-      { key: 'Meilleures Ventes', label: 'Meilleures Ventes', hasDropdown: false, link: '/meilleures-ventes' },
-      { key: 'Vêtements', label: 'Vêtements', hasDropdown: true },
-      { key: 'Soutiens-gorge', label: 'Soutiens-gorge', hasDropdown: true },
-      { key: 'Sous-vêtements', label: 'Sous-vêtements', hasDropdown: true },
-      { key: 'Gainage', label: 'Gainage', hasDropdown: true },
-      { key: 'Maillots de bain', label: 'Maillots de bain', hasDropdown: true },
-      { key: 'Homme', label: 'Homme', hasDropdown: false, link: '/homme' },
-      { key: 'Collections', label: 'Collections', hasDropdown: true },
-      { key: 'Plus', label: 'Plus', hasDropdown: true }
-    ];
-
-    return (
-      <div className="md:hidden">
-        {/* Overlay */}
-        {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMobileMenu}></div>
-        )}
-        {/* Mobile Menu */}
-        <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}>
-          <div className="p-4">
-            {/* Close Button */}
-            <div className="flex justify-end mb-6">
-              <button onClick={toggleMobileMenu} className="p-2">
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            {/* Menu Items */}
-            <div className="space-y-0">
-              {mobileMenuItems.map((item) => (
-                <div key={item.key} className="border-b border-gray-200">
-                  {item.hasDropdown ? (
-                    <div>
-                      <button
-                        onClick={() => toggleMobileSection(item.key)}
-                        className="w-full flex items-center justify-between py-4 text-left text-gray-900 font-medium"
-                      >
-                        {item.label}
-                        <ChevronDown className={`h-4 w-4 transform transition-transform ${
-                          expandedMobileSection === item.key ? 'rotate-180' : ''
-                        }`} />
-                      </button>
-                     
-                      {expandedMobileSection === item.key && navigationData[item.key]?.content && (
-                        <div className="pb-4">
-                          {/* Left section items */}
-                          {navigationData[item.key].content!.left.map((linkItem, index) => (
-                            <a
-                              key={index}
-                              href={linkItem.link}
-                              className="block py-2 pl-4 text-sm text-gray-700 hover:text-gray-900"
-                            >
-                              {linkItem.title}
-                            </a>
-                          ))}
-                         
-                          {/* Right section items */}
-                          {navigationData[item.key].content!.right.map((section, sectionIndex) => (
-                            <div key={sectionIndex} className="mt-4">
-                              <h4 className="text-sm font-semibold text-gray-900 pl-4 mb-2 uppercase tracking-wide">
-                                {section.title}
-                              </h4>
-                              {section.items?.map((linkItem, linkIndex) => (
-                                <a
-                                  key={linkIndex}
-                                  href={linkItem.link}
-                                  className="block py-2 pl-6 text-sm text-gray-700 hover:text-gray-900"
-                                >
-                                  {linkItem.title}
-                                </a>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <a
-                      href={item.link}
-                      className="block py-4 text-gray-900 font-medium"
-                    >
-                      {item.label}
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen">
+        <div className="min-h-screen">
       {/* Hero Section avec slider */}
       <div className="relative h-screen w-full overflow-hidden">
-        
+       
         <Swiper
           modules={[Navigation, Pagination, Autoplay, EffectFade]}
           spaceBetween={0}
@@ -321,11 +120,12 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
    {sliderData.map((slide, index) => (
   <SwiperSlide key={index}>
     <div className="relative h-full w-full">
-      {/* Utiliser une balise img au lieu de background-image */}
-      <img
+      {/* Utiliser Image de Next.js */}
+      <Image
         src={slide.image}
         alt={slide.title}
-        className="absolute inset-0 w-full h-full object-cover"
+        fill
+        className="object-cover"
         onError={(e) => {
           console.error('Erreur de chargement de l\'image:', slide.image);
           // Fallback vers une image par défaut ou une couleur
@@ -333,10 +133,10 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         }}
         onLoad={() => console.log('Image chargée:', slide.image)}
       />
-      
+     
       {/* Overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-      
+     
       {/* Contenu du slide */}
       <div className="absolute bottom-8 left-8 z-20 text-white max-w-sm">
         <h2 className="text-3xl md:text-4xl font-bold mb-4 uppercase tracking-wide">
@@ -345,98 +145,28 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         <p className="text-lg mb-6 opacity-90 font-light">
           {slide.subtitle}
         </p>
-        <a
+        <Link
           href={slide.buttonLink}
           className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
         >
           {slide.buttonText}
-        </a>
+        </Link>
       </div>
     </div>
   </SwiperSlide>
 ))}
         </Swiper>
-
         {/* Navigation personnalisée */}
         <div className="swiper-button-prev !text-white !text-2xl !left-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
         <div className="swiper-button-next !text-white !text-2xl !right-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
-        
+       
         {/* Pagination personnalisée */}
         <div className="swiper-pagination !bottom-8 !right-8 !left-auto !w-auto flex space-x-2"></div>
-
         {/* Header avec fond transparent/translucide */}
-        <header className="absolute top-0 left-0 right-0 z-30 bg-transparent backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo */}
-              <div className="flex-shrink-0">
-                <a href="/" className="text-2xl font-bold text-white tracking-tight">
-                  DressCode
-                </a>
-              </div>
-              {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center space-x-8">
-                {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
-                  <div
-                    key={key}
-                    className="relative"
-                    onMouseEnter={() => nav.hasDropdown && handleMouseEnter(key)}
-                    onMouseLeave={() => nav.hasDropdown && handleMouseLeave()}
-                  >
-                    {nav.hasDropdown ? (
-                      <button className="flex items-center text-sm font-medium text-white hover:text-black hover:bg-white px-3 py-2 rounded transition-all duration-200">
-                        {key}
-                        <ChevronDown className="ml-1 h-3 w-3" />
-                      </button>
-                    ) : (
-                      <a
-                        href={nav.link}
-                        className="text-sm font-medium text-white hover:text-black hover:bg-white px-3 py-2 rounded transition-all duration-200"
-                      >
-                        {key}
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </nav>
-              {/* Right Icons */}
-              <div className="flex items-center space-x-2 sm:space-x-4">
-                <button className="p-2 text-white hover:text-gray-300 transition-colors duration-200">
-                  <Search className="h-5 w-5" />
-                </button>
-                <button className="hidden sm:block p-2 text-white hover:text-gray-300 transition-colors duration-200">
-                  <User className="h-5 w-5" />
-                </button>
-                <button className="p-2 text-white hover:text-gray-300 relative transition-colors duration-200">
-                  <Heart className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 bg-white text-black text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    1
-                  </span>
-                </button>
-                <button className="p-2 text-white hover:text-gray-300 transition-colors duration-200">
-                  <ShoppingBag className="h-5 w-5" />
-                </button>
-               
-                {/* Mobile Menu Button */}
-                <button
-                  className="md:hidden p-2 text-white hover:text-gray-300 transition-colors duration-200"
-                  onClick={toggleMobileMenu}
-                >
-                  <Menu className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* Desktop Dropdown Menus */}
-          {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
-            <div
-              onMouseEnter={() => handleMouseEnter(activeDropdown)}
-              onMouseLeave={handleMouseLeave}
-            >
-              {renderDropdownContent(navigationData[activeDropdown].content!)}
-            </div>
-          )}
-        </header>
+    
+{/* C'est ici que je met le Header */}
+<Header/>
+
       </div>
       {/* New In Section */}
      <section className="py-16 px-4 bg-gray-50">
@@ -457,7 +187,6 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
                 Shop New In
               </button>
             </div>
-
             {/* Right Content - Product Carousel */}
             <div className="lg:w-2/3">
               <div className="relative">
@@ -495,11 +224,12 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
                   {newInData.map((item) => (
                     <SwiperSlide key={item.id}>
                       <div className="bg-white group cursor-pointer">
-                        <div className="aspect-square overflow-hidden bg-gray-100 mb-4">
-                          <img
+                        <div className="aspect-square overflow-hidden bg-gray-100 mb-4 relative">
+                          <Image
                             src={item.image}
                             alt={item.alt}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
                               // Fallback en cas d'erreur de chargement
                               e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMDAgNzBMMTMwIDEwMEgxMTBWMTMwSDkwVjEwMEg3MEwxMDAgNzBaIiBmaWxsPSIjOTQ5NEE0Ii8+Cjwvc3ZnPgo=';
@@ -515,7 +245,6 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
                     </SwiperSlide>
                   ))}
                 </Swiper>
-
                 {/* Navigation Arrows */}
             {/* Navigation Arrows */}
                 {!isNewInBeginning && (
@@ -538,17 +267,17 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
   <div className="flex h-full">
     {/* Moitié de gauche - Tops Tendances */}
     <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <img
+      <Image
         src="/images/trending-tops.jpg"
         alt="Femme en haut tricoté violet"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        fill
+        className="object-cover group-hover:scale-105 transition-transform duration-700"
         onError={(e) => {
           e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
         }}
       />
       {/* Superposition Sombre */}
       <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-
       {/* Contenu */}
       <div className="absolute bottom-8 left-8 text-white z-10">
         <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
@@ -557,27 +286,27 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
           Nouveaux hauts en tricot transparent et t-shirts signature pour un ajustement parfait à chaque fois
         </p>
-        <a
+        <Link
           href="/trending-tops"
           className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
         >
           Acheter Maintenant
-        </a>
+        </Link>
       </div>
     </div>
     {/* Moitié de droite - Bas Indispensables */}
     <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         alt="Femme en jupe imprimée serpent"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        fill
+        className="object-cover group-hover:scale-105 transition-transform duration-700"
         onError={(e) => {
           e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
         }}
       />
       {/* Superposition Sombre */}
       <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-
       {/* Contenu */}
       <div className="absolute bottom-8 left-8 text-white z-10">
         <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
@@ -586,17 +315,16 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
           Complétez votre look avec des jupes, des pantalons ultra-flatteurs et plus encore
         </p>
-        <a
+        <Link
           href="/must-have-bottoms"
           className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
         >
           Acheter Maintenant
-        </a>
+        </Link>
       </div>
     </div>
   </div>
 </section>
-
           <section className="py-16 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           {/* Section Title */}
@@ -605,21 +333,21 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
               Les marques qui retiennent notre attention
             </h2>
           </div>
-
           {/* Products Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1">
             {productsData.map((product) => (
               <div key={product.id} className="group cursor-pointer">
                 <div className="aspect-square overflow-hidden bg-gray-100 relative">
-                  <img
+                  <Image
                     src={product.image}
                     alt={product.alt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K';
                     }}
                   />
-                  
+                 
                   {/* Heart Favorite Button */}
                   <button
                     onClick={(e) => {
@@ -628,16 +356,16 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
                     }}
                     className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/heart"
                   >
-                    <Heart 
+                    <Heart
                       className={`h-4 w-4 transition-all duration-200 ${
-                        favorites.includes(product.id) 
-                          ? 'fill-black text-black' 
+                        favorites.includes(product.id)
+                          ? 'fill-black text-black'
                           : 'text-gray-600 hover:text-black'
                       }`}
                     />
                   </button>
                 </div>
-                
+               
                 {/* Product Info */}
                 <div className="pt-3 space-y-1">
                   <h3 className="text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -659,17 +387,17 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
   <div className="flex h-full">
     {/* Moitié de gauche - Tops Tendances */}
     <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <img
+      <Image
         src="/images/trending-tops.jpg"
         alt="Femme en haut tricoté violet"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        fill
+        className="object-cover group-hover:scale-105 transition-transform duration-700"
         onError={(e) => {
           e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
         }}
       />
       {/* Superposition Sombre */}
       <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-
       {/* Contenu */}
       <div className="absolute bottom-8 left-8 text-white z-10">
         <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
@@ -678,27 +406,27 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
           Des robes éblouissantes pour chaque occasion
         </p>
-        <a
+        <Link
           href="/trending-tops"
           className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
         >
           Acheter Maintenant
-        </a>
+        </Link>
       </div>
     </div>
     {/* Moitié de droite - Bas Indispensables */}
     <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         alt="Femme en jupe imprimée serpent"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        fill
+        className="object-cover group-hover:scale-105 transition-transform duration-700"
         onError={(e) => {
           e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
         }}
       />
       {/* Superposition Sombre */}
       <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-
       {/* Contenu */}
       <div className="absolute bottom-8 left-8 text-white z-10">
         <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
@@ -707,17 +435,16 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
           Peu importe le look, nos soutiens-gorge innovants et nos vêtements de forme vous couvrent
         </p>
-        <a
+        <Link
           href="/must-have-bottoms"
           className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
         >
           Acheter Maintenant
-        </a>
+        </Link>
       </div>
     </div>
   </div>
 </section>
-
 
 <section className="py-16 px-4 bg-white">
   <div className="max-w-7xl mx-auto">
@@ -1046,8 +773,6 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         </div>
       </footer>
       {/* Mobile Menu */}
-      {renderMobileMenu()}
-
       {/* Styles personnalisés pour Swiper */}
       <style jsx global>{`
         .swiper-pagination-bullet {
