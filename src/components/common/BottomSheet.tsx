@@ -10,7 +10,7 @@ interface UseDragBottomSheetProps {
 interface UseDragBottomSheetReturn {
   currentLevel: number;
   isDragging: boolean;
-  containerRef: React.RefObject<HTMLDivElement | null>; // Correction du typage
+  containerRef: React.RefObject<HTMLDivElement | null>;
   setLevel: (level: number) => void;
   handlers: {
     onTouchStart: (e: React.TouchEvent) => void;
@@ -33,16 +33,16 @@ interface BottomSheetProps {
 }
 
 // Hook personnalisé pour gérer le drag du bottom sheet
-const useDragBottomSheet = ({ 
-  isOpen, 
-  onSnapLevel, 
-  snapLevels = [0, 0.25, 0.5, 1] 
+const useDragBottomSheet = ({
+  isOpen,
+  onSnapLevel,
+  snapLevels = [0, 0.25, 0.5, 1]
 }: UseDragBottomSheetProps): UseDragBottomSheetReturn => {
   const [currentLevel, setCurrentLevel] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [startY, setStartY] = useState<number>(0);
   const [startLevel, setStartLevel] = useState<number>(0);
-  const containerRef = useRef<HTMLDivElement | null>(null); // Correction du typage
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const getClosestSnapLevel = useCallback((level: number): number => {
     return snapLevels.reduce((prev, curr) =>
@@ -161,7 +161,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   handleClassName = '',
   showHandle = true,
   closeOnOverlayClick = true,
-  maxHeight = '90vh'
+  maxHeight = '100vh'
 }) => {
   const handleSnapLevel = useCallback((level: number): void => {
     if (level === 0 && onClose) {
@@ -191,13 +191,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     return `translateY(${percentage}%)`;
   };
 
-  // Calculer la hauteur maximale basée sur le niveau
-  const getMaxHeight = (): string => {
-    if (typeof maxHeight === 'string' && maxHeight.includes('vh')) {
-      const vh = parseInt(maxHeight);
-      return `${vh * currentLevel}vh`;
-    }
-    return maxHeight;
+  // Calculer la hauteur basée sur le niveau
+  const getHeight = (): string => {
+    return `${currentLevel * 100}vh`;
   };
 
   if (!isOpen && currentLevel === 0) {
@@ -222,24 +218,26 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         } ${className}`}
         style={{
           transform: getTransform(),
-          maxHeight: getMaxHeight()
+          height: getHeight()
         }}
       >
         {/* Contenu du Bottom Sheet */}
-        <div className="relative bg-white rounded-t-3xl shadow-2xl overflow-hidden h-full">
+        <div className="relative bg-white rounded-t-3xl shadow-2xl h-full flex flex-col overflow-hidden">
           {/* Handle pour glisser */}
           {showHandle && (
             <div
-              className={`flex justify-center py-3 bg-white rounded-t-3xl cursor-grab active:cursor-grabbing ${handleClassName}`}
+              className={`flex-shrink-0 flex justify-center py-3 bg-white rounded-t-3xl cursor-grab active:cursor-grabbing ${handleClassName}`}
               {...handlers}
             >
               <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
             </div>
           )}
          
-          {/* Contenu */}
-          <div className="overflow-y-auto h-full">
-            {children}
+          {/* Contenu avec scroll */}
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            <div className="min-h-full">
+              {children}
+            </div>
           </div>
         </div>
       </div>

@@ -16,6 +16,7 @@ import Header from '@/components/common/Header';
 import SplitSection from '@/components/Home/SplitSection';
 import Footer from '@/components/common/Footer';
 import Button from '@/components/ui/button';
+import ButtonLink from '@/components/ui/buttonLink';
 
 
 type FormErrors = {
@@ -148,12 +149,9 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         <p className="text-lg mb-6 opacity-90 font-light">
           {slide.subtitle}
         </p>
-        <Link
-          href={slide.buttonLink}
-          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-        >
+        <ButtonLink size="md" href={slide.buttonLink}>
           {slide.buttonText}
-        </Link>
+        </ButtonLink>  
       </div>
     </div>
   </SwiperSlide>

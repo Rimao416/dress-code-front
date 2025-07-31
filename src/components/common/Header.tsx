@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
 import { DropdownContent, FeaturedItem, navigationData, NavigationItem, NavLink, NavSection } from '@/components/Header/NavigationData';
 import Link from 'next/link';
+import SignUpModal from '../modal/SignUpModal';
 
 interface HeaderProps {
   // Vous pouvez ajouter des props si nécessaire
@@ -15,7 +16,7 @@ const Header: React.FC<HeaderProps> = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
-
+const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
   // Effet pour détecter le scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -295,6 +296,7 @@ const Header: React.FC<HeaderProps> = () => {
                 <Search className="h-5 w-5" />
               </button>
               <button 
+              onClick={() => setIsSignUpModalOpen(true)}
                 className={`hidden sm:block p-2 transition-colors duration-300 ${
                   isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
@@ -344,6 +346,10 @@ const Header: React.FC<HeaderProps> = () => {
           </div>
         )}
       </header>
+        <SignUpModal 
+        isOpen={isSignUpModalOpen} 
+        onClose={() => setIsSignUpModalOpen(false)} 
+      />
 
       {/* Mobile Menu */}
       {renderMobileMenu()}
