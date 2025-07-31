@@ -15,6 +15,7 @@ import Image from 'next/image';
 import Header from '@/components/common/Header';
 import SplitSection from '@/components/Home/SplitSection';
 import Footer from '@/components/common/Footer';
+import Button from '@/components/ui/button';
 
 
 type FormErrors = {
@@ -159,8 +160,7 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
 ))}
         </Swiper>
         {/* Navigation personnalisée */}
-        <div className="swiper-button-prev !text-white !text-2xl !left-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
-        <div className="swiper-button-next !text-white !text-2xl !right-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
+
         <div className="swiper-pagination !bottom-8 !right-8 !left-auto !w-auto flex space-x-2"></div>
 <Header/>
 
@@ -168,94 +168,93 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
      <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-12">
-            {/* Left Content */}
-            <div className="lg:w-1/3 flex flex-col justify-center">
-              <div className="text-sm text-gray-600 mb-2 tracking-wider uppercase">
-                977 NEW ITEMS
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-serif text-black mb-6">
-                New In
-              </h2>
-              <p className="text-gray-700 mb-8 leading-relaxed">
-                New arrivals, now dropping five days a week – discover the latest launches onsite from Monday to Friday
-              </p>
-              <button className="bg-black text-white px-8 py-3 font-medium hover:bg-gray-800 transition-colors duration-200 w-fit">
-                Shop New In
-              </button>
-            </div>
-            {/* Right Content - Product Carousel */}
-            <div className="lg:w-2/3">
-              <div className="relative">
+    {/* Contenu gauche */}
+    <div className="lg:w-1/3 flex flex-col justify-center">
+        <div className="text-sm text-gray-600 mb-2 tracking-wider uppercase">
+            977 NOUVEAUTÉS
+        </div>
+        <h2 className="text-4xl lg:text-5xl font-serif text-black mb-6">
+            Nouveautés
+        </h2>
+        <p className="text-gray-700 mb-8 leading-relaxed">
+            Nouveautés disponibles dès maintenant cinq jours par semaine - découvrez les dernières sorties sur le site du lundi au vendredi
+        </p>
+        <Button size="md" variant='black' className="w-fit">
+            Acheter maintenant
+        </Button> 
+    </div>
+    {/* Contenu droit - Carrousel de produits */}
+    <div className="lg:w-2/3">
+        <div className="relative">
             <Swiper
-                  modules={[Navigation]}
-                  spaceBetween={20}
-                  slidesPerView={1.2}
-                  navigation={{
+                modules={[Navigation]}
+                spaceBetween={20}
+                slidesPerView={1.2}
+                navigation={{
                     nextEl: '.new-in-button-next',
                     prevEl: '.new-in-button-prev',
-                  }}
-                  onSwiper={(swiper) => {
+                }}
+                onSwiper={(swiper) => {
                     setNewInSlidesCount(swiper.slides.length);
                     setIsNewInBeginning(swiper.isBeginning);
                     setIsNewInEnd(swiper.isEnd);
-                  }}
-                  onSlideChange={(swiper) => {
+                }}
+                onSlideChange={(swiper) => {
                     setNewInSlideIndex(swiper.activeIndex);
                     setIsNewInBeginning(swiper.isBeginning);
                     setIsNewInEnd(swiper.isEnd);
-                  }}
-                  breakpoints={{
+                }}
+                breakpoints={{
                     640: {
-                      slidesPerView: 2.2,
+                        slidesPerView: 2.2,
                     },
                     768: {
-                      slidesPerView: 2.5,
+                        slidesPerView: 2.5,
                     },
                     1024: {
-                      slidesPerView: 3.2,
+                        slidesPerView: 3.2,
                     },
-                  }}
-                  className="overflow-visible"
-                >
-                  {newInData.map((item) => (
+                }}
+                className="overflow-visible"
+            >
+                {newInData.map((item) => (
                     <SwiperSlide key={item.id}>
-                      <div className="bg-white group cursor-pointer">
-                        <div className="aspect-square overflow-hidden bg-gray-100 mb-4 relative">
-                          <Image
-                            src={item.image}
-                            alt={item.alt}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              // Fallback en cas d'erreur de chargement
-                              e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMDAgNzBMMTMwIDEwMEgxMTBWMTMwSDkwVjEwMEg3MEwxMDAgNzBaIiBmaWxsPSIjOTQ5NEE0Ii8+Cjwvc3ZnPgo=';
-                            }}
-                          />
+                        <div className="bg-white group cursor-pointer">
+                            <div className="aspect-square overflow-hidden bg-gray-100 mb-4 relative">
+                                <Image
+                                    src={item.image}
+                                    alt={item.alt}
+                                    fill
+                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => {
+                                        // Solution de repli en cas d'erreur de chargement
+                                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMDAgNzBMMTMwIDEwMEgxMTBWMTMwSDkwVjEwMEg3MEwxMDAgNzBaIiBmaWxsPSIjOTQ5NEE0Ii8+Cjwvc3ZnPgo=';
+                                    }}
+                                />
+                            </div>
+                            <div className="text-center">
+                                <h3 className="font-semibold text-black text-sm tracking-wide">
+                                    {item.brand}
+                                </h3>
+                            </div>
                         </div>
-                        <div className="text-center">
-                          <h3 className="font-semibold text-black text-sm tracking-wide">
-                            {item.brand}
-                          </h3>
-                        </div>
-                      </div>
                     </SwiperSlide>
-                  ))}
-                </Swiper>
-                {/* Navigation Arrows */}
-            {/* Navigation Arrows */}
-                {!isNewInBeginning && (
-                  <button className="new-in-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
+                ))}
+            </Swiper>
+            {/* Flèches de navigation */}
+            {!isNewInBeginning && (
+                <button className="new-in-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
                     <ChevronDown className="h-5 w-5 rotate-90 text-black" />
-                  </button>
-                )}
-                {!isNewInEnd && (
-                  <button className="new-in-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
+                </button>
+            )}
+            {!isNewInEnd && (
+                <button className="new-in-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
                     <ChevronDown className="h-5 w-5 -rotate-90 text-black" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+                </button>
+            )}
+        </div>
+    </div>
+</div>
         </div>
       </section>
             {/* Full Screen Split Section */}
@@ -421,14 +420,15 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
                 </h3>
               </div>
               
-              <p className="text-gray-600 leading-relaxed">
-                Rejoignez-nous et profitez dès maintenant de la livraison 
-                gratuite sur toutes vos commandes, d'une surprise pour 
-                votre anniversaire, de l'accès exclusif aux lancements de 
-                produits, de leur exclusivité et plus encore. Comme vos 
-                jeans, les avantages sont encore plus sympas au fil du 
-                temps.
-              </p>
+             <p className="text-gray-600 leading-relaxed">
+  Bienvenue parmi nous ! Nous sommes ravis de vous avoir à bord. Profitez 
+  dès maintenant de notre service de livraison gratuite sur toutes vos 
+  commandes, d'un cadeau spécial pour votre anniversaire, ainsi que d'un 
+  accès privilégié aux nouveaux produits et à leurs exclusivités. Comme 
+  vos jeans, vous verrez que les avantages deviennent encore meilleurs avec 
+  le temps !
+</p>
+
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
@@ -502,17 +502,7 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
                 />
 
                 <div className="space-y-4">
-                  <label className="flex items-start space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.acceptNewsletters}
-                      onChange={(e) => setFormData(prev => ({ ...prev, acceptNewsletters: e.target.checked }))}
-                      className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                    />
-                    <span className="text-sm text-gray-600">
-                      Send me news and offers from the LS&Co. Group of Companies. I can unsubscribe at any time.
-                    </span>
-                  </label>
+                 
 
                   <div className="text-xs text-gray-500">
                     <p className="mb-2">
@@ -525,13 +515,15 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
                     </p>
                   </div>
                 </div>
+<Button
+  type="submit"
+  variant="black"
+  size="lg"
+  className="w-full"
+>
+  Créer un compte
+</Button>
 
-                <button
-                  type="submit"
-                  className="w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-black transition-colors duration-200"
-                >
-                  Créer un compte
-                </button>
               </form>
             </div>
           </div>
