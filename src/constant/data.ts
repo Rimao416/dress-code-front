@@ -112,3 +112,52 @@ export const productsData = [
     alt: "Sweat à capuche en coton oversize Celine Homme"
   }
 ];
+
+
+export const trendingTopsSection = {
+  leftSection: {
+    title: "Tops Tendances",
+    description: "Nouveaux hauts en tricot transparent et t-shirts signature pour un ajustement parfait à chaque fois",
+    href: "/trending-tops",
+    image: {
+      src: "/images/trending-tops.jpg",
+      alt: "Femme en haut tricoté violet"
+    },
+    fallbackSvg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K'
+  },
+  rightSection: {
+    title: 'Bas <span class="text-gray-300">Indispensables</span>',
+    description: "Complétez votre look avec des jupes, des pantalons ultra-flatteurs et plus encore",
+    href: "/must-have-bottoms",
+    image: {
+      src: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Femme en jupe imprimée serpent"
+    },
+    fallbackSvg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K'
+  }
+};
+
+// Configuration pour la deuxième section
+export const occasionReadySection = {
+  leftSection: {
+    title: "Boutique de Robes",
+    description: "Des robes éblouissantes pour chaque occasion",
+    href: "/trending-tops",
+    image: {
+      src: "/images/trending-tops.jpg",
+      alt: "Femme en haut tricoté violet"
+    },
+    fallbackSvg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K'
+  },
+  rightSection: {
+    title: 'Solutions Prêtes pour les <span class="text-gray-300">Occasions</span>',
+    description: "Peu importe le look, nos soutiens-gorge innovants et nos vêtements de forme vous couvrent",
+    href: "/must-have-bottoms",
+    image: {
+      src: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      alt: "Femme en jupe imprimée serpent"
+    },
+    fallbackSvg: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K'
+  }
+};
+

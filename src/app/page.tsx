@@ -8,11 +8,13 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
-import { newInData, productsData, sliderData } from '@/constant/data';
+import { newInData, occasionReadySection, productsData, sliderData, trendingTopsSection } from '@/constant/data';
 import Input from '@/components/ui/input';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/common/Header';
+import SplitSection from '@/components/Home/SplitSection';
+import Footer from '@/components/common/Footer';
 
 
 type FormErrors = {
@@ -159,16 +161,10 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         {/* Navigation personnalisée */}
         <div className="swiper-button-prev !text-white !text-2xl !left-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
         <div className="swiper-button-next !text-white !text-2xl !right-4 !top-1/2 !w-12 !h-12 !mt-0 after:!text-xl opacity-70 hover:opacity-100 transition-opacity duration-300"></div>
-       
-        {/* Pagination personnalisée */}
         <div className="swiper-pagination !bottom-8 !right-8 !left-auto !w-auto flex space-x-2"></div>
-        {/* Header avec fond transparent/translucide */}
-    
-{/* C'est ici que je met le Header */}
 <Header/>
 
       </div>
-      {/* New In Section */}
      <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-12">
@@ -263,188 +259,68 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
         </div>
       </section>
             {/* Full Screen Split Section */}
-<section className="h-screen w-full">
-  <div className="flex h-full">
-    {/* Moitié de gauche - Tops Tendances */}
-    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <Image
-        src="/images/trending-tops.jpg"
-        alt="Femme en haut tricoté violet"
-        fill
-        className="object-cover group-hover:scale-105 transition-transform duration-700"
-        onError={(e) => {
-          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
-        }}
-      />
-      {/* Superposition Sombre */}
-      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-      {/* Contenu */}
-      <div className="absolute bottom-8 left-8 text-white z-10">
-        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-          Tops Tendances
-        </h3>
-        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-          Nouveaux hauts en tricot transparent et t-shirts signature pour un ajustement parfait à chaque fois
-        </p>
-        <Link
-          href="/trending-tops"
-          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-        >
-          Acheter Maintenant
-        </Link>
-      </div>
+<SplitSection {...trendingTopsSection} />
+        <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-4 md:px-6 lg:px-8 bg-white">
+  <div className="max-w-7xl mx-auto">
+    {/* Section Title */}
+    <div className="text-center mb-8 sm:mb-10 md:mb-12">
+      <h2 className="text-xs sm:text-sm font-medium text-black tracking-[0.15em] sm:tracking-[0.2em] uppercase px-4">
+        Les marques qui retiennent notre attention
+      </h2>
     </div>
-    {/* Moitié de droite - Bas Indispensables */}
-    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <Image
-        src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt="Femme en jupe imprimée serpent"
-        fill
-        className="object-cover group-hover:scale-105 transition-transform duration-700"
-        onError={(e) => {
-          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
-        }}
-      />
-      {/* Superposition Sombre */}
-      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-      {/* Contenu */}
-      <div className="absolute bottom-8 left-8 text-white z-10">
-        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-          Bas <span className="text-gray-300">Indispensables</span>
-        </h3>
-        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-          Complétez votre look avec des jupes, des pantalons ultra-flatteurs et plus encore
-        </p>
-        <Link
-          href="/must-have-bottoms"
-          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-        >
-          Acheter Maintenant
-        </Link>
-      </div>
-    </div>
-  </div>
-</section>
-          <section className="py-16 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          {/* Section Title */}
-          <div className="text-center mb-12">
-            <h2 className="text-sm font-medium text-black tracking-[0.2em] uppercase">
-              Les marques qui retiennent notre attention
-            </h2>
+    
+    {/* Products Grid */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-1">
+      {productsData.map((product) => (
+        <div key={product.id} className="group cursor-pointer">
+          <div className="aspect-square overflow-hidden bg-gray-100 relative rounded-sm">
+            <Image
+              src={product.image}
+              alt={product.alt}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K';
+              }}
+            />
+                              
+            {/* Heart Favorite Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(product.id);
+              }}
+              className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/heart"
+            >
+              <Heart
+                className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${
+                  favorites.includes(product.id)
+                    ? 'fill-black text-black'
+                    : 'text-gray-600 hover:text-black'
+                }`}
+              />
+            </button>
           </div>
-          {/* Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1">
-            {productsData.map((product) => (
-              <div key={product.id} className="group cursor-pointer">
-                <div className="aspect-square overflow-hidden bg-gray-100 relative">
-                  <Image
-                    src={product.image}
-                    alt={product.alt}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K';
-                    }}
-                  />
-                 
-                  {/* Heart Favorite Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(product.id);
-                    }}
-                    className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/heart"
-                  >
-                    <Heart
-                      className={`h-4 w-4 transition-all duration-200 ${
-                        favorites.includes(product.id)
-                          ? 'fill-black text-black'
-                          : 'text-gray-600 hover:text-black'
-                      }`}
-                    />
-                  </button>
-                </div>
-               
-                {/* Product Info */}
-                <div className="pt-3 space-y-1">
-                  <h3 className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                    {product.brand}
-                  </h3>
-                  <p className="text-sm text-black font-medium line-clamp-2">
-                    {product.name}
-                  </p>
-                  <p className="text-sm font-semibold text-black">
-                    ${product.price}
-                  </p>
-                </div>
-              </div>
-            ))}
+                          
+          {/* Product Info */}
+          <div className="pt-2 sm:pt-3 space-y-1">
+            <h3 className="text-[10px] sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
+              {product.brand}
+            </h3>
+            <p className="text-xs sm:text-sm text-black font-medium line-clamp-2 leading-tight">
+              {product.name}
+            </p>
+            <p className="text-xs sm:text-sm font-semibold text-black">
+              ${product.price}
+            </p>
           </div>
         </div>
-      </section>
-        <section className="h-screen w-full">
-  <div className="flex h-full">
-    {/* Moitié de gauche - Tops Tendances */}
-    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <Image
-        src="/images/trending-tops.jpg"
-        alt="Femme en haut tricoté violet"
-        fill
-        className="object-cover group-hover:scale-105 transition-transform duration-700"
-        onError={(e) => {
-          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjOTMzM0VBIi8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj5UUkVORElORyBUT1BTPC90ZXh0Pgo8L3N2Zz4K';
-        }}
-      />
-      {/* Superposition Sombre */}
-      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-      {/* Contenu */}
-      <div className="absolute bottom-8 left-8 text-white z-10">
-        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-          Boutique de Robes
-        </h3>
-        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-          Des robes éblouissantes pour chaque occasion
-        </p>
-        <Link
-          href="/trending-tops"
-          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-        >
-          Acheter Maintenant
-        </Link>
-      </div>
-    </div>
-    {/* Moitié de droite - Bas Indispensables */}
-    <div className="w-1/2 relative overflow-hidden group cursor-pointer">
-      <Image
-        src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt="Femme en jupe imprimée serpent"
-        fill
-        className="object-cover group-hover:scale-105 transition-transform duration-700"
-        onError={(e) => {
-          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDgwMCA4MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjNkI3Mjk0Ii8+CjxwYXRoIGQ9Ik00MDAgMzAwTDUwMCA0MDBINDE1MFY1MDBIMjUwVjQwMEgxNTBMNDAwIDMwMFoiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iNTcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5NVVNULUFBVEU8L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iNjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIj5CT1RUT01TPC90ZXh0Pgo8L3N2Zz4K';
-        }}
-      />
-      {/* Superposition Sombre */}
-      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-      {/* Contenu */}
-      <div className="absolute bottom-8 left-8 text-white z-10">
-        <h3 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide uppercase">
-          Solutions Prêtes pour les <span className="text-gray-300">Occasions</span>
-        </h3>
-        <p className="text-lg mb-6 opacity-90 max-w-md leading-relaxed">
-          Peu importe le look, nos soutiens-gorge innovants et nos vêtements de forme vous couvrent
-        </p>
-        <Link
-          href="/must-have-bottoms"
-          className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium"
-        >
-          Acheter Maintenant
-        </Link>
-      </div>
+      ))}
     </div>
   </div>
 </section>
+     <SplitSection {...occasionReadySection} />
 
 <section className="py-16 px-4 bg-white">
   <div className="max-w-7xl mx-auto">
@@ -661,117 +537,7 @@ const handleInputChange = (field: keyof FormErrors, value: string) => {
           </div>
         </div>
       </section>
-      <footer className="bg-white border-t">
-        {/* Moyens de paiement */}
-        <div className="border-b border-gray-200 py-6">
-          <div className="max-w-7xl mx-auto px-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Moyens de paiement</h3>
-            <div className="flex space-x-4">
-              <img src="https://via.placeholder.com/40x25/0052CC/FFFFFF?text=AMEX" alt="American Express" className="h-6" />
-              <img src="https://via.placeholder.com/40x25/EB001B/FFFFFF?text=MC" alt="Mastercard" className="h-6" />
-              <img src="https://via.placeholder.com/40x25/1A1F71/FFFFFF?text=VISA" alt="Visa" className="h-6" />
-              <img src="https://via.placeholder.com/40x25/003087/FFFFFF?text=PP" alt="PayPal" className="h-6" />
-            </div>
-          </div>
-        </div>
-
-        {/* Liens footer */}
-        <div className="bg-gray-100 py-12">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {/* Service client */}
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-4">Service client</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li><a href="#" className="hover:text-gray-900">Aide & contact</a></li>
-                  <li><a href="#" className="hover:text-gray-900">FAQ</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Commandes & livraison</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Retours & remboursements</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Paiements & tarification</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Paiements en crypto-monnaie</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Conditions des promotions</a></li>
-                  <li><a href="#" className="hover:text-gray-900">La garantie DRESSCODE</a></li>
-                </ul>
-              </div>
-
-              {/* À propos de DRESSCODE */}
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-4">À propos de DRESSCODE</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li><a href="#" className="hover:text-gray-900">À propos de nous</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Boutiques partenaires DRESSCODE</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Carrières (site en anglais)</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Appli DRESSCODE</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Déclarations sur l'esclavage moderne</a></li>
-                  <li><a href="#" className="hover:text-gray-900">DRESSCODE Advertising</a></li>
-                </ul>
-              </div>
-
-              {/* Programme de fidélité */}
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-4">Programme de fidélité</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li><a href="#" className="hover:text-gray-900">Programme d'affiliation</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Programme de parrainage</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Programme de fidélité</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Student Beans & Diplômé·es</a></li>
-                </ul>
-              </div>
-
-              {/* Suivez-nous */}
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-4">Suivez-nous</h4>
-                <div className="flex space-x-3">
-                  <a href="#" className="text-gray-600 hover:text-gray-900">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.042-3.441.219-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.888-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.357-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.012.001z"/>
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-600 hover:text-gray-900">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-600 hover:text-gray-900">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-600 hover:text-gray-900">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-600 hover:text-gray-900">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-600 hover:text-gray-900">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.042-3.441.219-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.888-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.357-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.012.001z"/>
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer bas */}
-        <div className="bg-gray-200 py-4">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
-              <div className="flex space-x-6 mb-4 md:mb-0">
-                <a href="#" className="hover:text-gray-900">Politique de confidentialité</a>
-                <a href="#" className="hover:text-gray-900">Terms & conditions</a>
-                <a href="#" className="hover:text-gray-900">Accessibilité</a>
-              </div>
-           
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
       {/* Mobile Menu */}
       {/* Styles personnalisés pour Swiper */}
       <style jsx global>{`
