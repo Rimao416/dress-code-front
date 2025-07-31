@@ -239,7 +239,7 @@ const Header: React.FC<HeaderProps> = () => {
         onMouseEnter={() => setIsNavbarHovered(true)}
         onMouseLeave={() => setIsNavbarHovered(false)}
       >
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
@@ -254,7 +254,7 @@ const Header: React.FC<HeaderProps> = () => {
             </div>
             
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-4">
               {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
                 <div
                   key={key}
@@ -264,7 +264,7 @@ const Header: React.FC<HeaderProps> = () => {
                 >
                   {nav.hasDropdown ? (
                     <button 
-                      className={`flex items-center text-sm font-medium px-3 py-2 rounded transition-colors duration-300 ${
+                      className={`flex items-center text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
                         isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                       }`}
                     >
@@ -274,7 +274,7 @@ const Header: React.FC<HeaderProps> = () => {
                   ) : nav.link ? (
                     <Link
                       href={nav.link}
-                      className={`text-sm font-medium px-3 py-2 rounded transition-colors duration-300 ${
+                      className={`text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
                         isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                       }`}
                     >
@@ -286,7 +286,7 @@ const Header: React.FC<HeaderProps> = () => {
             </nav>
             
             {/* Right Icons */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-3">
               <button 
                 className={`p-2 transition-colors duration-300 ${
                   isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
