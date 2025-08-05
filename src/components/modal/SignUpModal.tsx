@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useCallback } from "react";
-import { X, Gift, Truck, Crown, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { X, Gift, Truck, Crown, Loader2, CheckCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
 import Input from "../ui/input";
 import Button from "../ui/button";
 import BottomSheet from "../common/BottomSheet";
@@ -21,18 +21,40 @@ interface SubmissionState {
   error: string | null;
 }
 
+// Type pour les données du formulaire
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
+// Type pour les erreurs du formulaire
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+}
+
 // Modal d'inscription
 const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
-  const {
-    userData,
-    updateUserData,
-    resetUserData,
-    loading,
-    setLoading,
-    errors,
-    setError,
-    clearAllErrors
-  } = useAuth();
+  const { setLoading } = useAuth();
+  
+  // Utilisation de useRef pour éviter les re-renders excessifs
+  const formDataRef = useRef<FormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: ''
+  });
+
+  // État local pour forcer le re-render quand nécessaire
+  const [, forceUpdate] = useState({});
+  const triggerUpdate = () => forceUpdate({});
+
+  // État local pour les erreurs
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     isSubmitting: false,
@@ -42,7 +64,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
 
   const [isMobile, setIsMobile] = useState(false);
 
-  // Détecter si on est sur mobile - avec useCallback pour éviter la re-création
+  // Détecter si on est sur mobile
   const checkIsMobile = useCallback(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
@@ -50,68 +72,98 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
   useEffect(() => {
     checkIsMobile();
     window.addEventListener('resize', checkIsMobile);
-   
     return () => window.removeEventListener('resize', checkIsMobile);
   }, [checkIsMobile]);
 
-  // Reset du state lors de l'ouverture/fermeture - FIXE: dépendances stables
+  // Reset du state lors de l'ouverture/fermeture
   useEffect(() => {
     if (isOpen) {
+      formDataRef.current = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: ''
+      };
+      setFormErrors({});
       setSubmissionState({
         isSubmitting: false,
         isSuccess: false,
         error: null
       });
-      clearAllErrors();
+      triggerUpdate();
     }
-  }, [isOpen]); // ENLEVÉ clearAllErrors des dépendances
+  }, [isOpen]);
 
-  // Fonction memoïsée pour éviter les re-créations - CORRIGÉE
-  const handleInputChange = useCallback((field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateUserData(field as keyof typeof userData, e.target.value);
-    // Clear submission error when user starts typing
-    setSubmissionState(prev => {
-      if (prev.error) {
-        return { ...prev, error: null };
+  // Fonction pour gérer les changements d'input - VERSION OPTIMISÉE
+  const handleInputChange = useCallback((field: keyof FormData, value: string) => {
+    console.log(`Changing ${field} to:`, value);
+    
+    // Mettre à jour les données du formulaire dans la ref
+    formDataRef.current = {
+      ...formDataRef.current,
+      [field]: value
+    };
+    
+    // Effacer l'erreur pour ce champ
+    setFormErrors(prev => {
+      if (prev[field]) {
+        return {
+          ...prev,
+          [field]: undefined
+        };
       }
       return prev;
     });
-  }, [updateUserData]);
+    
+    // Effacer l'erreur de soumission
+    setSubmissionState(prev => {
+      if (prev.error) {
+        return {
+          ...prev,
+          error: null
+        };
+      }
+      return prev;
+    });
+  }, []);
 
-  // Fonction de validation memoïsée
-  const validateForm = useCallback((): boolean => {
+  // Fonction de validation
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
     let hasErrors = false;
+    const formData = formDataRef.current;
 
-    if (!userData.firstName.trim()) {
-      setError('firstName', 'Le prénom est requis');
+    if (!formData.firstName.trim()) {
+      errors.firstName = 'Le prénom est requis';
       hasErrors = true;
     }
 
-    if (!userData.lastName.trim()) {
-      setError('lastName', 'Le nom est requis');
+    if (!formData.lastName.trim()) {
+      errors.lastName = 'Le nom est requis';
       hasErrors = true;
     }
 
-    if (!userData.email.trim()) {
-      setError('email', 'L\'email est requis');
+    if (!formData.email.trim()) {
+      errors.email = 'L\'email est requis';
       hasErrors = true;
-    } else if (!/\S+@\S+\.\S+/.test(userData.email)) {
-      setError('email', 'Email invalide');
-      hasErrors = true;
-    }
-
-    if (!userData.password.trim()) {
-      setError('password', 'Le mot de passe est requis');
-      hasErrors = true;
-    } else if (userData.password.length < 8) {
-      setError('password', 'Le mot de passe doit contenir au moins 8 caractères');
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Email invalide';
       hasErrors = true;
     }
 
+    if (!formData.password.trim()) {
+      errors.password = 'Le mot de passe est requis';
+      hasErrors = true;
+    } else if (formData.password.length < 8) {
+      errors.password = 'Le mot de passe doit contenir au moins 8 caractères';
+      hasErrors = true;
+    }
+
+    setFormErrors(errors);
     return !hasErrors;
-  }, [userData.firstName, userData.lastName, userData.email, userData.password, setError]);
+  };
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
@@ -120,13 +172,15 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
     setLoading(true);
 
     try {
+      const formData = formDataRef.current;
+      
       // Préparer les données pour l'inscription
       const registrationData = {
-        email: userData.email,
-        password: userData.password,
-        confirmPassword: userData.password, // Ajout du champ manquant
-        firstName: userData.firstName,
-        lastName: userData.lastName,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
       };
 
       const response = await authService.register(registrationData);
@@ -140,16 +194,19 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
 
         // Attendre un peu pour montrer le succès
         setTimeout(() => {
-          resetUserData();
           onSuccess?.();
           onClose();
         }, 2000);
       } else {
         // Gestion des erreurs de validation du serveur
         if (response.errors) {
+          const serverErrors: FormErrors = {};
           Object.entries(response.errors).forEach(([field, message]) => {
-            setError(field, message);
+            if (field in formDataRef.current) {
+              serverErrors[field as keyof FormErrors] = message as string;
+            }
           });
+          setFormErrors(serverErrors);
         }
 
         setSubmissionState({
@@ -168,10 +225,10 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
     } finally {
       setLoading(false);
     }
-  }, [validateForm, userData, setLoading, setError, resetUserData, onSuccess, onClose]);
+  };
 
-  // Composant pour afficher les messages de statut - memoïsé
-  const StatusMessage = useCallback(() => {
+  // Composant pour afficher les messages de statut
+  const StatusMessage = () => {
     if (submissionState.isSuccess) {
       return (
         <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
@@ -191,10 +248,88 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
     }
 
     return null;
-  }, [submissionState.isSuccess, submissionState.error]);
+  };
+
+  // Composant Input personnalisé pour éviter les conflits
+  const CustomInput = ({ 
+    label, 
+    type = "text", 
+    placeholder, 
+    field, 
+    error, 
+    disabled, 
+    required,
+    showPasswordToggle = false 
+  }: {
+    label: string;
+    type?: string;
+    placeholder: string;
+    field: keyof FormData;
+    error?: string;
+    disabled?: boolean;
+    required?: boolean;
+    showPasswordToggle?: boolean;
+  }) => {
+    const [localValue, setLocalValue] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Sync avec la ref au montage et quand le modal s'ouvre
+    useEffect(() => {
+      setLocalValue(formDataRef.current[field]);
+    }, [field, isOpen]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setLocalValue(value);
+      formDataRef.current[field] = value;
+      handleInputChange(field, value);
+    };
+
+    const inputType = type === 'password' && showPassword ? 'text' : type;
+
+    return (
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        <div className="relative">
+          <input
+            type={inputType}
+            placeholder={placeholder}
+            value={localValue}
+            onChange={handleChange}
+            disabled={disabled}
+            className={`
+  w-full px-4 py-3 border rounded-md transition-all duration-200
+  text-neutral-900 placeholder-neutral-400 bg-neutral-50
+  hover:bg-white outline-none focus:outline-none
+  ${error
+    ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-transparent'
+    : 'border-neutral-300 focus:ring-2 focus:ring-neutral-800 focus:border-transparent'
+  }
+  ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+  ${(type === 'password' && showPasswordToggle) || error ? 'pr-12' : ''}
+`}
+          />
+          {showPasswordToggle && type === 'password' && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          )}
+        </div>
+        {error && (
+          <p className="text-sm text-red-600">{error}</p>
+        )}
+      </div>
+    );
+  };
 
   // Contenu du formulaire pour mobile
-  const MobileFormContent = useCallback(() => (
+  const MobileFormContent = () => (
     <>
       {/* Header */}
       <div className="relative bg-gradient-to-r from-red-800 to-red-700 text-white p-4 text-center rounded-t-3xl">
@@ -204,7 +339,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
           </div>
           <div className="text-sm font-medium mt-1">MEMBER PROGRAM</div>
         </div>
-       
+        
         <p className="text-sm text-red-100 leading-relaxed">
           Rejoignez-nous et profitez dès maintenant de la livraison gratuite sur toutes vos commandes,
           d'une surprise pour votre anniversaire, de l'accès exclusif aux lancements de produits,
@@ -223,7 +358,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
               10% sur votre commande en vous inscrivant à notre newsletter
             </span>
           </div>
-         
+          
           <div className="flex items-center gap-3 text-sm">
             <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
               <Truck className="h-4 w-4 text-red-700" />
@@ -232,7 +367,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
               Livraison et retours GRATUITS
             </span>
           </div>
-         
+          
           <div className="flex items-center gap-3 text-sm">
             <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
               <Crown className="h-4 w-4 text-red-700" />
@@ -249,54 +384,50 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
         <div className="space-y-4">
           <StatusMessage />
           
-          <Input
+          <CustomInput
             label="Prénom"
             placeholder="Votre prénom"
-            value={userData.firstName}
-            onChange={handleInputChange('firstName')}
-            error={errors.firstName}
+            field="firstName"
+            error={formErrors.firstName}
             disabled={submissionState.isSubmitting || submissionState.isSuccess}
             required
           />
-         
-          <Input
+          
+          <CustomInput
             label="Nom"
             placeholder="Votre nom"
-            value={userData.lastName}
-            onChange={handleInputChange('lastName')}
-            error={errors.lastName}
+            field="lastName"
+            error={formErrors.lastName}
             disabled={submissionState.isSubmitting || submissionState.isSuccess}
             required
           />
-         
-          <Input
+          
+          <CustomInput
             label="E-mail"
             type="email"
             placeholder="votre@email.com"
-            value={userData.email}
-            onChange={handleInputChange('email')}
-            error={errors.email}
+            field="email"
+            error={formErrors.email}
             disabled={submissionState.isSubmitting || submissionState.isSuccess}
             required
           />
-         
-          <Input
+          
+          <CustomInput
             label="Mot de passe"
             type="password"
             placeholder="Votre mot de passe"
-            value={userData.password}
-            onChange={handleInputChange('password')}
-            error={errors.password}
+            field="password"
+            error={formErrors.password}
             disabled={submissionState.isSubmitting || submissionState.isSuccess}
             showPasswordToggle
             required
           />
-         
+          
           <div className="text-xs text-gray-500 leading-relaxed">
             Les mots de passe doivent contenir au moins 8 caractères et être difficiles à deviner -
             les mots de passe couramment utilisés ou risqués ne sont pas autorisés.
           </div>
-         
+          
           <Button
             variant="primary"
             size="lg"
@@ -318,17 +449,17 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
               'S\'inscrire maintenant'
             )}
           </Button>
-         
+          
           <p className="text-xs text-gray-500 text-center leading-relaxed">
             En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
           </p>
         </div>
       </div>
     </>
-  ), [userData, errors, submissionState, handleInputChange, handleSubmit, StatusMessage]);
+  );
 
   // Contenu pour desktop avec disposition en colonnes
-  const DesktopFormContent = useCallback(() => (
+  const DesktopFormContent = () => (
     <div className="flex h-full">
       {/* Bouton fermer */}
       <button
@@ -347,7 +478,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
             DressCode<span className="text-red-200">CLUB</span>
           </div>
           <div className="text-sm font-medium mb-4">MEMBER PROGRAM</div>
-         
+          
           <p className="text-red-100 leading-relaxed">
             Rejoignez-nous et profitez dès maintenant de la livraison gratuite sur toutes vos commandes,
             d'une surprise pour votre anniversaire, de l'accès exclusif aux lancements de produits,
@@ -366,7 +497,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
               <div className="text-sm text-red-200">10% sur votre première commande</div>
             </div>
           </div>
-         
+          
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-red-600/30 rounded-full flex items-center justify-center">
               <Truck className="h-5 w-5 text-red-200" />
@@ -376,7 +507,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
               <div className="text-sm text-red-200">Livraison et retours GRATUITS</div>
             </div>
           </div>
-         
+          
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-red-600/30 rounded-full flex items-center justify-center">
               <Crown className="h-5 w-5 text-red-200" />
@@ -396,54 +527,50 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
             <StatusMessage />
             
             <div className="grid grid-cols-2 gap-4">
-              <Input
+              <CustomInput
                 label="Prénom"
                 placeholder="Votre prénom"
-                value={userData.firstName}
-                onChange={handleInputChange('firstName')}
-                error={errors.firstName}
+                field="firstName"
+                error={formErrors.firstName}
                 disabled={submissionState.isSubmitting || submissionState.isSuccess}
                 required
               />
-             
-              <Input
+              
+              <CustomInput
                 label="Nom"
                 placeholder="Votre nom"
-                value={userData.lastName}
-                onChange={handleInputChange('lastName')}
-                error={errors.lastName}
+                field="lastName"
+                error={formErrors.lastName}
                 disabled={submissionState.isSubmitting || submissionState.isSuccess}
                 required
               />
             </div>
-           
-            <Input
+            
+            <CustomInput
               label="E-mail"
               type="email"
               placeholder="votre@email.com"
-              value={userData.email}
-              onChange={handleInputChange('email')}
-              error={errors.email}
+              field="email"
+              error={formErrors.email}
               disabled={submissionState.isSubmitting || submissionState.isSuccess}
               required
             />
-           
-            <Input
+            
+            <CustomInput
               label="Mot de passe"
               type="password"
               placeholder="Votre mot de passe"
-              value={userData.password}
-              onChange={handleInputChange('password')}
-              error={errors.password}
+              field="password"
+              error={formErrors.password}
               disabled={submissionState.isSubmitting || submissionState.isSuccess}
               showPasswordToggle
               required
             />
-           
+            
             <div className="text-xs text-gray-500 leading-relaxed">
               Les mots de passe doivent contenir au moins 8 caractères et être difficiles à deviner.
             </div>
-           
+            
             <Button
               variant="primary"
               size="lg"
@@ -465,7 +592,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
                 'S\'inscrire maintenant'
               )}
             </Button>
-           
+            
             <p className="text-xs text-gray-500 text-center leading-relaxed">
               En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
             </p>
@@ -473,7 +600,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
         </div>
       </div>
     </div>
-  ), [onClose, submissionState, userData, errors, handleInputChange, handleSubmit, StatusMessage]);
+  );
 
   if (!isOpen) return null;
 
@@ -506,7 +633,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
           onClick={submissionState.isSubmitting ? undefined : onClose}
           className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         />
-       
+        
         {/* Modal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}

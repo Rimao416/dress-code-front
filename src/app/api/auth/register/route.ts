@@ -32,14 +32,7 @@ export async function POST(request: NextRequest) {
       password,
       firstName,
       lastName,
-      phone,
-      dateOfBirth,
-      gender,
-      country,
-      address,
-      postalCode,
-      city,
-      addressComplement,
+
     } = validationResult.data;
 
     // Vérifier si l'utilisateur existe déjà
@@ -74,9 +67,7 @@ export async function POST(request: NextRequest) {
     id: user.id,
     firstName,
     lastName,
-    phone,
-    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-    gender,
+ 
     acceptedTerms: true,
     acceptedMarketing: false,
     // Si tu veux créer l'adresse en même temps
