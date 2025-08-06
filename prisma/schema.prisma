@@ -1,3 +1,16 @@
+
+
+// Prisma client generator
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -35,17 +48,6 @@ enum PaymentMethod {
   PAYPAL
   APPLE_PAY
   GOOGLE_PAY
-}
-
-// Prisma client generator
-generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // Models

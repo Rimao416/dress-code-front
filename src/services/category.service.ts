@@ -20,9 +20,11 @@ class CategoryService {
       const url = `${this.baseUrl}/${encodeURIComponent(slug)}`;
       console.log(`Request URL: ${url}`);
 
-      // Utiliser une approche compatible pour le timeout
+      // Créer un AbortController pour gérer le timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 30000); // 30 secondes
 
       try {
         const response = await fetch(url, {
@@ -32,8 +34,11 @@ class CategoryService {
             'Accept': 'application/json',
           },
           signal: controller.signal,
+          // Ajouter cache: 'no-store' pour éviter les problèmes de cache
+          cache: 'no-store'
         });
 
+        // Nettoyer le timeout si la requête se termine
         clearTimeout(timeoutId);
 
         console.log(`Response status: ${response.status}`);
@@ -46,6 +51,7 @@ class CategoryService {
             errorMessage = errorData.error || errorData.message || errorMessage;
           } catch {
             // Si on ne peut pas parser l'erreur, on garde le message par défaut
+            console.warn('Could not parse error response');
           }
           
           throw new Error(errorMessage);
@@ -64,9 +70,15 @@ class CategoryService {
         console.log('Category fetched successfully:', result.data.name);
         return result.data;
 
-      } catch (error) {
+      } catch (fetchError) {
         clearTimeout(timeoutId);
-        throw error;
+        
+        // Gestion spécifique des erreurs AbortError
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          throw new Error('Request timeout: The server took too long to respond');
+        }
+        
+        throw fetchError;
       }
 
     } catch (error) {
@@ -77,10 +89,7 @@ class CategoryService {
         throw new Error('Network error: Unable to connect to the server');
       }
       
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout: The server took too long to respond');
-      }
-      
+      // Re-lancer l'erreur telle quelle
       throw error;
     }
   }
@@ -100,6 +109,7 @@ class CategoryService {
             'Accept': 'application/json',
           },
           signal: controller.signal,
+          cache: 'no-store'
         });
 
         clearTimeout(timeoutId);
@@ -116,9 +126,14 @@ class CategoryService {
 
         return result.data || [];
 
-      } catch (error) {
+      } catch (fetchError) {
         clearTimeout(timeoutId);
-        throw error;
+        
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          throw new Error('Request timeout: The server took too long to respond');
+        }
+        
+        throw fetchError;
       }
 
     } catch (error) {
@@ -140,14 +155,15 @@ class CategoryService {
             'Content-Type': 'application/json',
           },
           signal: controller.signal,
+          cache: 'no-store'
         });
 
         clearTimeout(timeoutId);
         return response.ok;
 
-      } catch (error) {
+      } catch (fetchError) {
         clearTimeout(timeoutId);
-        throw error;
+        return false;
       }
 
     } catch (error) {
