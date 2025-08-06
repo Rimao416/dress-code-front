@@ -91,11 +91,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
         {/* Badge vedette */}
-        {product.featured && (
+        {/* {product.featured && (
           <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 bg-red-600 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
             VEDETTE
           </div>
-        )}
+        )} */}
       </div>
       {/* Informations produit */}
       <div className={`pt-2 sm:pt-3 space-y-1 ${contentClassName}`}>

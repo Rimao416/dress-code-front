@@ -22,7 +22,15 @@ const nextConfig: NextConfig = {
         hostname: 'res.cloudinary.com',
         port: '',
         pathname: '/**',
-      }
+      },
+      // Configuration pour Cloudinary
+      {
+        // ["https://example.com/products/product-0-1.jpg","https://example.com/products/product-0-2.jpg","https://example.com/products/product-0-3.jpg"]
+        protocol: 'https',
+        hostname: 'example.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
