@@ -137,21 +137,47 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
     return filtered;
   }, [products, filters]);
  
-  // Grouper les produits filtrés par catégorie
+  // CORRECTION : Grouper les produits filtrés par catégorie
   const productsByCategory = useMemo(() => {
-    if (!category?.children) return [];
-   
-    return category.children
-      .filter(child => {
-        // Vérifier si cette catégorie a des produits après filtrage
-        const categoryProductIds = child.products?.map(p => p.id) || [];
-        return filteredProducts.some(p => categoryProductIds.includes(p.id));
-      })
-      .map(child => ({
-        category: child,
-        products: filteredProducts.filter(p => child.products?.some(cp => cp.id === p.id) || false)
-      }));
-  }, [category?.children, filteredProducts]);
+    if (!category) return [];
+    
+    const result: { category: Category; products: Product[] }[] = [];
+    
+    // 1. Si la catégorie courante a des produits DIRECTS, on les ajoute
+    if (category.products && category.products.length > 0) {
+      const directProducts = filteredProducts.filter(p => 
+        category.products.some(cp => cp.id === p.id)
+      );
+      
+      if (directProducts.length > 0) {
+        result.push({
+          category: category,
+          products: directProducts
+        });
+      }
+    }
+    
+    // 2. Si la catégorie a des enfants avec des produits, on les ajoute aussi
+    if (category.children && category.children.length > 0) {
+      category.children.forEach(child => {
+        if (child.products && child.products.length > 0) {
+          const categoryProductIds = child.products.map(p => p.id);
+          const childProducts = filteredProducts.filter(p => 
+            categoryProductIds.includes(p.id)
+          );
+          
+          if (childProducts.length > 0) {
+            result.push({
+              category: child,
+              products: childProducts
+            });
+          }
+        }
+      });
+    }
+    
+    return result;
+  }, [category, filteredProducts]);
  
   // Fonctions de gestion des filtres
   const toggleFilter = (type: keyof FilterState, value: string) => {
