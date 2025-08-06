@@ -1,8 +1,9 @@
 "use client"
 import React, { use, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import du router Next.js
+import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Star, Filter, ChevronDown, X } from 'lucide-react';
 import Header from '@/components/common/Header';
+import BottomSheet from '@/components/common/BottomSheet';
 import { useCategory, useCategoryNavigation } from '@/hooks/category/useCategory';
 import { Product, Category } from '@/types/category';
 
@@ -10,7 +11,6 @@ interface CollectionPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Interface pour les filtres
 interface FilterState {
   brands: string[];
   priceRange: { min: number; max: number };
@@ -21,17 +21,13 @@ interface FilterState {
 }
 
 const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
-  const router = useRouter(); // Hook Next.js pour la navigation
- 
-  // Utiliser React.use() pour unwrap la Promise dans un composant client
+  const router = useRouter();
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
- 
-  // Use custom hooks avec le slug résolu
+  
   const { category, isLoading, error } = useCategory(slug);
   const { breadcrumbs, subcategories, hasSubcategories } = useCategoryNavigation();
- 
-  // État des filtres
+  
   const [filters, setFilters] = useState<FilterState>({
     brands: [],
     priceRange: { min: 0, max: 1000 },
@@ -40,19 +36,16 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
     tags: [],
     sortBy: 'featured'
   });
- 
+  
   const [showFilters, setShowFilters] = useState(false);
- 
-  // Mémoiser les produits pour éviter les recalculs
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  
   const products = useMemo(() => category?.allProducts || [], [category?.allProducts]);
- 
-  // Fonction pour naviguer vers une sous-catégorie
+  
   const handleSubcategoryClick = (subcategory: Category) => {
-    // Naviguer vers la nouvelle URL avec le slug de la sous-catégorie
     router.push(`/collections/${subcategory.slug}`);
   };
-
-  // Extraire les options de filtres des produits
+  
   const filterOptions = useMemo(() => {
     if (!products.length) return {
       brands: [],
@@ -74,41 +67,34 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
    
     return { brands, colors, sizes, tags, priceRange };
   }, [products]);
- 
-  // Filtrer et trier les produits
+  
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
    
-    // Filtrer par marque
     if (filters.brands.length > 0) {
       filtered = filtered.filter(p => p.brand?.name && filters.brands.includes(p.brand.name));
     }
    
-    // Filtrer par prix
     filtered = filtered.filter(p => p.price >= filters.priceRange.min && p.price <= filters.priceRange.max);
    
-    // Filtrer par couleur
     if (filters.colors.length > 0) {
       filtered = filtered.filter(p =>
         p.variants?.some(v => v.color && filters.colors.includes(v.color))
       );
     }
    
-    // Filtrer par taille
     if (filters.sizes.length > 0) {
       filtered = filtered.filter(p =>
         p.variants?.some(v => v.size && filters.sizes.includes(v.size))
       );
     }
    
-    // Filtrer par tags
     if (filters.tags.length > 0) {
       filtered = filtered.filter(p =>
         p.tags?.some(tag => filters.tags.includes(tag))
       );
     }
    
-    // Trier
     switch (filters.sortBy) {
       case 'price-asc':
         filtered.sort((a, b) => a.price - b.price);
@@ -136,19 +122,17 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
    
     return filtered;
   }, [products, filters]);
- 
-  // CORRECTION : Grouper les produits filtrés par catégorie
+  
   const productsByCategory = useMemo(() => {
     if (!category) return [];
-    
+   
     const result: { category: Category; products: Product[] }[] = [];
-    
-    // 1. Si la catégorie courante a des produits DIRECTS, on les ajoute
+   
     if (category.products && category.products.length > 0) {
-      const directProducts = filteredProducts.filter(p => 
+      const directProducts = filteredProducts.filter(p =>
         category.products.some(cp => cp.id === p.id)
       );
-      
+     
       if (directProducts.length > 0) {
         result.push({
           category: category,
@@ -156,16 +140,15 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
         });
       }
     }
-    
-    // 2. Si la catégorie a des enfants avec des produits, on les ajoute aussi
+   
     if (category.children && category.children.length > 0) {
       category.children.forEach(child => {
         if (child.products && child.products.length > 0) {
           const categoryProductIds = child.products.map(p => p.id);
-          const childProducts = filteredProducts.filter(p => 
+          const childProducts = filteredProducts.filter(p =>
             categoryProductIds.includes(p.id)
           );
-          
+         
           if (childProducts.length > 0) {
             result.push({
               category: child,
@@ -175,11 +158,10 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
         }
       });
     }
-    
+   
     return result;
   }, [category, filteredProducts]);
- 
-  // Fonctions de gestion des filtres
+  
   const toggleFilter = (type: keyof FilterState, value: string) => {
     setFilters(prev => ({
       ...prev,
@@ -188,14 +170,14 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
         : [...(prev[type as keyof Pick<FilterState, 'brands' | 'colors' | 'sizes' | 'tags'>] as string[]), value]
     }));
   };
- 
+  
   const updatePriceRange = (min: number, max: number) => {
     setFilters(prev => ({
       ...prev,
       priceRange: { min, max }
     }));
   };
- 
+  
   const clearFilters = () => {
     setFilters({
       brands: [],
@@ -206,13 +188,24 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
       sortBy: 'featured'
     });
   };
- 
+  
   const hasActiveFilters = filters.brands.length > 0 || filters.colors.length > 0 ||
     filters.sizes.length > 0 || filters.tags.length > 0 ||
     filters.priceRange.min !== filterOptions.priceRange.min ||
     filters.priceRange.max !== filterOptions.priceRange.max;
- 
-  // Loading state
+
+  const activeFiltersCount = filters.brands.length + filters.colors.length + 
+    filters.sizes.length + filters.tags.length;
+
+  // Mobile filter button handler
+  const handleFilterClick = () => {
+    if (window.innerWidth < 768) {
+      setIsBottomSheetOpen(true);
+    } else {
+      setShowFilters(!showFilters);
+    }
+  };
+
   if (isLoading) {
     return (
       <>
@@ -226,8 +219,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
       </>
     );
   }
- 
-  // Error state
+
   if (error || !category) {
     return (
       <>
@@ -246,8 +238,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
       </>
     );
   }
- 
-  // Composant pour afficher un produit
+
   const ProductCard: React.FC<{ product: Product }> = ({ product }) => (
     <div key={product.id} className="group cursor-pointer">
       <div className="aspect-[3/4] overflow-hidden bg-gray-100 mb-4 relative">
@@ -257,7 +248,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
        
-        {/* Tags */}
         {product.tags?.slice(0, 1).map((tag: string) => (
           <div
             key={tag}
@@ -280,7 +270,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
         )}
       </div>
      
-      {/* Informations produit */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-black text-sm">
@@ -298,7 +287,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           </p>
         )}
        
-        {/* Variantes de couleur */}
         {product.variants?.length > 0 && (
           <div className="flex gap-2 py-2">
             {product.variants.slice(0, 5).map((variant, index: number) => (
@@ -317,7 +305,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           </div>
         )}
        
-        {/* Prix */}
         <div className="flex items-center gap-2">
           <span className="font-semibold text-black">
             ${product.price}
@@ -331,18 +318,179 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
       </div>
     </div>
   );
- 
-  // Composant FilterSection
+
   const FilterSection: React.FC<{
     title: string;
     children: React.ReactNode;
   }> = ({ title, children }) => (
-    <div className="border-b border-gray-200 pb-4 mb-4">
-      <h3 className="font-medium text-black mb-3">{title}</h3>
+    <div className="pb-6 mb-6 border-b border-gray-100 last:border-b-0 last:pb-0 last:mb-0">
+      <h3 className="font-semibold text-black mb-4 text-lg">{title}</h3>
       {children}
     </div>
   );
- 
+
+  const FilterContent = () => (
+    <div className="space-y-6">
+      {/* En-tête des filtres */}
+      <div className="flex items-center justify-between py-4 px-6 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <Filter className="w-5 h-5 text-black" />
+          <h2 className="text-xl font-semibold text-black">Filters</h2>
+          {activeFiltersCount > 0 && (
+            <span className="bg-black text-white text-xs px-2 py-1 rounded-full font-medium">
+              {activeFiltersCount}
+            </span>
+          )}
+        </div>
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-sm text-gray-600 hover:text-black transition-colors font-medium"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+
+      <div className="px-6 space-y-6">
+        {/* Tri */}
+        <FilterSection title="Sort By">
+          <select
+            value={filters.sortBy}
+            onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
+          >
+            <option value="featured">Featured</option>
+            <option value="newest">Newest</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </FilterSection>
+
+        {/* Filtres par marque */}
+        {filterOptions.brands.length > 0 && (
+          <FilterSection title="Brands">
+            <div className="space-y-3">
+              {filterOptions.brands.map(brand => (
+                <label key={brand} className="flex items-center group cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.brands.includes(brand)}
+                    onChange={() => toggleFilter('brands', brand)}
+                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black focus:ring-1"
+                  />
+                  <span className="ml-3 text-sm text-gray-700 group-hover:text-black transition-colors">
+                    {brand}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </FilterSection>
+        )}
+        
+        {/* Filtres par couleur */}
+        {filterOptions.colors.length > 0 && (
+          <FilterSection title="Colors">
+            <div className="space-y-3">
+              {filterOptions.colors.slice(0, 8).map(color => (
+                <label key={color} className="flex items-center group cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.colors.includes(color)}
+                    onChange={() => toggleFilter('colors', color)}
+                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black focus:ring-1"
+                  />
+                  <span className="ml-3 text-sm text-gray-700 group-hover:text-black transition-colors capitalize">
+                    {color}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </FilterSection>
+        )}
+        
+        {/* Filtres par taille */}
+        {filterOptions.sizes.length > 0 && (
+          <FilterSection title="Sizes">
+            <div className="grid grid-cols-3 gap-3">
+              {filterOptions.sizes.slice(0, 9).map(size => (
+                <button
+                  key={size}
+                  onClick={() => toggleFilter('sizes', size)}
+                  className={`px-4 py-3 text-sm font-medium border rounded-xl transition-all duration-200 ${
+                    filters.sizes.includes(size)
+                      ? 'bg-black text-white border-black'
+                      : 'border-gray-200 text-gray-700 hover:border-black hover:text-black'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </FilterSection>
+        )}
+        
+        {/* Filtres par tags */}
+        {filterOptions.tags.length > 0 && (
+          <FilterSection title="Tags">
+            <div className="space-y-3">
+              {filterOptions.tags.slice(0, 6).map(tag => (
+                <label key={tag} className="flex items-center group cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.tags.includes(tag)}
+                    onChange={() => toggleFilter('tags', tag)}
+                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black focus:ring-1"
+                  />
+                  <span className="ml-3 text-sm text-gray-700 group-hover:text-black transition-colors">
+                    {tag}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </FilterSection>
+        )}
+        
+        {/* Filtres par prix */}
+        <FilterSection title="Price Range">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>${filters.priceRange.min}</span>
+              <span>${filters.priceRange.max}</span>
+            </div>
+            <div className="flex gap-3">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.priceRange.min}
+                onChange={(e) => updatePriceRange(Number(e.target.value), filters.priceRange.max)}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.priceRange.max}
+                onChange={(e) => updatePriceRange(filters.priceRange.min, Number(e.target.value))}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
+              />
+            </div>
+          </div>
+        </FilterSection>
+      </div>
+
+      {/* Bouton d'application (mobile uniquement) */}
+      <div className="md:hidden px-6 py-4 border-t border-gray-100 bg-white">
+        <button
+          onClick={() => setIsBottomSheetOpen(false)}
+          className="w-full bg-black text-white py-4 rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+        >
+          Show {filteredProducts.length} products
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Header />
@@ -361,7 +509,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           </div>
         </div>
        
-        {/* En-tête de catégorie principale - Espacement réduit */}
+        {/* En-tête de catégorie principale */}
         <div className="py-4 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
@@ -380,11 +528,10 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           </div>
         </div>
        
-        {/* Section 1: Sous-catégories - Espacement réduit */}
+        {/* Section sous-catégories */}
         {hasSubcategories && (
           <section className="px-4">
             <div className="max-w-7xl mx-auto">
-              {/* Grille des sous-catégories */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-12">
                 {subcategories.map((subcategory) => (
                   <div
@@ -415,22 +562,21 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           </section>
         )}
        
-        {/* NOUVELLE SECTION: Filtres et Tri */}
+        {/* Section filtres et tri */}
         {products.length > 0 && (
           <section className="px-4 py-6 border-t border-gray-200">
             <div className="max-w-7xl mx-auto">
-              {/* Barre de contrôle des filtres */}
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                 <div className="flex items-center gap-4 mb-4 md:mb-0">
                   <button
-                    onClick={() => setShowFilters(!showFilters)}
+                    onClick={handleFilterClick}
                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:border-black transition-colors"
                   >
                     <Filter className="w-4 h-4" />
                     <span>Filters</span>
                     {hasActiveFilters && (
                       <span className="bg-black text-white text-xs px-2 py-1 rounded-full">
-                        {filters.brands.length + filters.colors.length + filters.sizes.length + filters.tags.length}
+                        {activeFiltersCount}
                       </span>
                     )}
                   </button>
@@ -445,8 +591,8 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
                   )}
                 </div>
                
-                {/* Tri */}
-                <div className="flex items-center gap-2">
+                {/* Tri desktop */}
+                <div className="hidden md:flex items-center gap-2">
                   <span className="text-sm text-gray-600">Sort by:</span>
                   <select
                     value={filters.sortBy}
@@ -462,11 +608,10 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
                 </div>
               </div>
              
-              {/* Panneau de filtres */}
+              {/* Panneau de filtres desktop */}
               {showFilters && (
-                <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                <div className="hidden md:block bg-gray-50 rounded-lg p-6 mb-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {/* Filtres par marque */}
                     {filterOptions.brands.length > 0 && (
                       <FilterSection title="Brands">
                         <div className="space-y-2">
@@ -485,7 +630,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
                       </FilterSection>
                     )}
                    
-                    {/* Filtres par couleur */}
                     {filterOptions.colors.length > 0 && (
                       <FilterSection title="Colors">
                         <div className="space-y-2">
@@ -504,7 +648,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
                       </FilterSection>
                     )}
                    
-                    {/* Filtres par taille */}
                     {filterOptions.sizes.length > 0 && (
                       <FilterSection title="Sizes">
                         <div className="grid grid-cols-3 gap-2">
@@ -525,7 +668,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
                       </FilterSection>
                     )}
                    
-                    {/* Filtres par tags */}
                     {filterOptions.tags.length > 0 && (
                       <FilterSection title="Tags">
                         <div className="space-y-2">
@@ -544,7 +686,6 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
                       </FilterSection>
                     )}
                    
-                    {/* Filtres par prix */}
                     <FilterSection title="Price Range">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm">
@@ -576,13 +717,12 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           </section>
         )}
        
-        {/* Section 2: Produits groupés par catégorie (avec filtrage) */}
+        {/* Section produits */}
         {productsByCategory.length > 0 ? (
           <div className="py-8 px-4">
             <div className="max-w-7xl mx-auto space-y-16">
               {productsByCategory.map(({ category: subCategory, products: categoryProducts }) => (
                 <section key={subCategory.id} className="space-y-8">
-                  {/* Titre de la sous-catégorie */}
                   <div className="border-b border-gray-200 pb-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -600,7 +740,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
                       </div>
                     </div>
                   </div>
-                  {/* Grille de produits pour cette catégorie */}
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {categoryProducts.map((product) => (
                       <ProductCard key={product.id} product={product} />
@@ -625,9 +765,20 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
             )}
           </div>
         )}
+
+        {/* BottomSheet pour les filtres mobiles */}
+        <BottomSheet
+          isOpen={isBottomSheetOpen}
+          onClose={() => setIsBottomSheetOpen(false)}
+          snapLevels={[0, 0.3, 0.6, 0.9]}
+          initialLevel={0.6}
+          className="md:hidden"
+        >
+          <FilterContent />
+        </BottomSheet>
       </div>
     </>
   );
 };
- 
+
 export default CollectionPage;
