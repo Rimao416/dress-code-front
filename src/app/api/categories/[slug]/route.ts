@@ -1,7 +1,8 @@
 // pages/api/categories/[slug].ts ou app/api/categories/[slug]/route.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { CategoryResponse, CategoryWithFullData, Category, Product } from '@/types/category';
-import prisma from '@/lib/prisma';
+
+import {  CategoryWithFullData, Category } from '@/types/category';
+import prisma from '@/lib/prisma'
+import { Product } from '@/types/product';
 
 export async function GET(
   request: Request,

@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from 'react';
-import { ChevronDown, Heart } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
@@ -15,6 +15,10 @@ import SplitSection from '@/components/Home/SplitSection';
 import Footer from '@/components/common/Footer';
 import Button from '@/components/ui/button';
 import ButtonLink from '@/components/ui/buttonLink';
+import ProductCard from '@/components/common/ProductCard';
+import { useFavorites } from '@/hooks/product/useFavorites';
+import { convertLegacyProductData, Product, ProductCardItem } from '@/types/product';
+import { useRouter } from 'next/navigation';
 
 type FormErrors = {
   firstName?: string;
@@ -25,13 +29,19 @@ type FormErrors = {
 };
 
 const HomePage = () => {
-  const toggleFavorite = (productId: number) => {
-    setFavorites(prev =>
-      prev.includes(productId)
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  };
+  const router = useRouter();
+
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  const handleProductClick = (product: ProductCardItem) => {
+  // Si c'est un produit complet avec slug, l'utiliser
+  if ('slug' in product && product.slug) {
+    router.push(`/products/${product.slug}`);
+  } else {
+    // Sinon utiliser l'ID comme fallback
+    router.push(`/products/${product.id}`);
+  }
+};
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -264,52 +274,22 @@ const HomePage = () => {
          
           {/* Products Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-1">
-            {productsData.map((product) => (
-              <div key={product.id} className="group cursor-pointer">
-                <div className="aspect-square overflow-hidden bg-gray-100 relative rounded-sm">
-                  <Image
-                    src={product.image}
-                    alt={product.alt}
-                    fill
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K';
-                    }}
-                  />
-                                   
-                  {/* Heart Favorite Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(product.id);
-                    }}
-                    className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/heart"
-                  >
-                    <Heart
-                      className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${
-                        favorites.includes(product.id)
-                          ? 'fill-black text-black'
-                          : 'text-gray-600 hover:text-black'
-                      }`}
-                    />
-                  </button>
-                </div>
-                               
-                {/* Product Info */}
-                <div className="pt-2 sm:pt-3 space-y-1">
-                  <h3 className="text-[10px] sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
-                    {product.brand}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-black font-medium line-clamp-2 leading-tight">
-                    {product.name}
-                  </p>
-                  <p className="text-xs sm:text-sm font-semibold text-black">
-                    ${product.price}
-                  </p>
-                </div>
-              </div>
-            ))}
+           {productsData.map((product) => {
+        // Convertir les anciennes données vers le nouveau format
+        const convertedProduct = convertLegacyProductData(product);
+        
+        return (
+          <ProductCard
+            key={product.id}
+            product={convertedProduct}
+            isFavorite={isFavorite(String(product.id))}
+            onToggleFavorite={toggleFavorite}
+            onClick={handleProductClick}
+            showBrand={true}
+            showPrice={true}
+          />
+        );
+      })}
           </div>
         </div>
       </section>

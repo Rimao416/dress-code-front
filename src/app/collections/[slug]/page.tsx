@@ -5,7 +5,8 @@ import { Loader2, AlertCircle, Star, Filter, ChevronDown, X } from 'lucide-react
 import Header from '@/components/common/Header';
 import BottomSheet from '@/components/common/BottomSheet';
 import { useCategory, useCategoryNavigation } from '@/hooks/category/useCategory';
-import { Product, Category } from '@/types/category';
+import { Category } from '@/types/category';
+import { Product } from '@/types/product';
 
 interface CollectionPageProps {
   params: Promise<{ slug: string }>;
