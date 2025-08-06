@@ -1,5 +1,6 @@
 "use client"
 import React, { use, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, AlertCircle, Star, Filter, ChevronDown, X } from 'lucide-react';
 import Header from '@/components/common/Header';
 import { useCategory, useCategoryNavigation } from '@/hooks/category/useCategory';
@@ -18,6 +19,71 @@ interface FilterState {
   tags: string[];
   sortBy: string;
 }
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 10
+    }
+  }
+};
+
+const productVariants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 120,
+      damping: 15
+    }
+  },
+  hover: {
+    y: -8,
+    transition: {
+      type: "spring",
+      stiffness: 400,
+      damping: 10
+    }
+  }
+};
+
+const filterPanelVariants = {
+  hidden: {
+    height: 0,
+    opacity: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut"
+    }
+  },
+  visible: {
+    height: "auto",
+    opacity: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut"
+    }
+  }
+};
 
 const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
   // Utiliser React.use() pour unwrap la Promise dans un composant client
@@ -183,10 +249,14 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
       <>
         <Header />
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="flex items-center gap-3">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-3"
+          >
             <Loader2 className="w-6 h-6 animate-spin" />
             <span className="text-gray-600">Loading category...</span>
-          </div>
+          </motion.div>
         </div>
       </>
     );
@@ -198,7 +268,11 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
       <>
         <Header />
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               {error || 'Collection not found'}
@@ -206,47 +280,74 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
             <p className="text-gray-600">
               We couldn't load this category. Please try again later.
             </p>
-          </div>
+          </motion.div>
         </div>
       </>
     );
   }
   
   // Composant pour afficher un produit
-  const ProductCard: React.FC<{ product: Product }> = ({ product }) => (
-    <div key={product.id} className="group cursor-pointer">
-      <div className="aspect-[3/4] overflow-hidden bg-gray-100 mb-4 relative">
-        <img
+  const ProductCard: React.FC<{ product: Product; index: number }> = ({ product, index }) => (
+    <motion.div
+      variants={productVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      custom={index}
+      className="group cursor-pointer"
+    >
+      <motion.div className="aspect-[3/4] overflow-hidden bg-gray-100 mb-4 relative rounded-lg">
+        <motion.img
           src={product.images?.[0] || '/api/placeholder/310/400'}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.3 }}
         />
        
         {/* Tags */}
-        {product.tags?.slice(0, 1).map((tag: string) => (
-          <div
-            key={tag}
-            className="absolute bottom-4 left-4 bg-black text-white text-xs px-3 py-1 font-medium"
-          >
-            {tag}
-          </div>
-        ))}
+        <AnimatePresence>
+          {product.tags?.slice(0, 1).map((tag: string) => (
+            <motion.div
+              key={tag}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="absolute bottom-4 left-4 bg-black text-white text-xs px-3 py-1 font-medium rounded"
+            >
+              {tag}
+            </motion.div>
+          ))}
+        </AnimatePresence>
        
         {product.isNewIn && (
-          <div className="absolute top-4 left-4 bg-white text-black text-xs px-3 py-1 font-medium">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute top-4 left-4 bg-white text-black text-xs px-3 py-1 font-medium rounded shadow-sm"
+          >
             NEW IN
-          </div>
+          </motion.div>
         )}
        
         {product.featured && (
-          <div className="absolute top-4 right-4">
+          <motion.div 
+            initial={{ opacity: 0, rotate: -180 }}
+            animate={{ opacity: 1, rotate: 0 }}
+            className="absolute top-4 right-4"
+          >
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
      
       {/* Informations produit */}
-      <div className="space-y-2">
+      <motion.div 
+        className="space-y-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-black text-sm">
             {product.brand?.name || 'Brand'}
@@ -265,25 +366,43 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
        
         {/* Variantes de couleur */}
         {product.variants?.length > 0 && (
-          <div className="flex gap-2 py-2">
-            {product.variants.slice(0, 5).map((variant, index: number) => (
-              <div
-                key={index}
+          <motion.div 
+            className="flex gap-2 py-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {product.variants.slice(0, 5).map((variant, variantIndex: number) => (
+              <motion.div
+                key={variantIndex}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1 * variantIndex }}
+                whileHover={{ scale: 1.2 }}
                 className="w-6 h-6 rounded-full border-2 border-gray-200 cursor-pointer hover:border-black transition-colors duration-200"
                 style={{ backgroundColor: variant.colorHex || '#ccc' }}
                 title={variant.color || 'Color variant'}
               />
             ))}
             {product.variants.length > 5 && (
-              <span className="text-xs text-gray-500 self-center">
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-gray-500 self-center"
+              >
                 +{product.variants.length - 5}
-              </span>
+              </motion.span>
             )}
-          </div>
+          </motion.div>
         )}
        
         {/* Prix */}
-        <div className="flex items-center gap-2">
+        <motion.div 
+          className="flex items-center gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <span className="font-semibold text-black">
             ${product.price}
           </span>
@@ -292,9 +411,9 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
               ${product.comparePrice}
             </span>
           )}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
   
   // Composant FilterSection
@@ -302,291 +421,487 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
     title: string;
     children: React.ReactNode;
   }> = ({ title, children }) => (
-    <div className="border-b border-gray-200 pb-4 mb-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="border-b border-gray-200 pb-4 mb-4"
+    >
       <h3 className="font-medium text-black mb-3">{title}</h3>
       {children}
-    </div>
+    </motion.div>
   );
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-white">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-white"
+      >
         {/* Breadcrumb */}
-        <div className="py-4 px-4 max-w-7xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="py-4 px-4 max-w-7xl mx-auto"
+        >
           <div className="text-sm text-gray-600">
             {breadcrumbs.map((crumb, index) => (
               <React.Fragment key={crumb.href}>
                 {index > 0 && <span className="mx-2">/</span>}
-                <span className={index === breadcrumbs.length - 1 ? 'text-black' : 'hover:text-black cursor-pointer'}>
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={index === breadcrumbs.length - 1 ? 'text-black' : 'hover:text-black cursor-pointer transition-colors'}
+                >
                   {crumb.name}
-                </span>
+                </motion.span>
               </React.Fragment>
             ))}
           </div>
-        </div>
+        </motion.div>
         
-        {/* En-tête de catégorie principale - Espacement réduit */}
-        <div className="py-4 px-4">
+        {/* En-tête de catégorie principale */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="py-4 px-4"
+        >
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-4xl lg:text-5xl font-serif text-black mb-4">
+              <motion.h1 
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-4xl lg:text-5xl font-serif text-black mb-4"
+              >
                 {category.name.toUpperCase()}
-              </h1>
+              </motion.h1>
               {category.description && (
-                <p className="text-gray-700 text-lg leading-relaxed">
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-gray-700 text-lg leading-relaxed"
+                >
                   {category.description}
-                </p>
+                </motion.p>
               )}
-              <p className="text-gray-700 leading-relaxed mt-4">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-gray-700 leading-relaxed mt-4"
+              >
                 Showing {filteredProducts.length} products across {productsByCategory.length} categories
-              </p>
+              </motion.p>
             </div>
           </div>
-        </div>
+        </motion.div>
         
-        {/* Section 1: Sous-catégories - Espacement réduit */}
+        {/* Section 1: Sous-catégories */}
         {hasSubcategories && (
-          <section className="px-4">
+          <motion.section 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="px-4"
+          >
             <div className="max-w-7xl mx-auto">
               {/* Grille des sous-catégories */}
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-12">
-                {subcategories.map((subcategory) => (
-                  <div key={subcategory.id} className="group cursor-pointer">
-                    <div className="aspect-[3/4] overflow-hidden bg-gray-100 mb-3 relative">
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-12"
+              >
+                {subcategories.map((subcategory, index) => (
+                  <motion.div 
+                    key={subcategory.id} 
+                    variants={itemVariants}
+                    whileHover={{ y: -5 }}
+                    className="group cursor-pointer"
+                  >
+                    <motion.div 
+                      className="aspect-[3/4] overflow-hidden bg-gray-100 mb-3 relative rounded-lg"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       {subcategory.image ? (
-                        <img
+                        <motion.img
                           src={subcategory.image}
                           alt={subcategory.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover"
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.3 }}
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                           <span className="text-gray-400 text-sm">{subcategory.name}</span>
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                     <h3 className="text-sm font-semibold text-black text-center tracking-wide">
                       {subcategory.name}
                     </h3>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </div>
-          </section>
+          </motion.section>
         )}
         
         {/* NOUVELLE SECTION: Filtres et Tri */}
         {products.length > 0 && (
-          <section className="px-4 py-6 border-t border-gray-200">
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="px-4 py-6 border-t border-gray-200"
+          >
             <div className="max-w-7xl mx-auto">
               {/* Barre de contrôle des filtres */}
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                 <div className="flex items-center gap-4 mb-4 md:mb-0">
-                  <button
+                  <motion.button
                     onClick={() => setShowFilters(!showFilters)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:border-black transition-colors"
                   >
-                    <Filter className="w-4 h-4" />
-                    <span>Filters</span>
-                    {hasActiveFilters && (
-                      <span className="bg-black text-white text-xs px-2 py-1 rounded-full">
-                        {filters.brands.length + filters.colors.length + filters.sizes.length + filters.tags.length}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {hasActiveFilters && (
-                    <button
-                      onClick={clearFilters}
-                      className="text-sm text-gray-600 hover:text-black transition-colors"
+                    <motion.div
+                      animate={{ rotate: showFilters ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      Clear all
-                    </button>
-                  )}
+                      <Filter className="w-4 h-4" />
+                    </motion.div>
+                    <span>Filters</span>
+                    <AnimatePresence>
+                      {hasActiveFilters && (
+                        <motion.span
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          className="bg-black text-white text-xs px-2 py-1 rounded-full"
+                        >
+                          {filters.brands.length + filters.colors.length + filters.sizes.length + filters.tags.length}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                  
+                  <AnimatePresence>
+                    {hasActiveFilters && (
+                      <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        onClick={clearFilters}
+                        whileHover={{ scale: 1.05 }}
+                        className="text-sm text-gray-600 hover:text-black transition-colors"
+                      >
+                        Clear all
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
                 </div>
                 
                 {/* Tri */}
-                <div className="flex items-center gap-2">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2"
+                >
                   <span className="text-sm text-gray-600">Sort by:</span>
-                  <select
+                  <motion.select
+                    whileFocus={{ scale: 1.02 }}
                     value={filters.sortBy}
                     onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                    className="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-black"
+                    className="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-black transition-colors"
                   >
                     <option value="featured">Featured</option>
                     <option value="newest">Newest</option>
                     <option value="price-asc">Price: Low to High</option>
                     <option value="price-desc">Price: High to Low</option>
                     <option value="name">Name A-Z</option>
-                  </select>
-                </div>
+                  </motion.select>
+                </motion.div>
               </div>
               
               {/* Panneau de filtres */}
-              {showFilters && (
-                <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {/* Filtres par marque */}
-                    {filterOptions.brands.length > 0 && (
-                      <FilterSection title="Brands">
-                        <div className="space-y-2">
-                          {filterOptions.brands.map(brand => (
-                            <label key={brand} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={filters.brands.includes(brand)}
-                                onChange={() => toggleFilter('brands', brand)}
-                                className="mr-2 rounded"
-                              />
-                              <span className="text-sm">{brand}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </FilterSection>
-                    )}
-                    
-                    {/* Filtres par couleur */}
-                    {filterOptions.colors.length > 0 && (
-                      <FilterSection title="Colors">
-                        <div className="space-y-2">
-                          {filterOptions.colors.slice(0, 8).map(color => (
-                            <label key={color} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={filters.colors.includes(color)}
-                                onChange={() => toggleFilter('colors', color)}
-                                className="mr-2 rounded"
-                              />
-                              <span className="text-sm capitalize">{color}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </FilterSection>
-                    )}
-                    
-                    {/* Filtres par taille */}
-                    {filterOptions.sizes.length > 0 && (
-                      <FilterSection title="Sizes">
-                        <div className="grid grid-cols-3 gap-2">
-                          {filterOptions.sizes.slice(0, 9).map(size => (
-                            <button
-                              key={size}
-                              onClick={() => toggleFilter('sizes', size)}
-                              className={`px-3 py-2 text-sm border rounded ${
-                                filters.sizes.includes(size)
-                                  ? 'bg-black text-white border-black'
-                                  : 'border-gray-300 hover:border-black'
-                              }`}
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    variants={filterPanelVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="bg-gray-50 rounded-lg p-6 mb-6 overflow-hidden"
+                  >
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6"
+                    >
+                      {/* Filtres par marque */}
+                      {filterOptions.brands.length > 0 && (
+                        <FilterSection title="Brands">
+                          <div className="space-y-2">
+                            {filterOptions.brands.map((brand, index) => (
+                              <motion.label 
+                                key={brand} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="flex items-center hover:bg-white hover:bg-opacity-50 rounded p-1 transition-colors cursor-pointer"
+                              >
+                                <motion.input
+                                  type="checkbox"
+                                  checked={filters.brands.includes(brand)}
+                                  onChange={() => toggleFilter('brands', brand)}
+                                  whileTap={{ scale: 0.9 }}
+                                  className="mr-2 rounded"
+                                />
+                                <span className="text-sm">{brand}</span>
+                              </motion.label>
+                            ))}
+                          </div>
+                        </FilterSection>
+                      )}
+                      
+                      {/* Filtres par couleur */}
+                      {filterOptions.colors.length > 0 && (
+                        <FilterSection title="Colors">
+                          <div className="space-y-2">
+                            {filterOptions.colors.slice(0, 8).map((color, index) => (
+                              <motion.label 
+                                key={color} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="flex items-center hover:bg-white hover:bg-opacity-50 rounded p-1 transition-colors cursor-pointer"
+                              >
+                                <motion.input
+                                  type="checkbox"
+                                  checked={filters.colors.includes(color)}
+                                  onChange={() => toggleFilter('colors', color)}
+                                  whileTap={{ scale: 0.9 }}
+                                  className="mr-2 rounded"
+                                />
+                                <span className="text-sm capitalize">{color}</span>
+                              </motion.label>
+                            ))}
+                          </div>
+                        </FilterSection>
+                      )}
+                      
+                      {/* Filtres par taille */}
+                      {filterOptions.sizes.length > 0 && (
+                        <FilterSection title="Sizes">
+                          <div className="grid grid-cols-3 gap-2">
+                            {filterOptions.sizes.slice(0, 9).map((size, index) => (
+                              <motion.button
+                                key={size}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: index * 0.05 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => toggleFilter('sizes', size)}
+                                className={`px-3 py-2 text-sm border rounded transition-all ${
+                                  filters.sizes.includes(size)
+                                    ? 'bg-black text-white border-black'
+                                    : 'border-gray-300 hover:border-black hover:bg-gray-50'
+                                }`}
+                              >
+                                {size}
+                              </motion.button>
+                            ))}
+                          </div>
+                        </FilterSection>
+                      )}
+                      
+                      {/* Filtres par tags */}
+                      {filterOptions.tags.length > 0 && (
+                        <FilterSection title="Tags">
+                          <div className="space-y-2">
+                            {filterOptions.tags.slice(0, 6).map((tag, index) => (
+                              <motion.label 
+                                key={tag} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="flex items-center hover:bg-white hover:bg-opacity-50 rounded p-1 transition-colors cursor-pointer"
+                              >
+                                <motion.input
+                                  type="checkbox"
+                                  checked={filters.tags.includes(tag)}
+                                  onChange={() => toggleFilter('tags', tag)}
+                                  whileTap={{ scale: 0.9 }}
+                                  className="mr-2 rounded"
+                                />
+                                <span className="text-sm">{tag}</span>
+                              </motion.label>
+                            ))}
+                          </div>
+                        </FilterSection>
+                      )}
+                      
+                      {/* Filtres par prix */}
+                      <FilterSection title="Price Range">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <motion.span
+                              key={filters.priceRange.min}
+                              initial={{ scale: 1.2 }}
+                              animate={{ scale: 1 }}
+                              className="font-medium"
                             >
-                              {size}
-                            </button>
-                          ))}
+                              ${filters.priceRange.min}
+                            </motion.span>
+                            <motion.span
+                              key={filters.priceRange.max}
+                              initial={{ scale: 1.2 }}
+                              animate={{ scale: 1 }}
+                              className="font-medium"
+                            >
+                              ${filters.priceRange.max}
+                            </motion.span>
+                          </div>
+                          <div className="flex gap-2">
+                            <motion.input
+                              type="number"
+                              placeholder="Min"
+                              value={filters.priceRange.min}
+                              onChange={(e) => updatePriceRange(Number(e.target.value), filters.priceRange.max)}
+                              whileFocus={{ scale: 1.02 }}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-black transition-colors"
+                            />
+                            <motion.input
+                              type="number"
+                              placeholder="Max"
+                              value={filters.priceRange.max}
+                              onChange={(e) => updatePriceRange(filters.priceRange.min, Number(e.target.value))}
+                              whileFocus={{ scale: 1.02 }}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-black transition-colors"
+                            />
+                          </div>
                         </div>
                       </FilterSection>
-                    )}
-                    
-                    {/* Filtres par tags */}
-                    {filterOptions.tags.length > 0 && (
-                      <FilterSection title="Tags">
-                        <div className="space-y-2">
-                          {filterOptions.tags.slice(0, 6).map(tag => (
-                            <label key={tag} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={filters.tags.includes(tag)}
-                                onChange={() => toggleFilter('tags', tag)}
-                                className="mr-2 rounded"
-                              />
-                              <span className="text-sm">{tag}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </FilterSection>
-                    )}
-                    
-                    {/* Filtres par prix */}
-                    <FilterSection title="Price Range">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between text-sm">
-                          <span>${filters.priceRange.min}</span>
-                          <span>${filters.priceRange.max}</span>
-                        </div>
-                        <div className="flex gap-2">
-                          <input
-                            type="number"
-                            placeholder="Min"
-                            value={filters.priceRange.min}
-                            onChange={(e) => updatePriceRange(Number(e.target.value), filters.priceRange.max)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                          />
-                          <input
-                            type="number"
-                            placeholder="Max"
-                            value={filters.priceRange.max}
-                            onChange={(e) => updatePriceRange(filters.priceRange.min, Number(e.target.value))}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                          />
-                        </div>
-                      </div>
-                    </FilterSection>
-                  </div>
-                </div>
-              )}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </section>
+          </motion.section>
         )}
         
         {/* Section 2: Produits groupés par catégorie (avec filtrage) */}
         {productsByCategory.length > 0 ? (
-          <div className="py-8 px-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="py-8 px-4"
+          >
             <div className="max-w-7xl mx-auto space-y-16">
-              {productsByCategory.map(({ category: subCategory, products: categoryProducts }) => (
-                <section key={subCategory.id} className="space-y-8">
+              {productsByCategory.map(({ category: subCategory, products: categoryProducts }, categoryIndex) => (
+                <motion.section 
+                  key={subCategory.id} 
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: categoryIndex * 0.2 }}
+                  className="space-y-8"
+                >
                   {/* Titre de la sous-catégorie */}
-                  <div className="border-b border-gray-200 pb-4">
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: categoryIndex * 0.2 + 0.1 }}
+                    className="border-b border-gray-200 pb-4"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="text-3xl font-serif text-black mb-2">
+                        <motion.h2 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-3xl font-serif text-black mb-2"
+                        >
                           {subCategory.name.toUpperCase()}
-                        </h2>
+                        </motion.h2>
                         {subCategory.description && (
-                          <p className="text-gray-700 leading-relaxed mb-2">
+                          <motion.p 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-gray-700 leading-relaxed mb-2"
+                          >
                             {subCategory.description}
-                          </p>
+                          </motion.p>
                         )}
-                        <p className="text-gray-700 leading-relaxed">
+                        <motion.p 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                          className="text-gray-700 leading-relaxed"
+                        >
                           {categoryProducts.length} product{categoryProducts.length > 1 ? 's' : ''}
-                        </p>
+                        </motion.p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
+
                   {/* Grille de produits pour cette catégorie */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {categoryProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-                </section>
+                  <motion.div 
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                  >
+                    <AnimatePresence mode="popLayout">
+                      {categoryProducts.map((product, index) => (
+                        <ProductCard key={product.id} product={product} index={index} />
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                </motion.section>
               ))}
             </div>
-          </div>
+          </motion.div>
         ) : (
-          <div className="text-center py-16">
-            <p className="text-gray-500 text-lg">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16"
+          >
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-gray-500 text-lg"
+            >
               {hasActiveFilters ? 'No products match your filters' : 'No products found in this category'}
-            </p>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="mt-4 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                Clear Filters
-              </button>
-            )}
-          </div>
+            </motion.p>
+            <AnimatePresence>
+              {hasActiveFilters && (
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  onClick={clearFilters}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="mt-4 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  Clear Filters
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </>
   );
 };
