@@ -5,28 +5,35 @@ import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-r
 import { DropdownContent, FeaturedItem, navigationData, NavigationItem, NavLink, NavSection } from '@/components/Header/NavigationData';
 import Link from 'next/link';
 import SignUpModal from '../modal/SignUpModal';
+import { useFavorites } from '@/hooks/product/useFavorites';
 
 interface HeaderProps {
-  // Vous pouvez ajouter des props si nécessaire
+  forceScrolledStyle?: boolean; // Nouveau prop pour forcer le style scrollé
 }
 
-const Header: React.FC<HeaderProps> = () => {
+const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isNavbarHovered, setIsNavbarHovered] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
-const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+  
+  // Utilisation du hook useFavorites
+  const { favoritesCount } = useFavorites();
+
   // Effet pour détecter le scroll
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       setIsScrolled(scrollTop > 0);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Logique pour déterminer si le style "scrollé" doit être appliqué
+  const shouldApplyScrolledStyle = forceScrolledStyle || isNavbarHovered || isScrolled;
 
   const handleMouseEnter = (menu: string) => {
     setActiveDropdown(menu);
@@ -233,9 +240,9 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
   return (
     <>
       {/* Header avec fond transparent/translucide */}
-      <header 
+      <header
         className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
-          isNavbarHovered || isScrolled ? 'bg-white backdrop-blur-sm shadow-sm' : 'bg-transparent backdrop-blur-sm'
+          shouldApplyScrolledStyle ? 'bg-white backdrop-blur-sm shadow-sm' : 'bg-transparent backdrop-blur-sm'
         }`}
         onMouseEnter={() => setIsNavbarHovered(true)}
         onMouseLeave={() => setIsNavbarHovered(false)}
@@ -244,16 +251,16 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className={`text-2xl font-bold tracking-tight transition-colors duration-300 ${
-                  isNavbarHovered || isScrolled ? 'text-black' : 'text-white'
+                  shouldApplyScrolledStyle ? 'text-black' : 'text-white'
                 }`}
               >
                 DressCode
               </Link>
             </div>
-            
+           
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-4">
               {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
@@ -264,9 +271,9 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
                   onMouseLeave={() => nav.hasDropdown && handleMouseLeave()}
                 >
                   {nav.hasDropdown ? (
-                    <button 
+                    <button
                       className={`flex items-center text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
-                        isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                        shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                       }`}
                     >
                       {key}
@@ -276,7 +283,7 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
                     <Link
                       href={nav.link}
                       className={`text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
-                        isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                        shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                       }`}
                     >
                       {key}
@@ -285,39 +292,45 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
                 </div>
               ))}
             </nav>
-            
+           
             {/* Right Icons */}
             <div className="flex items-center space-x-3">
-              <button 
+              <button
                 className={`p-2 transition-colors duration-300 ${
-                  isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
               >
                 <Search className="h-5 w-5" />
               </button>
-              <button 
-              onClick={() => setIsSignUpModalOpen(true)}
+              <button
+                onClick={() => setIsSignUpModalOpen(true)}
                 className={`hidden sm:block p-2 transition-colors duration-300 ${
-                  isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
               >
                 <User className="h-5 w-5" />
               </button>
-              <button 
+             
+              {/* Bouton Favoris avec badge dynamique */}
+              <button
                 className={`p-2 relative transition-colors duration-300 ${
-                  isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
               >
                 <Heart className="h-5 w-5" />
-                <span className={`absolute -top-1 -right-1 text-xs rounded-full h-4 w-4 flex items-center justify-center transition-colors duration-300 ${
-                  isNavbarHovered || isScrolled ? 'bg-black text-white' : 'bg-white text-black'
-                }`}>
-                  1
-                </span>
+                {/* Badge dynamique - ne s'affiche que s'il y a des favoris */}
+                {favoritesCount > 0 && (
+                  <span className={`absolute -top-1 -right-1 text-xs font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 transform ${
+                    shouldApplyScrolledStyle ? 'bg-black text-white' : 'bg-white text-black'
+                  } ${favoritesCount > 99 ? 'scale-110' : ''}`}>
+                    {favoritesCount > 99 ? '99+' : favoritesCount}
+                  </span>
+                )}
               </button>
-              <button 
+             
+              <button
                 className={`p-2 transition-colors duration-300 ${
-                  isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -326,7 +339,7 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
               {/* Mobile Menu Button */}
               <button
                 className={`md:hidden p-2 transition-colors duration-300 ${
-                  isNavbarHovered || isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
                 onClick={toggleMobileMenu}
               >
@@ -335,7 +348,7 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
             </div>
           </div>
         </div>
-        
+       
         {/* Desktop Dropdown Menus */}
         {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
           <div
@@ -346,11 +359,12 @@ const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
           </div>
         )}
       </header>
-        <SignUpModal 
-        isOpen={isSignUpModalOpen} 
-        onClose={() => setIsSignUpModalOpen(false)} 
+     
+      <SignUpModal
+        isOpen={isSignUpModalOpen}
+        onClose={() => setIsSignUpModalOpen(false)}
       />
-
+     
       {/* Mobile Menu */}
       {renderMobileMenu()}
     </>

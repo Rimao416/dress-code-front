@@ -210,7 +210,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
   if (isLoading) {
     return (
       <>
-        <Header />
+        <Header forceScrolledStyle={true} />
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="flex items-center gap-3">
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -224,7 +224,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
   if (error || !category) {
     return (
       <>
-        <Header />
+        <Header forceScrolledStyle={true} />
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -494,7 +494,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
 
   return (
     <>
-      <Header />
+              <Header forceScrolledStyle={true} />
       <div className="min-h-screen bg-white">
         {/* Breadcrumb */}
         <div className="py-4 px-4 max-w-7xl mx-auto">
