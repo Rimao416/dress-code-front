@@ -51,81 +51,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Image principale */}
-      <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
-        <Image
-          src={currentImage}
-          alt={`${productName} - Image ${currentIndex + 1}`}
-          fill
-          className={`object-cover transition-transform duration-300 ${
-            isZoomed ? 'scale-150' : 'group-hover:scale-105'
-          }`}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
-          priority
-          onError={(e) => {
-            e.currentTarget.src = defaultImage;
-          }}
-        />
-        
-        {/* Contrôles de navigation */}
-        {displayImages.length > 1 && (
-          <>
-            <button
-              onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
-              aria-label="Image précédente"
-            >
-              <ChevronLeft className="h-5 w-5 text-gray-700" />
-            </button>
-            
-            <button
-              onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
-              aria-label="Image suivante"
-            >
-              <ChevronRight className="h-5 w-5 text-gray-700" />
-            </button>
-          </>
-        )}
-
-        {/* Bouton favori */}
-        {onToggleFavorite && (
-          <button
-            onClick={handleFavoriteClick}
-            className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200"
-            aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-          >
-            <Heart
-              className={`h-5 w-5 transition-all duration-200 ${
-                isFavorite
-                  ? "fill-black text-black"
-                  : "text-gray-600 hover:text-black"
-              }`}
-            />
-          </button>
-        )}
-
-        {/* Bouton zoom */}
-        <button
-          onClick={() => setIsZoomed(!isZoomed)}
-          className="absolute top-4 left-4 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
-          aria-label={isZoomed ? "Dézoomer" : "Zoomer"}
-        >
-          <Search className="h-5 w-5 text-gray-700" />
-        </button>
-
-        {/* Indicateur de position */}
-        {displayImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full">
-            {currentIndex + 1} / {displayImages.length}
-          </div>
-        )}
-      </div>
-
-      {/* Vignettes */}
+    <div className="flex gap-4">
+      {/* Vignettes à gauche */}
       {displayImages.length > 1 && (
-        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+        <div className="flex flex-col gap-2 w-16 sm:w-20">
           {displayImages.map((image, index) => (
             <button
               key={index}
@@ -141,7 +70,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 alt={`${productName} - Vignette ${index + 1}`}
                 fill
                 className="object-cover"
-                sizes="(max-width: 640px) 25vw, (max-width: 1024px) 15vw, 10vw"
+                sizes="(max-width: 640px) 64px, 80px"
                 onError={(e) => {
                   e.currentTarget.src = defaultImage;
                 }}
@@ -150,6 +79,79 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           ))}
         </div>
       )}
+
+      {/* Image principale */}
+      <div className="flex-1">
+        <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
+          <Image
+            src={currentImage}
+            alt={`${productName} - Image ${currentIndex + 1}`}
+            fill
+            className={`object-cover transition-transform duration-300 ${
+              isZoomed ? 'scale-150' : 'group-hover:scale-105'
+            }`}
+            sizes="(max-width: 640px) calc(100vw - 80px), (max-width: 1024px) calc(50vw - 80px), calc(40vw - 80px)"
+            priority
+            onError={(e) => {
+              e.currentTarget.src = defaultImage;
+            }}
+          />
+          
+          {/* Contrôles de navigation */}
+          {displayImages.length > 1 && (
+            <>
+              <button
+                onClick={goToPrevious}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+                aria-label="Image précédente"
+              >
+                <ChevronLeft className="h-5 w-5 text-gray-700" />
+              </button>
+              
+              <button
+                onClick={goToNext}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+                aria-label="Image suivante"
+              >
+                <ChevronRight className="h-5 w-5 text-gray-700" />
+              </button>
+            </>
+          )}
+
+          {/* Bouton favori */}
+          {onToggleFavorite && (
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200"
+              aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+            >
+              <Heart
+                className={`h-5 w-5 transition-all duration-200 ${
+                  isFavorite
+                    ? "fill-black text-black"
+                    : "text-gray-600 hover:text-black"
+                }`}
+              />
+            </button>
+          )}
+
+          {/* Bouton zoom */}
+          <button
+            onClick={() => setIsZoomed(!isZoomed)}
+            className="absolute top-4 left-4 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+            aria-label={isZoomed ? "Dézoomer" : "Zoomer"}
+          >
+            <Search className="h-5 w-5 text-gray-700" />
+          </button>
+
+          {/* Indicateur de position */}
+          {displayImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+              {currentIndex + 1} / {displayImages.length}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
