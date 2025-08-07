@@ -1,4 +1,4 @@
-// components/modal/SignUpModal.tsx - Version modifiée
+// components/modal/LoginModal.tsx
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Loader2, CheckCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
@@ -9,29 +9,23 @@ import { useAuth } from "@/context/AuthContext";
 import { FormErrors, SubmissionState } from "@/types/auth.type";
 
 // Types pour les props du composant
-interface SignUpModalProps {
+interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  onSwitchToLogin?: () => void; // Changé de onLoginClick à onSwitchToLogin
+  onSwitchToSignUp?: () => void; // Changé de onSignUpClick à onSwitchToSignUp
 }
-
-// Type pour les données du formulaire
-interface FormData {
-  firstName: string;
-  lastName: string;
+// Type pour les données du formulaire de connexion
+interface LoginFormData {
   email: string;
   password: string;
 }
 
-// Modal d'inscription
-const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModalProps) => {
-  const { setLoading, user, setUser } = useAuth();
+const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignUp }: LoginModalProps) => {
+  const { setLoading, setUser } = useAuth();
   
   // Utilisation de useRef pour éviter les re-renders excessifs
-  const formDataRef = useRef<FormData>({
-    firstName: '',
-    lastName: '',
+  const formDataRef = useRef<LoginFormData>({
     email: '',
     password: ''
   });
@@ -64,8 +58,6 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
   useEffect(() => {
     if (isOpen) {
       formDataRef.current = {
-        firstName: '',
-        lastName: '',
         email: '',
         password: ''
       };
@@ -80,13 +72,13 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
   }, [isOpen]);
 
   // Fonction pour gérer les changements d'input
-  const handleInputChange = useCallback((field: keyof FormData, value: string) => {
+  const handleInputChange = useCallback((field: keyof LoginFormData, value: string) => {
     // Mettre à jour les données du formulaire dans la ref
     formDataRef.current = {
       ...formDataRef.current,
       [field]: value
     };
-    
+
     // Effacer l'erreur pour ce champ
     setFormErrors(prev => {
       if (prev[field]) {
@@ -97,7 +89,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
       }
       return prev;
     });
-    
+
     // Effacer l'erreur de soumission
     setSubmissionState(prev => {
       if (prev.error) {
@@ -116,16 +108,6 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
     let hasErrors = false;
     const formData = formDataRef.current;
 
-    if (!formData.firstName.trim()) {
-      errors.firstName = 'Le prénom est requis';
-      hasErrors = true;
-    }
-
-    if (!formData.lastName.trim()) {
-      errors.lastName = 'Le nom est requis';
-      hasErrors = true;
-    }
-
     if (!formData.email.trim()) {
       errors.email = 'L\'email est requis';
       hasErrors = true;
@@ -136,9 +118,6 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
 
     if (!formData.password.trim()) {
       errors.password = 'Le mot de passe est requis';
-      hasErrors = true;
-    } else if (formData.password.length < 8) {
-      errors.password = 'Le mot de passe doit contenir au moins 8 caractères';
       hasErrors = true;
     }
 
@@ -158,16 +137,10 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
     try {
       const formData = formDataRef.current;
       
-      // Préparer les données pour l'inscription
-      const registrationData = {
+      const response = await authService.login({
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-      };
-
-      const response = await authService.register(registrationData);
+      });
 
       if (response.success && response.data) {
         if (response.data.user) {
@@ -184,7 +157,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
         setTimeout(() => {
           onSuccess?.();
           onClose();
-        }, 2000);
+        }, 1500);
       } else {
         // Gestion des erreurs de validation du serveur
         if (response.errors) {
@@ -200,11 +173,11 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
         setSubmissionState({
           isSubmitting: false,
           isSuccess: false,
-          error: response.message || 'Une erreur est survenue lors de l\'inscription'
+          error: response.message || 'Email ou mot de passe incorrect'
         });
       }
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error);
+      console.error('Erreur lors de la connexion:', error);
       setSubmissionState({
         isSubmitting: false,
         isSuccess: false,
@@ -215,20 +188,19 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
     }
   };
 
-  // Gérer le clic sur "Se connecter"
- // Gérer le clic sur "Se connecter"
-const handleLoginClick = () => {
+  // Gérer le clic sur "S'inscrire"
+ // Gérer le clic sur "S'inscrire"
+const handleSignUpClick = () => {
   onClose();
-  onSwitchToLogin?.();
+  onSwitchToSignUp?.();
 };
-
   // Composant pour afficher les messages de statut
   const StatusMessage = () => {
     if (submissionState.isSuccess) {
       return (
         <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
           <CheckCircle className="h-4 w-4" />
-          <span>Inscription réussie ! Bienvenue chez DressCode !</span>
+          <span>Connexion réussie ! Bienvenue !</span>
         </div>
       );
     }
@@ -259,7 +231,7 @@ const handleLoginClick = () => {
     label: string;
     type?: string;
     placeholder: string;
-    field: keyof FormData;
+    field: keyof LoginFormData;
     error?: string;
     disabled?: boolean;
     required?: boolean;
@@ -330,13 +302,13 @@ const handleLoginClick = () => {
       <div className="relative bg-gradient-to-r from-neutral-900 to-neutral-800 text-white p-6 text-center rounded-t-3xl">
         <div className="mb-4">
           <div className="text-2xl font-bold tracking-tight">
-            Bienvenue chez DressCode
+            Bienvenue sur DressCode
           </div>
         </div>
         
         <p className="text-sm text-neutral-300 leading-relaxed">
-          Créez votre compte pour découvrir nos collections exclusives,
-          sauvegarder vos favoris et profiter d'une expérience shopping personnalisée.
+          Connectez-vous à votre compte pour accéder à vos favoris, 
+          suivre vos commandes et profiter d'une expérience personnalisée.
         </p>
       </div>
 
@@ -344,24 +316,6 @@ const handleLoginClick = () => {
       <div className="p-6 pb-8">
         <div className="space-y-4">
           <StatusMessage />
-          
-          <CustomInput
-            label="Prénom"
-            placeholder="Votre prénom"
-            field="firstName"
-            error={formErrors.firstName}
-            disabled={submissionState.isSubmitting || submissionState.isSuccess}
-            required
-          />
-          
-          <CustomInput
-            label="Nom"
-            placeholder="Votre nom"
-            field="lastName"
-            error={formErrors.lastName}
-            disabled={submissionState.isSubmitting || submissionState.isSuccess}
-            required
-          />
           
           <CustomInput
             label="E-mail"
@@ -384,10 +338,6 @@ const handleLoginClick = () => {
             required
           />
           
-          <div className="text-xs text-gray-500 leading-relaxed">
-            Les mots de passe doivent contenir au moins 8 caractères et être difficiles à deviner.
-          </div>
-          
           <Button
             variant="primary"
             size="lg"
@@ -398,41 +348,37 @@ const handleLoginClick = () => {
             {submissionState.isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Inscription en cours...
+                Connexion en cours...
               </>
             ) : submissionState.isSuccess ? (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Inscription réussie !
+                Connecté !
               </>
             ) : (
-              'Créer mon compte'
+              'Se connecter'
             )}
           </Button>
 
-          {/* Lien vers connexion */}
+          {/* Lien vers inscription */}
           <div className="text-center pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-600">
-              Vous avez déjà un compte ?{' '}
+              Vous n'avez pas encore de compte ?{' '}
               <button
-                onClick={handleLoginClick}
+                onClick={handleSignUpClick}
                 className="text-neutral-900 font-medium hover:underline"
                 disabled={submissionState.isSubmitting}
               >
-                Connectez-vous
+                Créer un compte
               </button>
             </p>
           </div>
-          
-          <p className="text-xs text-gray-500 text-center leading-relaxed">
-            En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
-          </p>
         </div>
       </div>
     </>
   );
 
-  // Contenu pour desktop avec disposition en colonnes
+  // Contenu pour desktop
   const DesktopFormContent = () => (
     <div className="flex h-full">
       {/* Bouton fermer */}
@@ -444,54 +390,28 @@ const handleLoginClick = () => {
         <X className="h-6 w-6" />
       </button>
 
-      {/* Colonne gauche - Header et Message de bienvenue */}
+      {/* Colonne gauche - Header */}
       <div className="flex-1 bg-gradient-to-br from-neutral-900 to-neutral-800 text-white p-8 flex flex-col justify-center">
         <div className="max-w-sm mx-auto text-center">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="text-3xl font-bold tracking-tight mb-4">
-              Bienvenue chez DressCode
-            </div>
-            
-            <p className="text-neutral-300 leading-relaxed">
-              Créez votre compte pour découvrir nos collections exclusives,
-              sauvegarder vos favoris et profiter d'une expérience shopping personnalisée.
-            </p>
+          <div className="text-3xl font-bold tracking-tight mb-4">
+            Bienvenue sur DressCode
           </div>
+          
+          <p className="text-neutral-300 leading-relaxed mb-8">
+            Connectez-vous à votre compte pour accéder à vos favoris, 
+            suivre vos commandes et profiter d'une expérience personnalisée.
+          </p>
 
           {/* Illustration ou logo */}
         
-          <div className="text-sm text-neutral-400">
-            Rejoignez des milliers de clients satisfaits
-          </div>
         </div>
       </div>
 
       {/* Colonne droite - Formulaire */}
-      <div className="flex-1 bg-white p-8 overflow-y-auto">
-        <div className="h-full flex flex-col justify-center">
-          <div className="max-w-sm mx-auto w-full space-y-4">
+      <div className="flex-1 bg-white p-8 flex flex-col justify-center">
+        <div className="max-w-sm mx-auto w-full">
+          <div className="space-y-6">
             <StatusMessage />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <CustomInput
-                label="Prénom"
-                placeholder="Votre prénom"
-                field="firstName"
-                error={formErrors.firstName}
-                disabled={submissionState.isSubmitting || submissionState.isSuccess}
-                required
-              />
-              
-              <CustomInput
-                label="Nom"
-                placeholder="Votre nom"
-                field="lastName"
-                error={formErrors.lastName}
-                disabled={submissionState.isSubmitting || submissionState.isSuccess}
-                required
-              />
-            </div>
             
             <CustomInput
               label="E-mail"
@@ -514,49 +434,41 @@ const handleLoginClick = () => {
               required
             />
             
-            <div className="text-xs text-gray-500 leading-relaxed">
-              Les mots de passe doivent contenir au moins 8 caractères et être difficiles à deviner.
-            </div>
-            
             <Button
               variant="primary"
               size="lg"
-              className="w-full mt-6"
+              className="w-full"
               onClick={handleSubmit}
               disabled={submissionState.isSubmitting || submissionState.isSuccess}
             >
               {submissionState.isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Inscription en cours...
+                  Connexion en cours...
                 </>
               ) : submissionState.isSuccess ? (
                 <>
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Inscription réussie !
+                  Connecté !
                 </>
               ) : (
-                'Créer mon compte'
+                'Se connecter'
               )}
             </Button>
 
-            {/* Lien vers connexion */}
+            {/* Lien vers inscription */}
             <div className="text-center pt-4 border-t border-gray-100">
               <p className="text-sm text-gray-600">
-                Vous avez déjà un compte ?{' '}
+                Vous n'avez pas encore de compte ?{' '}
                 <button
-                  onClick={handleLoginClick}
+                  onClick={handleSignUpClick}
                   className="text-neutral-900 font-medium hover:underline"
                   disabled={submissionState.isSubmitting}
                 >
-                  Connectez-vous
+                  Créer un compte
                 </button>
               </p>
             </div>
-            
-            <p className="text-xs text-gray-500 text-center leading-relaxed">
-              En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
-            </p>
           </div>
         </div>
       </div>
@@ -572,17 +484,17 @@ const handleLoginClick = () => {
         isOpen={isOpen}
         onClose={onClose}
         snapLevels={[0, 0.25, 0.5, 1]}
-        initialLevel={0.85}
+        initialLevel={0.7}
         showHandle={true}
         closeOnOverlayClick={!submissionState.isSubmitting}
-        maxHeight="95vh"
+        maxHeight="90vh"
       >
         <MobileFormContent />
       </BottomSheet>
     );
   }
 
-  // Version desktop avec modal en colonnes
+  // Version desktop avec modal
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -601,7 +513,7 @@ const handleLoginClick = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: "spring", duration: 0.5 }}
-          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 h-[600px] overflow-hidden"
+          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 h-[500px] overflow-hidden"
         >
           <DesktopFormContent />
         </motion.div>
@@ -610,4 +522,4 @@ const handleLoginClick = () => {
   );
 };
 
-export default SignUpModal;
+export default LoginModal;
