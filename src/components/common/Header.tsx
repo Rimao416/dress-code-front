@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
 import { DropdownContent, FeaturedItem, navigationData, NavigationItem, NavLink, NavSection } from '@/components/Header/NavigationData';
 import Link from 'next/link';
-import SignUpModal from '../modal/SignUpModal';
 import { useFavorites } from '@/hooks/product/useFavorites';
 import { useCartStore } from '@/store/useCartStore';
+import { useCartSidebarStore } from '@/store/useCartSidebarStore'; // NOUVEAU
+import SignUpModal from '../modal/SignUpModal';
+import CartSidebar from '../cart/CartSidebar';
 
 interface HeaderProps {
-  forceScrolledStyle?: boolean; // Nouveau prop pour forcer le style scrollé
+  forceScrolledStyle?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
@@ -19,14 +21,13 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
- 
-  // Utilisation du hook useFavorites
-  const { favoritesCount } = useFavorites();
   
-  // Utilisation du store panier
+  // MODIFIÉ: Utilisation du store pour la sidebar
+  const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
+  
+  const { favoritesCount } = useFavorites();
   const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
-
-  // Effet pour détecter le scroll
+  
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
@@ -35,35 +36,32 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Logique pour déterminer si le style "scrollé" doit être appliqué
+  
   const shouldApplyScrolledStyle = forceScrolledStyle || isNavbarHovered || isScrolled;
-
+  
   const handleMouseEnter = (menu: string) => {
     setActiveDropdown(menu);
   };
-
+  
   const handleMouseLeave = () => {
     setActiveDropdown(null);
   };
-
+  
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     setExpandedMobileSection(null);
   };
-
+  
   const toggleMobileSection = (section: string) => {
     setExpandedMobileSection(expandedMobileSection === section ? null : section);
   };
-
+  
   const renderDropdownContent = (content: DropdownContent) => {
     if (!content) return null;
-
     return (
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-12 gap-8">
-            {/* Colonne de gauche */}
             {content.left && content.left.length > 0 && (
               <div className="col-span-2">
                 <div className="space-y-2">
@@ -79,8 +77,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 </div>
               </div>
             )}
-
-            {/* Colonnes centrales */}
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
                 {content.right?.map((section: NavSection, index: number) => (
@@ -103,8 +99,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 ))}
               </div>
             </div>
-
-            {/* Colonne de droite - Mise en avant */}
             <div className="col-span-4">
               {content.featured && !Array.isArray(content.featured) && (
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -146,7 +140,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       </div>
     );
   };
-
+  
   const renderMobileMenu = () => {
     const mobileMenuItems = [
       { key: 'Nouveau', label: 'Nouveau', hasDropdown: false, link: '/nouveau' },
@@ -160,25 +154,21 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       { key: 'Collections', label: 'Collections', hasDropdown: true },
       { key: 'Plus', label: 'Plus', hasDropdown: true }
     ];
-
+    
     return (
       <div className="md:hidden">
-        {/* Overlay */}
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMobileMenu}></div>
         )}
-        {/* Mobile Menu */}
         <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
           <div className="p-4">
-            {/* Close Button */}
             <div className="flex justify-end mb-6">
               <button onClick={toggleMobileMenu} className="p-2">
                 <X className="h-6 w-6" />
               </button>
             </div>
-            {/* Menu Items */}
             <div className="space-y-0">
               {mobileMenuItems.map((item) => (
                 <div key={item.key} className="border-b border-gray-200">
@@ -193,10 +183,9 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                           expandedMobileSection === item.key ? 'rotate-180' : ''
                         }`} />
                       </button>
-                     
+                      
                       {expandedMobileSection === item.key && navigationData[item.key]?.content && (
                         <div className="pb-4">
-                          {/* Left section items */}
                           {navigationData[item.key].content!.left.map((linkItem, index) => (
                             <a
                               key={index}
@@ -206,8 +195,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                               {linkItem.title}
                             </a>
                           ))}
-                         
-                          {/* Right section items */}
+                          
                           {navigationData[item.key].content!.right.map((section, sectionIndex) => (
                             <div key={sectionIndex} className="mt-4">
                               <h4 className="text-sm font-semibold text-gray-900 pl-4 mb-2 uppercase tracking-wide">
@@ -243,10 +231,9 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       </div>
     );
   };
-
+  
   return (
     <>
-      {/* Header avec fond transparent/translucide */}
       <header
         className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
           shouldApplyScrolledStyle ? 'bg-white backdrop-blur-sm shadow-sm' : 'bg-transparent backdrop-blur-sm'
@@ -256,7 +243,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       >
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
             <div className="flex-shrink-0">
               <Link
                 href="/"
@@ -267,8 +253,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 DressCode
               </Link>
             </div>
-           
-            {/* Desktop Navigation */}
+            
             <nav className="hidden md:flex items-center space-x-4">
               {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
                 <div
@@ -299,8 +284,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 </div>
               ))}
             </nav>
-           
-            {/* Right Icons */}
+            
             <div className="flex items-center space-x-3">
               <button
                 className={`p-2 transition-colors duration-300 ${
@@ -317,15 +301,13 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               >
                 <User className="h-5 w-5" />
               </button>
-             
-              {/* Bouton Favoris avec badge dynamique */}
+              
               <button
                 className={`p-2 relative transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
               >
                 <Heart className="h-5 w-5" />
-                {/* Badge dynamique - ne s'affiche que s'il y a des favoris */}
                 {favoritesCount > 0 && (
                   <span className={`absolute -top-1 -right-1 text-xs font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 transform ${
                     shouldApplyScrolledStyle ? 'bg-black text-white' : 'bg-white text-black'
@@ -334,15 +316,14 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   </span>
                 )}
               </button>
-             
-              {/* Bouton Panier avec badge dynamique */}
+              
               <button
+                onClick={toggleCartSidebar}
                 className={`p-2 relative transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
               >
                 <ShoppingBag className="h-5 w-5" />
-                {/* Badge dynamique - ne s'affiche que s'il y a des articles dans le panier */}
                 {cartItemsCount > 0 && (
                   <span className={`absolute -top-1 -right-1 text-xs font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 transform ${
                     shouldApplyScrolledStyle ? 'bg-black text-white' : 'bg-white text-black'
@@ -351,8 +332,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   </span>
                 )}
               </button>
-             
-              {/* Mobile Menu Button */}
+              
               <button
                 className={`md:hidden p-2 transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
@@ -364,8 +344,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             </div>
           </div>
         </div>
-       
-        {/* Desktop Dropdown Menus */}
+        
         {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
           <div
             onMouseEnter={() => handleMouseEnter(activeDropdown)}
@@ -375,13 +354,16 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
           </div>
         )}
       </header>
-     
+      
       <SignUpModal
         isOpen={isSignUpModalOpen}
         onClose={() => setIsSignUpModalOpen(false)}
       />
-     
-      {/* Mobile Menu */}
+      <CartSidebar
+        isOpen={isCartSidebarOpen}
+        onClose={closeCartSidebar}
+      />
+      
       {renderMobileMenu()}
     </>
   );

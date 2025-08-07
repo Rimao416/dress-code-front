@@ -1,16 +1,18 @@
 // components/product/ProductInfo.tsx
 "use client";
 import React, { useState } from 'react';
-import { Star, ChevronDown, ChevronUp, Minus, Plus, Check } from 'lucide-react';
+import { Star, ChevronDown, ChevronUp, Minus, Plus, Check, X, ShoppingBag } from 'lucide-react';
 import { ProductWithFullData, ProductVariant } from '@/types/product';
 import Header from '../common/Header';
 import { useCartStore } from '@/store/useCartStore';
+import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 
 interface ProductInfoProps {
   product: ProductWithFullData;
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
+    const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -20,11 +22,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
     fit: false,
     shipping: false,
   });
-  const [showError, setShowError] = useState<string>('');
-  const [showSuccess, setShowSuccess] = useState<boolean>(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showMiniCart, setShowMiniCart] = useState<boolean>(false);
+  const [addedItem, setAddedItem] = useState<any>(null);
 
   // Store actions
   const addItem = useCartStore((state) => state.addItem);
+  const totalItems = useCartStore((state) => state.totalItems);
 
   // Obtenir les tailles disponibles
   const availableSizes = [...new Set(
@@ -62,31 +66,34 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
     }
   }, [selectedSize, selectedColor, product.variants]);
 
-  const validateSelection = (): string | null => {
+  const validateSelection = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    
     // Si le produit a des tailles disponibles mais aucune n'est sélectionnée
     if (availableSizes.length > 0 && !selectedSize) {
-      return 'Veuillez sélectionner une taille';
+      errors.size = 'Veuillez sélectionner une taille';
     }
-
+    
     // Si le produit a des couleurs disponibles mais aucune n'est sélectionnée
     if (availableColors.length > 0 && !selectedColor) {
-      return 'Veuillez sélectionner une couleur';
+      errors.color = 'Veuillez sélectionner une couleur';
     }
-
+    
     // Si pas de variante trouvée avec la combinaison sélectionnée
     if ((selectedSize || selectedColor) && !selectedVariant) {
-      return 'Cette combinaison n\'est pas disponible';
+      errors.combination = 'Cette combinaison n\'est pas disponible';
     }
-
-    return null;
+    
+    return errors;
   };
 
   const handleAddToBag = () => {
-    const errorMessage = validateSelection();
+    const errors = validateSelection();
     
-    if (errorMessage) {
-      setShowError(errorMessage);
-      setTimeout(() => setShowError(''), 3000);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      // Effacer les erreurs après 3 secondes
+      setTimeout(() => setFieldErrors({}), 3000);
       return;
     }
 
@@ -109,12 +116,27 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
     try {
       addItem(product, variantToAdd, quantity, selectedSize, selectedColor);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
-      setShowError('');
+      
+      // Stocker les informations de l'article ajouté
+      setAddedItem({
+        product,
+        variant: variantToAdd,
+        quantity,
+        selectedSize,
+        selectedColor
+      });
+      
+      // Afficher le mini-panier
+      setShowMiniCart(true);
+      
+      // Masquer le mini-panier après 5 secondes
+      setTimeout(() => setShowMiniCart(false), 5000);
+      
+      // Effacer les erreurs
+      setFieldErrors({});
     } catch (error) {
-      setShowError('Erreur lors de l\'ajout au panier');
-      setTimeout(() => setShowError(''), 3000);
+      setFieldErrors({ general: 'Erreur lors de l\'ajout au panier' });
+      setTimeout(() => setFieldErrors({}), 3000);
     }
   };
 
@@ -166,21 +188,58 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   return (
     <>
       <Header forceScrolledStyle={true} />
+      
+      {/* Mini-panier flottant */}
+      {showMiniCart && addedItem && (
+        <div className="fixed top-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm z-50 animate-slide-in">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center text-green-600">
+              <Check className="h-5 w-5 mr-2" />
+              <span className="font-medium">Ajouté au panier</span>
+            </div>
+            <button 
+              onClick={() => setShowMiniCart(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div className="flex items-start space-x-3">
+            {addedItem.product.images && addedItem.product.images.length > 0 && (
+              <img 
+                src={addedItem.product.images[0]}
+                alt={addedItem.product.name}
+                className="w-16 h-16 object-cover rounded"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-medium text-gray-900 truncate">
+                {addedItem.product.name}
+              </h4>
+              <p className="text-sm text-gray-500">
+                {addedItem.selectedColor && `${addedItem.selectedColor} - `}
+                {addedItem.selectedSize && `${addedItem.selectedSize}`}
+              </p>
+              <p className="text-sm font-medium text-gray-900">
+                €{currentPrice.toFixed(2)}
+              </p>
+              <p className="text-sm text-gray-500">
+                Qté: {addedItem.quantity}
+              </p>
+            </div>
+          </div>
+          
+          <button className="w-full mt-4 bg-gray-900 text-white py-2 px-4 rounded text-sm font-medium hover:bg-gray-800 transition-colors"
+             onClick={toggleCartSidebar}
+          >
+            <ShoppingBag className="h-4 w-4 inline mr-2" />
+            Voir le panier ({totalItems})
+          </button>
+        </div>
+      )}
+
       <div className="space-y-6">
-        {/* Messages de succès et d'erreur */}
-        {showSuccess && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center">
-            <Check className="h-5 w-5 mr-2" />
-            Produit ajouté au panier avec succès !
-          </div>
-        )}
-
-        {showError && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {showError}
-          </div>
-        )}
-
         {/* Marque */}
         {product.brand && (
           <div className="text-sm font-medium text-gray-600 uppercase tracking-wide">
@@ -246,7 +305,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
               {availableColors.map(({ color, hex, id }) => (
                 <button
                   key={id}
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => {
+                    setSelectedColor(color);
+                    // Effacer l'erreur couleur si elle existe
+                    if (fieldErrors.color) {
+                      setFieldErrors(prev => ({ ...prev, color: '' }));
+                    }
+                  }}
                   className={`w-8 h-8 rounded-full border-2 transition-all ${
                     selectedColor === color
                       ? 'border-black ring-2 ring-gray-300'
@@ -258,6 +323,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                 />
               ))}
             </div>
+            {fieldErrors.color && (
+              <p className="text-sm text-red-500 mt-1">{fieldErrors.color}</p>
+            )}
           </div>
         )}
 
@@ -268,9 +336,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
               <span className="text-sm font-medium">
                 Taille <span className="text-red-500">*</span>
               </span>
-              <button className="text-sm text-gray-600 underline hover:text-black">
-                Guide des tailles
-              </button>
+            
             </div>
             <div className="grid grid-cols-6 gap-2">
               {availableSizes.map((size) => {
@@ -283,7 +349,15 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                 return (
                   <button
                     key={size}
-                    onClick={() => isAvailable ? setSelectedSize(size) : null}
+                    onClick={() => {
+                      if (isAvailable) {
+                        setSelectedSize(size);
+                        // Effacer l'erreur taille si elle existe
+                        if (fieldErrors.size) {
+                          setFieldErrors(prev => ({ ...prev, size: '' }));
+                        }
+                      }
+                    }}
                     disabled={!isAvailable}
                     className={`p-3 text-sm font-medium border transition-all ${
                       selectedSize === size
@@ -298,6 +372,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                 );
               })}
             </div>
+            {fieldErrors.size && (
+              <p className="text-sm text-red-500 mt-1">{fieldErrors.size}</p>
+            )}
+            {fieldErrors.combination && (
+              <p className="text-sm text-red-500 mt-1">{fieldErrors.combination}</p>
+            )}
           </div>
         )}
 
@@ -343,6 +423,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
                 <Plus className="h-4 w-4" />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Erreur générale */}
+        {fieldErrors.general && (
+          <div className="text-sm text-red-500 text-center">
+            {fieldErrors.general}
           </div>
         )}
 
@@ -459,6 +546,22 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
     </>
   );
 };
