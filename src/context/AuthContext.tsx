@@ -1,46 +1,21 @@
 "use client";
-
-import { Gender } from '../generated/prisma';
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-// Types basés sur le schema Prisma
-export interface UserData {
-  // Authentication information
-  email: string;
-  password: string;
- 
-  // Personal information (step 3)
-  firstName: string;
-  lastName: string;
-  phone: string;
-  dateOfBirth?: string;
-  gender?: Gender;
- 
-  // User preferences
-  acceptedTerms: boolean;
-  acceptedMarketing: boolean;
- 
-  // Address (step 4 - optional)
-  country?: string;
-  address?: string;
-  postalCode?: string;
-  city?: string;
-  addressComplement?: string;
-}
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { UserData, AuthenticatedUser, AuthCheckResponse } from '@/types/auth.type';
+import { Gender } from '@/generated/prisma';
 
 // Interface pour la validation des étapes
-export interface StepValidation {
-  step1: boolean;
-  step2: boolean;
-  step3: boolean;
-  step4: boolean;
-}
-
 export interface AuthContextType {
-  // User data
+  // User data (pour l'inscription)
   userData: UserData;
   updateUserData: (field: keyof UserData, value: string | boolean) => void;
   resetUserData: () => void;
+ 
+  // Authentication state
+  isAuthenticated: boolean;
+  user: AuthenticatedUser | null;
+  setUser: (user: AuthenticatedUser | null) => void;
+  logout: () => void;
+  checkAuthStatus: () => Promise<void>; // Ajout pour permettre un refresh manuel
  
   // Loading states
   loading: boolean;
@@ -51,16 +26,6 @@ export interface AuthContextType {
   setError: (field: string, error: string) => void;
   clearError: (field: string) => void;
   clearAllErrors: () => void;
- 
-  // Current step for multi-step forms
-  currentStep: number;
-  setCurrentStep: (step: number) => void;
-  nextStep: () => void;
-  previousStep: () => void;
-
-  // Step validation
-  stepValidation: StepValidation;
-  updateStepValidation: (step: keyof StepValidation, isValid: boolean) => void;
 }
 
 const initialUserData: UserData = {
@@ -80,13 +45,6 @@ const initialUserData: UserData = {
   addressComplement: '',
 };
 
-const initialStepValidation: StepValidation = {
-  step1: false,
-  step2: false,
-  step3: false,
-  step4: true, // L'étape 4 est optionnelle
-};
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -103,12 +61,69 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userData, setUserData] = useState<UserData>(initialUserData);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true); // ✅ Commence par true pour le check initial
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [stepValidation, setStepValidation] = useState<StepValidation>(initialStepValidation);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  const updateUserData = (field: keyof UserData, value: string | boolean) => {
+  // ✅ Fonction exposée pour permettre un refresh manuel
+  const checkAuthStatus = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch('/api/auth/me', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache', // ✅ Force pas de cache
+        }
+      });
+
+      console.log('Auth check response status:', response.status);
+      
+      if (response.ok) {
+        const userData: AuthenticatedUser = await response.json();
+        console.log('✅ User data from /api/auth/me:', userData);
+        
+        // ✅ La réponse contient directement l'utilisateur, pas dans une propriété user
+        if (userData && userData.id) {
+          setUser(userData);
+          setIsAuthenticated(true);
+        } else {
+          console.log('❌ No valid user data found');
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } else {
+        console.log('❌ Auth check failed with status:', response.status);
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la vérification de l\'authentification:', error);
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Vérifier l'authentification au chargement
+  useEffect(() => {
+    console.log('🔄 AuthProvider: Initial auth check');
+    checkAuthStatus();
+  }, []);
+
+  // ✅ Log des changements d'état pour debug
+  useEffect(() => {
+    console.log('👤 User state changed:', user);
+  }, [user]);
+
+  useEffect(() => {
+    console.log('🔐 IsAuthenticated changed:', isAuthenticated);
+  }, [isAuthenticated]);
+
+  const updateUserData = (field: keyof UserData, value: string | boolean): void => {
     setUserData(prev => ({
       ...prev,
       [field]: value,
@@ -120,21 +135,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const resetUserData = () => {
+  const resetUserData = (): void => {
     setUserData(initialUserData);
-    setCurrentStep(1);
-    setStepValidation(initialStepValidation);
     clearAllErrors();
   };
 
-  const setError = (field: string, error: string) => {
+  const setError = (field: string, error: string): void => {
     setErrors(prev => ({
       ...prev,
       [field]: error,
     }));
   };
 
-  const clearError = (field: string) => {
+  const clearError = (field: string): void => {
     setErrors(prev => {
       const newErrors = { ...prev };
       delete newErrors[field];
@@ -142,41 +155,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
-  const clearAllErrors = () => {
+  const clearAllErrors = (): void => {
     setErrors({});
   };
 
-  const nextStep = () => {
-    setCurrentStep(prev => prev + 1);
+  const logout = async (): Promise<void> => {
+    try {
+      setLoading(true);
+     
+      // Appel à votre API de déconnexion
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        console.warn('Erreur lors de la déconnexion côté serveur');
+      }
+     
+      // ✅ Réinitialiser l'état local dans tous les cas
+      setUser(null);
+      setIsAuthenticated(false);
+      resetUserData();
+     
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      // On réinitialise quand même l'état local
+      setUser(null);
+      setIsAuthenticated(false);
+      resetUserData();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const previousStep = () => {
-    setCurrentStep(prev => Math.max(1, prev - 1));
-  };
-
-  const updateStepValidation = (step: keyof StepValidation, isValid: boolean) => {
-    setStepValidation(prev => ({
-      ...prev,
-      [step]: isValid,
-    }));
-  };
+  // ✅ Fonction helper pour mettre à jour l'utilisateur après inscription/connexion
+// ✅ Fonction helper pour mettre à jour l'utilisateur
+const updateUserAfterAuth = (newUser: AuthenticatedUser | null) => {
+  console.log('🔄 Updating user after auth:', newUser);
+  
+  if (newUser) {
+    setUser(newUser);
+    setIsAuthenticated(true);
+  } else {
+    setUser(null);
+    setIsAuthenticated(false);
+  }
+};
 
   const value: AuthContextType = {
     userData,
     updateUserData,
     resetUserData,
+    isAuthenticated,
+    user,
+    setUser: updateUserAfterAuth, // ✅ Utilise la fonction helper
+    logout,
+    checkAuthStatus, // ✅ Expose la fonction
     loading,
     setLoading,
     errors,
     setError,
     clearError,
     clearAllErrors,
-    currentStep,
-    setCurrentStep,
-    nextStep,
-    previousStep,
-    stepValidation,
-    updateStepValidation,
   };
 
   return (

@@ -1,89 +1,156 @@
 // services/auth.service.ts
-import { CompleteRegistrationData, SimpleRegistrationData } from '@/schemas/auth.schema';
+import { 
+  ApiResponse, 
+  RegistrationResponse, 
+  LoginResponse, 
+  EmailCheckResponse,
+  AuthenticatedUser 
+} from '@/types/auth.type';
 
-export interface EmailCheckResponse {
-  exists: boolean;
-  message?: string;
+interface RegistrationData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
 }
 
-interface ApiResponse<T = any> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  errors?: Record<string, string>;
+interface LoginData {
+  email: string;
+  password: string;
 }
 
 class AuthService {
-  private baseUrl: string;
+  private baseUrl = '/api/auth';
 
-  constructor() {
-    // Configuration de l'URL de base selon l'environnement
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-  }
-
-  private async handleApiResponse(response: Response): Promise<ApiResponse> {
+  // ✅ Service d'inscription corrigé
+  async register(data: RegistrationData): Promise<ApiResponse<RegistrationResponse>> {
     try {
-      const data = await response.json();
+      console.log('🔄 Registration request:', { ...data, password: '[HIDDEN]' });
       
-      if (!response.ok) {
-        // Gestion des erreurs selon le status code
-        if (response.status === 400) {
-          // Erreur de validation
-          const errors: Record<string, string> = {};
-          
-          if (data.details && Array.isArray(data.details)) {
-            // Transformer les erreurs Zod en format utilisable
-            data.details.forEach((detail: any) => {
-              const fieldName = detail.path?.join('.') || 'unknown';
-              errors[fieldName] = detail.message;
-            });
+      const response = await fetch(`${this.baseUrl}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // ✅ Important pour les cookies
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log('📥 Registration response:', result);
+
+      if (response.ok) {
+        // ✅ Structure de réponse correcte selon ton API
+        return {
+          success: true,
+          message: result.message,
+          data: {
+            user: result.user,
+            sessionCreated: result.sessionCreated || true
           }
+        };
+      } else {
+        // ✅ Gestion des erreurs de validation
+        if (result.details && Array.isArray(result.details)) {
+          const errors: Record<string, string> = {};
+          result.details.forEach((detail: any) => {
+            if (detail.path && detail.path.length > 0) {
+              errors[detail.path[0]] = detail.message;
+            }
+          });
           
           return {
             success: false,
-            message: data.error || 'Données invalides',
-            errors: Object.keys(errors).length > 0 ? errors : undefined
-          };
-        } else if (response.status === 409) {
-          // Conflit - utilisateur existe déjà
-          return {
-            success: false,
-            message: data.error || 'Un compte avec cette adresse email existe déjà'
-          };
-        } else if (response.status >= 500) {
-          // Erreur serveur
-          return {
-            success: false,
-            message: 'Erreur serveur. Veuillez réessayer plus tard.'
-          };
-        } else {
-          // Autres erreurs
-          return {
-            success: false,
-            message: data.error || 'Une erreur inattendue s\'est produite'
+            message: result.error || 'Erreur de validation',
+            errors
           };
         }
+
+        return {
+          success: false,
+          message: result.error || 'Erreur lors de l\'inscription'
+        };
       }
-      
-      // Succès
-      return {
-        success: true,
-        message: data.message || 'Opération réussie',
-        data: data.user || data
-      };
-      
     } catch (error) {
-      console.error('Erreur lors du parsing de la réponse:', error);
+      console.error('❌ Registration service error:', error);
       return {
         success: false,
-        message: 'Erreur de communication avec le serveur'
+        message: 'Erreur de connexion au serveur'
       };
     }
   }
 
+  // ✅ Service de connexion
+  async login(data: LoginData): Promise<ApiResponse<LoginResponse>> {
+    try {
+      console.log('🔄 Login request for:', data.email);
+      
+      const response = await fetch(`${this.baseUrl}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log('📥 Login response:', result);
+
+      if (response.ok) {
+        return {
+          success: true,
+          message: result.message,
+          data: {
+            user: result.user,
+            sessionCreated: result.sessionCreated || true
+          }
+        };
+      } else {
+        return {
+          success: false,
+          message: result.error || 'Erreur lors de la connexion'
+        };
+      }
+    } catch (error) {
+      console.error('❌ Login service error:', error);
+      return {
+        success: false,
+        message: 'Erreur de connexion au serveur'
+      };
+    }
+  }
+
+  // ✅ Vérification du statut d'authentification
+  async checkAuthStatus(): Promise<AuthenticatedUser | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/me`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        console.log('✅ Auth status check successful:', user);
+        return user;
+      } else {
+        console.log('❌ Auth status check failed:', response.status);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Auth status check error:', error);
+      return null;
+    }
+  }
+
+  // ✅ Vérification si un email existe
   async checkEmailExists(email: string): Promise<EmailCheckResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/check-email`, {
+      const response = await fetch(`${this.baseUrl}/check-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,92 +158,50 @@ class AuthService {
         body: JSON.stringify({ email }),
       });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la vérification de l\'email');
-      }
-
-      return await response.json();
+      const result = await response.json();
+      
+      return {
+        exists: result.exists || false,
+        message: result.message
+      };
     } catch (error) {
-      console.error('Error checking email:', error);
+      console.error('❌ Email check error:', error);
       return {
         exists: false,
-        message: 'Erreur lors de la vérification de l\'email'
+        message: 'Erreur lors de la vérification'
       };
     }
   }
 
-  async register(userData: SimpleRegistrationData): Promise<ApiResponse> {
+  // ✅ Déconnexion
+  async logout(): Promise<ApiResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/register`, {
+      const response = await fetch(`${this.baseUrl}/logout`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      return await this.handleApiResponse(response);
-      
-    } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error);
-      
-      // Erreur réseau ou autre erreur non prévue
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        return {
-          success: false,
-          message: 'Erreur de connexion. Vérifiez votre connexion internet.'
-        };
-      }
-      
-      return {
-        success: false,
-        message: 'Une erreur inattendue s\'est produite. Veuillez réessayer.'
-      };
-    }
-  }
-
-  async login(email: string, password: string): Promise<ApiResponse> {
-    try {
-      const response = await fetch(`${this.baseUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      return await this.handleApiResponse(response);
-      
-    } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
-      return {
-        success: false,
-        message: 'Une erreur s\'est produite lors de la connexion'
-      };
-    }
-  }
-    async checkAuthStatus(): Promise<{ isAuthenticated: boolean; user?: any }> {
-    try {
-      const response = await fetch('/api/auth/me', {
-        method: 'GET',
         credentials: 'include',
       });
 
+      const result = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         return {
-          isAuthenticated: true,
-          user: data.user,
+          success: true,
+          message: result.message || 'Déconnexion réussie'
+        };
+      } else {
+        return {
+          success: false,
+          message: result.error || 'Erreur lors de la déconnexion'
         };
       }
-
-      return { isAuthenticated: false };
     } catch (error) {
-      console.error('Erreur lors de la vérification de l\'authentification:', error);
-      return { isAuthenticated: false };
+      console.error('❌ Logout service error:', error);
+      return {
+        success: false,
+        message: 'Erreur de connexion au serveur'
+      };
     }
   }
-
 }
 
 export const authService = new AuthService();

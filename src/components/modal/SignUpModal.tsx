@@ -1,24 +1,18 @@
+// Imports mis à jour pour utiliser les types unifiés
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Gift, Truck, Crown, Loader2, CheckCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
-import Input from "../ui/input";
 import Button from "../ui/button";
 import BottomSheet from "../common/BottomSheet";
 import { authService } from "@/services/auth.service";
 import { useAuth } from "@/context/AuthContext";
+import {FormErrors, SubmissionState} from "@/types/auth.type";
 
 // Types pour les props du composant
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-}
-
-// Type pour le state de soumission
-interface SubmissionState {
-  isSubmitting: boolean;
-  isSuccess: boolean;
-  error: string | null;
 }
 
 // Type pour les données du formulaire
@@ -29,18 +23,10 @@ interface FormData {
   password: string;
 }
 
-// Type pour les erreurs du formulaire
-interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
-}
-
 // Modal d'inscription
 const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
-  const { setLoading } = useAuth();
-  
+  const { setLoading, user, setUser } = useAuth();
+ 
   // Utilisation de useRef pour éviter les re-renders excessifs
   const formDataRef = useRef<FormData>({
     firstName: '',
@@ -55,13 +41,11 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
 
   // État local pour les erreurs
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     isSubmitting: false,
     isSuccess: false,
     error: null
   });
-
   const [isMobile, setIsMobile] = useState(false);
 
   // Détecter si on est sur mobile
@@ -97,13 +81,13 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
   // Fonction pour gérer les changements d'input - VERSION OPTIMISÉE
   const handleInputChange = useCallback((field: keyof FormData, value: string) => {
     console.log(`Changing ${field} to:`, value);
-    
+   
     // Mettre à jour les données du formulaire dans la ref
     formDataRef.current = {
       ...formDataRef.current,
       [field]: value
     };
-    
+   
     // Effacer l'erreur pour ce champ
     setFormErrors(prev => {
       if (prev[field]) {
@@ -114,7 +98,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
       }
       return prev;
     });
-    
+   
     // Effacer l'erreur de soumission
     setSubmissionState(prev => {
       if (prev.error) {
@@ -163,7 +147,8 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
     return !hasErrors;
   };
 
-  const handleSubmit = async () => {
+// Extrait de la fonction handleSubmit corrigée
+ const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
@@ -173,7 +158,7 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
 
     try {
       const formData = formDataRef.current;
-      
+     
       // Préparer les données pour l'inscription
       const registrationData = {
         email: formData.email,
@@ -184,8 +169,14 @@ const SignUpModal = ({ isOpen, onClose, onSuccess }: SignUpModalProps) => {
       };
 
       const response = await authService.register(registrationData);
+      console.log(response)
 
-      if (response.success) {
+      if (response.success && response.data) {
+        // ✅ CORRIGÉ: Accéder à l'utilisateur via response.data.user avec les bons types
+        if (response.data.user) {
+          setUser(response.data.user);
+        }
+
         setSubmissionState({
           isSubmitting: false,
           isSuccess: true,

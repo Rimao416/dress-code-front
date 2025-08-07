@@ -9,9 +9,10 @@ import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 
 interface ProductInfoProps {
   product: ProductWithFullData;
+  onAddToBag?: (variant?: ProductVariant) => void;
 }
 
-const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
+const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
     const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
@@ -116,6 +117,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
     try {
       addItem(product, variantToAdd, quantity, selectedSize, selectedColor);
+      onAddToBag?.(variantToAdd);
       
       // Stocker les informations de l'article ajouté
       setAddedItem({

@@ -9,6 +9,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 import SignUpModal from '../modal/SignUpModal';
 import CartSidebar from '../cart/CartSidebar';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;
@@ -24,9 +25,10 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [isClient, setIsClient] = useState(false); // Ajout pour éviter l'hydration error
 
+  const { user, isAuthenticated, loading, logout, checkAuthStatus } = useAuth();
+
   // MODIFIÉ: Utilisation du store pour la sidebar
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
-
   const { favoritesCount } = useFavorites();
   const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
 
@@ -41,12 +43,19 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   useEffect(() => {
     setIsClient(true);
   }, []);
+   useEffect(() => {
+    if (isClient && !loading && !user) {
+      console.log('🔄 Header: Re-checking auth status');
+      checkAuthStatus();
+    }
+  }, [isClient]);
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       setIsScrolled(scrollTop > 50);
     };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -58,6 +67,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
         prevIndex === promoMessages.length - 1 ? 0 : prevIndex + 1
       );
     }, 5000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -94,6 +104,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   const renderDropdownContent = (content: DropdownContent) => {
     if (!content) return null;
+
     return (
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -113,6 +124,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 </div>
               </div>
             )}
+
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
                 {content.right?.map((section: NavSection, index: number) => (
@@ -135,6 +147,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 ))}
               </div>
             </div>
+
             <div className="col-span-4">
               {content.featured && !Array.isArray(content.featured) && (
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -151,6 +164,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   </p>
                 </div>
               )}
+
               {content.featured && Array.isArray(content.featured) && (
                 <div className="space-y-4">
                   {content.featured.map((item: FeaturedItem, index: number) => (
@@ -196,6 +210,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMobileMenu}></div>
         )}
+
         <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
@@ -205,6 +220,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 <X className="h-6 w-6" />
               </button>
             </div>
+
             <div className="space-y-0">
               {mobileMenuItems.map((item) => (
                 <div key={item.key} className="border-b border-gray-200">
@@ -281,8 +297,8 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               <button
                 onClick={prevPromo}
                 className={`p-1 rounded transition-colors ${
-                  shouldApplyScrolledStyle 
-                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200' 
+                  shouldApplyScrolledStyle
+                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
                     : 'text-white/80 hover:text-white hover:bg-white/20'
                 }`}
               >
@@ -300,14 +316,15 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               <button
                 onClick={nextPromo}
                 className={`p-1 rounded transition-colors ${
-                  shouldApplyScrolledStyle 
-                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200' 
+                  shouldApplyScrolledStyle
+                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
                     : 'text-white/80 hover:text-white hover:bg-white/20'
                 }`}
               >
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>
+
             {/* Informations utilisateur */}
             <div className="flex items-center space-x-6">
               {/* Compte utilisateur */}
@@ -318,7 +335,9 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 }`}
               >
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">S'inscrire gratuitement</span>
+                <span className="hidden sm:inline">
+                  {user ? `Bonjour ${user.client?.firstName}` : 'S\'inscrire gratuitement'}
+                </span>
               </button>
             </div>
           </div>

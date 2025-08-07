@@ -107,8 +107,6 @@ export async function POST(request: NextRequest) {
       // On continue quand même car l'utilisateur est créé
     }
 
-    // TODO: Envoyer un email de vérification
-    // await sendVerificationEmail(user.email, user.id);
 
     return NextResponse.json(
       {
