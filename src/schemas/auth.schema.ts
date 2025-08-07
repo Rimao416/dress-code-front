@@ -100,3 +100,16 @@ export type PasswordFormData = z.infer<typeof passwordSchema>;
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 export type AddressFormData = z.infer<typeof addressSchema>;
 export type CompleteRegistrationData = z.infer<typeof completeRegistrationSchema>;
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "L'adresse email est obligatoire")
+    .email("Veuillez saisir une adresse email valide")
+    .toLowerCase()
+    .trim(),
+  password: z
+    .string()
+    .min(1, "Le mot de passe est obligatoire"),
+});
+
+export type LoginData = z.infer<typeof loginSchema>;
