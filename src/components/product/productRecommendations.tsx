@@ -1,10 +1,15 @@
 // components/product/ProductRecommendations.tsx
 "use client";
-
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
 import { ProductCardData } from '@/types/product';
 import ProductCard from '../common/ProductCard';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 interface ProductRecommendationsProps {
   title: string;
@@ -25,46 +30,10 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
   isFavorite = () => false,
   className = '',
 }) => {
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-  const [visibleCount, setVisibleCount] = React.useState(5);
-
-  // Adapter le nombre de produits visibles selon l'écran
-  React.useEffect(() => {
-    const updateVisibleCount = () => {
-      if (typeof window !== 'undefined') {
-        const width = window.innerWidth;
-        if (width < 640) {
-          setVisibleCount(2);
-        } else if (width < 768) {
-          setVisibleCount(3);
-        } else if (width < 1024) {
-          setVisibleCount(4);
-        } else {
-          setVisibleCount(5);
-        }
-      }
-    };
-
-    updateVisibleCount();
-    window.addEventListener('resize', updateVisibleCount);
-    return () => window.removeEventListener('resize', updateVisibleCount);
-  }, []);
-
-  const canScrollLeft = currentIndex > 0;
-  const canScrollRight = currentIndex + visibleCount < products.length;
-
-  const scrollLeft = () => {
-    if (canScrollLeft) {
-      setCurrentIndex(prev => Math.max(0, prev - 1));
-    }
-  };
-
-  const scrollRight = () => {
-    if (canScrollRight) {
-      setCurrentIndex(prev => Math.min(products.length - visibleCount, prev + 1));
-    }
-  };
-
+  const [swiper, setSwiper] = React.useState<any>(null);
+  const [currentSlide, setCurrentSlide] = React.useState(0);
+  const [isBeginning, setIsBeginning] = React.useState(true);
+  const [isEnd, setIsEnd] = React.useState(false);
   const handleProductClick = (product: ProductCardData) => {
     if (onProductClick) {
       onProductClick(product);
@@ -74,6 +43,27 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
     }
   };
 
+  const handleSlideChange = (swiper: any) => {
+    setCurrentSlide(swiper.activeIndex);
+    setIsBeginning(swiper.isBeginning);
+    setIsEnd(swiper.isEnd);
+  };
+
+  const slidePrev = () => {
+    if (swiper && !isBeginning) {
+      swiper.slidePrev();
+    }
+  };
+
+  const slideNext = () => {
+    if (swiper && !isEnd) {
+      swiper.slideNext();
+    }
+  };
+
+  // Calcul du nombre total de slides
+  const totalSlides = products.length;
+
   if (isLoading) {
     return (
       <div className={`space-y-6 ${className}`}>
@@ -81,7 +71,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
           <h2 className="text-xl font-bold text-center w-full">{title}</h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {Array.from({ length: visibleCount }).map((_, index) => (
+          {Array.from({ length: 5 }).map((_, index) => (
             <div key={index} className="animate-pulse">
               <div className="aspect-square bg-gray-200 rounded-lg mb-2"></div>
               <div className="space-y-2">
@@ -105,18 +95,18 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
       {/* Header avec navigation */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold flex-1 text-center">{title}</h2>
-        
+       
         {/* Navigation desktop */}
         <div className="hidden md:flex items-center space-x-2">
-          <span className="text-sm text-gray-600">
-            {currentIndex + 1} / {Math.max(1, products.length - visibleCount + 1)}
-          </span>
+          {/* <span className="text-sm text-gray-600">
+            {currentSlide + 1} / {totalSlides}
+          </span> */}
           <div className="flex space-x-1">
             <button
-              onClick={scrollLeft}
-              disabled={!canScrollLeft}
+              onClick={slidePrev}
+              disabled={isBeginning}
               className={`p-2 rounded-full border ${
-                canScrollLeft
+                !isBeginning
                   ? 'border-gray-300 hover:border-black hover:bg-black hover:text-white'
                   : 'border-gray-200 text-gray-400 cursor-not-allowed'
               } transition-all duration-200`}
@@ -125,10 +115,10 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
-              onClick={scrollRight}
-              disabled={!canScrollRight}
+              onClick={slideNext}
+              disabled={isEnd}
               className={`p-2 rounded-full border ${
-                canScrollRight
+                !isEnd
                   ? 'border-gray-300 hover:border-black hover:bg-black hover:text-white'
                   : 'border-gray-200 text-gray-400 cursor-not-allowed'
               } transition-all duration-200`}
@@ -140,21 +130,40 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
         </div>
       </div>
 
-      {/* Grille de produits */}
-      <div className="relative overflow-hidden">
-        <div 
-          className="flex transition-transform duration-300 ease-in-out gap-4"
-          style={{
-            transform: `translateX(-${currentIndex * (100 / visibleCount)}%)`,
-            width: `${(products.length / visibleCount) * 100}%`
+      {/* Swiper Container */}
+      <div className="relative">
+        <Swiper
+          modules={[Navigation, Pagination]}
+          spaceBetween={16}
+          slidesPerView={2}
+          breakpoints={{
+            640: {
+              slidesPerView: 3,
+            },
+            768: {
+              slidesPerView: 4,
+            },
+            1024: {
+              slidesPerView: 5,
+            },
           }}
+          onSwiper={setSwiper}
+          onSlideChange={handleSlideChange}
+          onReachBeginning={() => setIsBeginning(true)}
+          onReachEnd={() => setIsEnd(true)}
+          pagination={{
+            el: '.swiper-pagination-custom',
+            clickable: true,
+            bulletClass: 'w-2 h-2 rounded-full bg-gray-300 transition-all duration-200 cursor-pointer',
+            bulletActiveClass: 'bg-black',
+            renderBullet: function (index, className) {
+              return `<span class="${className}" aria-label="Page ${index + 1}"></span>`;
+            },
+          }}
+          className="!overflow-visible"
         >
-          {products.map((product, index) => (
-            <div 
-              key={product.id}
-              className="flex-shrink-0"
-              style={{ width: `${100 / products.length}%` }}
-            >
+          {products.map((product) => (
+            <SwiperSlide key={product.id}>
               <ProductCard
                 product={product}
                 isFavorite={isFavorite(product.id)}
@@ -162,35 +171,21 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
                 onClick={() => handleProductClick(product)}
                 className="h-full"
               />
-            </div>
+            </SwiperSlide>
           ))}
-        </div>
+        </Swiper>
       </div>
 
       {/* Navigation mobile (points) */}
-      <div className="md:hidden flex justify-center space-x-2">
-        {Array.from({ length: Math.ceil(products.length / visibleCount) }).map((_, index) => {
-          const isActive = Math.floor(currentIndex / visibleCount) === index;
-          return (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index * visibleCount)}
-              className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                isActive ? 'bg-black' : 'bg-gray-300'
-              }`}
-              aria-label={`Page ${index + 1}`}
-            />
-          );
-        })}
-      </div>
+      <div className="md:hidden flex justify-center space-x-2 swiper-pagination-custom"></div>
 
       {/* Navigation mobile (boutons) */}
       <div className="md:hidden flex justify-between items-center px-4">
         <button
-          onClick={scrollLeft}
-          disabled={!canScrollLeft}
+          onClick={slidePrev}
+          disabled={isBeginning}
           className={`flex items-center space-x-2 px-4 py-2 rounded-lg border ${
-            canScrollLeft
+            !isBeginning
               ? 'border-gray-300 hover:border-black'
               : 'border-gray-200 text-gray-400 cursor-not-allowed'
           } transition-all duration-200`}
@@ -198,16 +193,14 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
           <ChevronLeft className="h-4 w-4" />
           <span className="text-sm">Précédent</span>
         </button>
-
         <span className="text-sm text-gray-600">
-          {Math.floor(currentIndex / visibleCount) + 1} / {Math.ceil(products.length / visibleCount)}
+          {currentSlide + 1} / {totalSlides}
         </span>
-
         <button
-          onClick={scrollRight}
-          disabled={!canScrollRight}
+          onClick={slideNext}
+          disabled={isEnd}
           className={`flex items-center space-x-2 px-4 py-2 rounded-lg border ${
-            canScrollRight
+            !isEnd
               ? 'border-gray-300 hover:border-black'
               : 'border-gray-200 text-gray-400 cursor-not-allowed'
           } transition-all duration-200`}

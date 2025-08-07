@@ -154,7 +154,7 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
       <div className="py-12 px-4 max-w-7xl mx-auto space-y-12">
         {/* We Think You'd Like */}
         <ProductRecommendations
-          title="WE THINK YOU'D LIKE"
+          title="NOUS PENSONS QUE VOUS AIMEREZ"
           products={recommendedProducts}
           isLoading={isLoadingRecommended}
           onProductClick={handleProductClick}
@@ -164,7 +164,7 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
 
         {/* Similar Styles */}
         <ProductRecommendations
-          title="SIMILAR STYLES"
+          title="STYLES SIMILAIRES"
           products={similarProducts}
           isLoading={isLoadingSimilar}
           onProductClick={handleProductClick}
