@@ -6,6 +6,7 @@ import { DropdownContent, FeaturedItem, navigationData, NavigationItem, NavLink,
 import Link from 'next/link';
 import SignUpModal from '../modal/SignUpModal';
 import { useFavorites } from '@/hooks/product/useFavorites';
+import { useCartStore } from '@/store/useCartStore';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean; // Nouveau prop pour forcer le style scrollé
@@ -18,9 +19,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
-  
+ 
   // Utilisation du hook useFavorites
   const { favoritesCount } = useFavorites();
+  
+  // Utilisation du store panier
+  const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
 
   // Effet pour détecter le scroll
   useEffect(() => {
@@ -54,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   const renderDropdownContent = (content: DropdownContent) => {
     if (!content) return null;
+
     return (
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -74,6 +79,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 </div>
               </div>
             )}
+
             {/* Colonnes centrales */}
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
@@ -97,6 +103,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 ))}
               </div>
             </div>
+
             {/* Colonne de droite - Mise en avant */}
             <div className="col-span-4">
               {content.featured && !Array.isArray(content.featured) && (
@@ -328,12 +335,21 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 )}
               </button>
              
+              {/* Bouton Panier avec badge dynamique */}
               <button
-                className={`p-2 transition-colors duration-300 ${
+                className={`p-2 relative transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
                 }`}
               >
                 <ShoppingBag className="h-5 w-5" />
+                {/* Badge dynamique - ne s'affiche que s'il y a des articles dans le panier */}
+                {cartItemsCount > 0 && (
+                  <span className={`absolute -top-1 -right-1 text-xs font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 transform ${
+                    shouldApplyScrolledStyle ? 'bg-black text-white' : 'bg-white text-black'
+                  } ${cartItemsCount > 99 ? 'scale-110' : ''}`}>
+                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                  </span>
+                )}
               </button>
              
               {/* Mobile Menu Button */}
