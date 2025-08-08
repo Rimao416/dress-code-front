@@ -8,10 +8,16 @@ interface Props {
 }
 
 const CheckoutInformations: React.FC<Props> = ({ formData, setFormData, onNext }) => {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
-  };
+const handleInputChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+) => {
+  const { name, value } = e.target;
+  setFormData((prev: FormData) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
 
   return (
     <>
@@ -57,14 +63,15 @@ const CheckoutInformations: React.FC<Props> = ({ formData, setFormData, onNext }
         />
       </div>
 
-      <input
-        type="text"
-        name="address"
-        placeholder="Adresse"
-        value={formData.address}
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300"
-      />
+    <textarea
+  name="address"
+  placeholder="Adresse"
+  value={formData.address}
+  onChange={handleInputChange}
+  className="w-full p-3 border border-gray-300 resize-none"
+  rows={3}
+/>
+
 
       <input
         type="tel"
