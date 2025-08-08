@@ -6,7 +6,8 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-07-30.basil', // Version API mise à jour
+  typescript: true,
 });
 
 export class StripeService {
@@ -73,4 +74,119 @@ export class StripeService {
       };
     }
   }
+
+  // Méthodes supplémentaires utiles
+
+  static async createCustomer(email: string, name?: string) {
+    try {
+      const customer = await stripe.customers.create({
+        email,
+        name,
+      });
+
+      return {
+        success: true,
+        customer,
+      };
+    } catch (error) {
+      console.error('Erreur création customer:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+
+  static async updatePaymentIntent(paymentIntentId: string, data: Stripe.PaymentIntentUpdateParams) {
+    try {
+      const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, data);
+      
+      return {
+        success: true,
+        paymentIntent,
+      };
+    } catch (error) {
+      console.error('Erreur mise à jour PaymentIntent:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+
+  static async cancelPaymentIntent(paymentIntentId: string) {
+    try {
+      const paymentIntent = await stripe.paymentIntents.cancel(paymentIntentId);
+      
+      return {
+        success: true,
+        paymentIntent,
+      };
+    } catch (error) {
+      console.error('Erreur annulation PaymentIntent:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+
+  static async getPaymentMethods(customerId: string) {
+    try {
+      const paymentMethods = await stripe.paymentMethods.list({
+        customer: customerId,
+        type: 'card',
+      });
+      
+      return {
+        success: true,
+        paymentMethods: paymentMethods.data,
+      };
+    } catch (error) {
+      console.error('Erreur récupération moyens de paiement:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+
+  // Webhook handler pour gérer les événements Stripe
+  static async handleWebhook(body: string, signature: string) {
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!endpointSecret) {
+      throw new Error('STRIPE_WEBHOOK_SECRET is not defined');
+    }
+
+    try {
+      const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+      
+      return {
+        success: true,
+        event,
+      };
+    } catch (error) {
+      console.error('Erreur validation webhook:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+}
+
+// Types utiles pour votre application
+export interface CreatePaymentIntentRequest {
+  amount: number;
+  currency?: string;
+  customerId?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface PaymentIntentResponse {
+  success: boolean;
+  clientSecret?: string;
+  paymentIntentId?: string;
+  error?: string;
 }

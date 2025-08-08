@@ -10,9 +10,10 @@ export async function POST(request: NextRequest) {
 
     // Créer la commande
     const orderResult = await OrderService.createOrder(body);
+    console.log('Commande crée:', orderResult);
     if (!orderResult.success) {
       return NextResponse.json(
-        { error: 'Erreur lors de la création de la commande' },
+        { error: 'Erreur lors de la création de la commande'   },
         { status: 400 }
       );
     }
