@@ -12,6 +12,27 @@ import { useAuth } from "@/context/AuthContext";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+// ✅ Utilitaire inline pour les codes pays
+const getCountryCode = (countryName: string): string => {
+  const countryMap: { [key: string]: string } = {
+    'France': 'FR',
+    'Allemagne': 'DE',
+    'Espagne': 'ES',
+    'Italie': 'IT',
+    'Belgique': 'BE',
+    'Pays-Bas': 'NL',
+    'Luxembourg': 'LU',
+    'Portugal': 'PT',
+    'Autriche': 'AT',
+    'Suisse': 'CH',
+    'Royaume-Uni': 'GB',
+    'États-Unis': 'US',
+    'Canada': 'CA',
+  };
+  
+  return countryMap[countryName] || 'FR'; // Défaut France
+};
+
 interface Props {
   paymentMethod: string;
   setPaymentMethod: (method: string) => void;
@@ -25,6 +46,7 @@ interface Props {
     tax: number;
     total: number;
     items: any[];
+    countryCode?: string;
   };
 }
 
@@ -69,13 +91,50 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       console.log('User ID:', user?.id);
       console.log('Order items:', orderSummary.items);
 
-      // Vérifier que tous les IDs sont des strings
-      const validatedItems = orderSummary.items.map((item: any) => ({
-        ...item,
-        id: typeof item.id === 'number' ? item.id.toString() : item.id,
-        productId: typeof item.productId === 'number' ? item.productId.toString() : item.productId,
-        variantId: item.variantId ? (typeof item.variantId === 'number' ? item.variantId.toString() : item.variantId) : null
-      }));
+      // Validation et nettoyage des données
+      const validatedItems = orderSummary.items.map((item: any) => {
+        const productId = typeof item.productId === 'number' 
+          ? item.productId.toString() 
+          : item.productId;
+        
+        const variantId = item.variantId 
+          ? (typeof item.variantId === 'number' ? item.variantId.toString() : item.variantId)
+          : "";
+
+        return {
+          id: productId,
+          name: item.name,
+          price: Number(item.price),
+          quantity: Number(item.quantity),
+          productId: productId,
+          variantId: variantId,
+          variantInfo: item.variantInfo || {}
+        };
+      });
+
+      // Validation des totaux
+      const totals = {
+        subtotal: Number(orderSummary.subtotal.toFixed(2)),
+        shippingCost: Number(orderSummary.shipping.toFixed(2)),
+        taxAmount: Number(orderSummary.tax.toFixed(2)),
+        totalAmount: Number(orderSummary.total.toFixed(2)),
+      };
+
+      // S'assurer que le clientId est valide
+      if (!user.id || typeof user.id !== 'string') {
+        onError("ID utilisateur invalide");
+        return;
+      }
+
+      // Obtenir le code pays correct
+      const countryCode = orderSummary.countryCode || getCountryCode(formData.country);
+
+      console.log('Sending payment request:', {
+        clientId: user.id,
+        itemsCount: validatedItems.length,
+        totals,
+        countryCode
+      });
 
       // Créer l'intention de paiement
       const response = await fetch('/api/payment/create-intent', {
@@ -84,33 +143,39 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          clientId: user.id, // S'assurer que c'est un string
-          formData,
-          shippingMethod,
-          paymentMethod: 'CARD', // Utiliser l'enum correct de votre schéma
-          items: validatedItems, // Utiliser les items validés
-          totals: {
-            subtotal: orderSummary.subtotal,
-            shippingCost: orderSummary.shipping,
-            taxAmount: orderSummary.tax,
-            totalAmount: orderSummary.total,
+          clientId: user.id,
+          formData: {
+            ...formData,
+            country: countryCode // Utiliser le code pays pour l'API
           },
+          shippingMethod,
+          paymentMethod: 'CARD',
+          items: validatedItems,
+          totals,
         }),
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Erreur API:', errorData);
-        onError(errorData.error || "Erreur lors de la création du paiement");
+        console.error('Erreur API:', responseData);
+        onError(responseData.error || `Erreur ${response.status}: ${response.statusText}`);
         return;
       }
 
-      const { clientSecret, orderId, paymentIntentId } = await response.json();
+      const { clientSecret, orderId, paymentIntentId } = responseData;
       
       if (!clientSecret) {
-        onError("Erreur lors de la création du paiement");
+        onError("Client secret manquant dans la réponse");
         return;
       }
+
+      if (!orderId) {
+        onError("ID de commande manquant");
+        return;
+      }
+
+      console.log('Payment intent créé:', { orderId, paymentIntentId });
 
       // Confirmer le paiement avec Stripe
       const cardElement = elements.getElement(CardElement);
@@ -118,6 +183,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         onError("Élément de carte non trouvé");
         return;
       }
+
+      console.log('Confirmation du paiement avec Stripe...');
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
@@ -127,10 +194,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             billing_details: {
               name: `${formData.firstName} ${formData.lastName}`,
               email: formData.email,
-              phone: formData.phone,
+              phone: formData.phone || undefined,
               address: {
                 line1: formData.address,
-                country: formData.country,
+                country: countryCode,
               },
             },
           },
@@ -139,32 +206,48 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
       if (error) {
         console.error('Stripe error:', error);
-        onError(error.message || "Erreur de paiement");
-      } else if (paymentIntent.status === 'succeeded') {
-        // Confirmer la commande côté serveur
-        const confirmResponse = await fetch('/api/payment/confirm', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            paymentIntentId: paymentIntent.id,
-            orderId,
-          }),
-        });
-
-        if (!confirmResponse.ok) {
-          const confirmError = await confirmResponse.json();
-          console.error('Erreur confirmation:', confirmError);
-          onError("Erreur lors de la confirmation de la commande");
-          return;
-        }
-
-        onSuccess(orderId);
+        onError(error.message || "Erreur de paiement Stripe");
+        return;
       }
+
+      if (paymentIntent.status !== 'succeeded') {
+        console.error('Payment status:', paymentIntent.status);
+        onError(`Paiement non confirmé: ${paymentIntent.status}`);
+        return;
+      }
+
+      console.log('Paiement confirmé, mise à jour de la commande...');
+
+      // Confirmer la commande côté serveur
+      const confirmResponse = await fetch('/api/payment/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentIntentId: paymentIntent.id,
+          orderId,
+        }),
+      });
+
+      const confirmData = await confirmResponse.json();
+
+      if (!confirmResponse.ok) {
+        console.error('Erreur confirmation:', confirmData);
+        onError(confirmData.error || "Erreur lors de la confirmation de la commande");
+        return;
+      }
+
+      console.log('Commande confirmée avec succès');
+      onSuccess(orderId);
+
     } catch (error) {
       console.error('Payment error:', error);
-      onError("Erreur lors du traitement du paiement");
+      onError(
+        error instanceof Error 
+          ? error.message 
+          : "Erreur lors du traitement du paiement"
+      );
     } finally {
       setProcessing(false);
     }
@@ -187,8 +270,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 '::placeholder': {
                   color: '#aab7c4',
                 },
+                padding: '12px',
+              },
+              invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a',
               },
             },
+            hidePostalCode: true,
           }}
         />
       </motion.div>
@@ -199,19 +288,29 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           whileTap={{ scale: 0.98 }}
           type="button"
           onClick={onBack}
-          className="w-1/2 bg-gray-200 hover:bg-gray-300 text-black py-4 px-6 font-medium rounded"
+          className="w-1/2 bg-gray-200 hover:bg-gray-300 text-black py-4 px-6 font-medium rounded transition-colors"
           disabled={processing}
         >
           RETOUR
         </motion.button>
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: processing ? 1 : 1.02 }}
+          whileTap={{ scale: processing ? 1 : 0.98 }}
           type="submit"
           disabled={!stripe || processing}
-          className="w-1/2 bg-green-500 hover:bg-green-600 text-white py-4 px-6 font-medium rounded disabled:opacity-50"
+          className="w-1/2 bg-green-500 hover:bg-green-600 text-white py-4 px-6 font-medium rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {processing ? "TRAITEMENT..." : "CONFIRMER LE PAIEMENT"}
+          {processing ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              TRAITEMENT...
+            </span>
+          ) : (
+            "CONFIRMER LE PAIEMENT"
+          )}
         </motion.button>
       </div>
     </form>
@@ -232,11 +331,18 @@ const CheckoutPaiement: React.FC<Props> = ({
 
   const handlePaymentSuccess = (orderId: string) => {
     setPaymentSuccess(orderId);
-    onConfirm(); // Appeler la fonction de confirmation parent
+    setPaymentError(null);
+    onConfirm();
   };
 
   const handlePaymentError = (error: string) => {
     setPaymentError(error);
+    setPaymentSuccess(null);
+  };
+
+  const handlePaymentMethodChange = (method: string) => {
+    setPaymentMethod(method);
+    setPaymentError(null);
   };
 
   if (paymentSuccess) {
@@ -250,8 +356,11 @@ const CheckoutPaiement: React.FC<Props> = ({
         <h2 className="text-2xl font-bold text-green-600 mb-2">
           Paiement réussi !
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-4">
           Votre commande #{paymentSuccess} a été confirmée.
+        </p>
+        <p className="text-sm text-gray-500">
+          Vous recevrez un email de confirmation sous peu.
         </p>
       </motion.div>
     );
@@ -268,15 +377,28 @@ const CheckoutPaiement: React.FC<Props> = ({
         PAIEMENT
       </motion.h2>
 
-      {paymentError && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
-        >
-          {paymentError}
-        </motion.div>
-      )}
+      <AnimatePresence mode="wait">
+        {paymentError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"
+          >
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm">{paymentError}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.p
         initial={{ opacity: 0 }}
@@ -293,7 +415,6 @@ const CheckoutPaiement: React.FC<Props> = ({
         transition={{ duration: 0.6, delay: 0.2 }}
         className="border border-gray-300 rounded-lg overflow-hidden"
       >
-        {/* Option Carte de crédit */}
         <motion.label
           whileHover={{ backgroundColor: "rgba(249, 250, 251, 0.8)" }}
           transition={{ duration: 0.2 }}
@@ -304,7 +425,7 @@ const CheckoutPaiement: React.FC<Props> = ({
               type="radio"
               name="payment"
               checked={paymentMethod === "card"}
-              onChange={() => setPaymentMethod("card")}
+              onChange={() => handlePaymentMethodChange("card")}
               className="w-4 h-4 text-black mr-3"
             />
             <span className="font-medium">Carte de crédit ou débit</span>
@@ -314,7 +435,6 @@ const CheckoutPaiement: React.FC<Props> = ({
           </div>
         </motion.label>
 
-        {/* Formulaire de paiement Stripe */}
         <AnimatePresence>
           {paymentMethod === "card" && (
             <motion.div
@@ -340,29 +460,28 @@ const CheckoutPaiement: React.FC<Props> = ({
           )}
         </AnimatePresence>
 
-        {/* Option PayPal */}
         <motion.label
           whileHover={{ backgroundColor: "rgba(249, 250, 251, 0.8)" }}
           transition={{ duration: 0.2 }}
-          className="flex items-center justify-between p-4 cursor-pointer"
+          className="flex items-center justify-between p-4 cursor-pointer opacity-50"
         >
           <div className="flex items-center">
             <input
               type="radio"
               name="payment"
               checked={paymentMethod === "paypal"}
-              onChange={() => setPaymentMethod("paypal")}
+              onChange={() => handlePaymentMethodChange("paypal")}
               className="w-4 h-4 text-black mr-3"
+              disabled
             />
             <span className="font-medium">PayPal</span>
           </div>
-          <div className="text-blue-500">
+          <div className="text-gray-400">
             <span className="text-sm">Bientôt disponible</span>
           </div>
         </motion.label>
       </motion.div>
 
-      {/* Résumé de la commande */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -372,12 +491,14 @@ const CheckoutPaiement: React.FC<Props> = ({
         <h3 className="font-medium mb-3">Résumé de la commande</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span>Sous-total</span>
+            <span>Sous-total ({orderSummary.items?.length || 0} article{(orderSummary.items?.length || 0) > 1 ? 's' : ''})</span>
             <span>{orderSummary.subtotal.toFixed(2)} €</span>
           </div>
           <div className="flex justify-between">
             <span>Livraison</span>
-            <span>{orderSummary.shipping.toFixed(2)} €</span>
+            <span>
+              {orderSummary.shipping === 0 ? 'Gratuite' : `${orderSummary.shipping.toFixed(2)} €`}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>TVA</span>
