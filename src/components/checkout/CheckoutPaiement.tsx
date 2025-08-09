@@ -8,8 +8,8 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import { useAuth } from "@/context/AuthContext";
 
-// Assure-toi d'avoir ta clé publique Stripe dans tes variables d'environnement
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface Props {
@@ -45,21 +45,38 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   onSuccess,
   onError,
 }) => {
+  const { user } = useAuth();
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+    
     if (!stripe || !elements) {
       onError("Stripe n'est pas encore chargé");
       return;
     }
 
-    setProcessing(true);
+    if (!user?.id) {
+      onError("Utilisateur non authentifié");
+      return;
+    }
 
+    setProcessing(true);
+    
     try {
+      console.log('User ID:', user?.id);
+      console.log('Order items:', orderSummary.items);
+
+      // Vérifier que tous les IDs sont des strings
+      const validatedItems = orderSummary.items.map((item: any) => ({
+        ...item,
+        id: typeof item.id === 'number' ? item.id.toString() : item.id,
+        productId: typeof item.productId === 'number' ? item.productId.toString() : item.productId,
+        variantId: item.variantId ? (typeof item.variantId === 'number' ? item.variantId.toString() : item.variantId) : null
+      }));
+
       // Créer l'intention de paiement
       const response = await fetch('/api/payment/create-intent', {
         method: 'POST',
@@ -67,11 +84,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          clientId: 'current-user-id', // Tu dois récupérer l'ID du client connecté
+          clientId: user.id, // S'assurer que c'est un string
           formData,
           shippingMethod,
-          paymentMethod: 'card',
-          items: orderSummary.items,
+          paymentMethod: 'CARD', // Utiliser l'enum correct de votre schéma
+          items: validatedItems, // Utiliser les items validés
           totals: {
             subtotal: orderSummary.subtotal,
             shippingCost: orderSummary.shipping,
@@ -81,8 +98,15 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         }),
       });
 
-      const { clientSecret, orderId, paymentIntentId } = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Erreur API:', errorData);
+        onError(errorData.error || "Erreur lors de la création du paiement");
+        return;
+      }
 
+      const { clientSecret, orderId, paymentIntentId } = await response.json();
+      
       if (!clientSecret) {
         onError("Erreur lors de la création du paiement");
         return;
@@ -114,10 +138,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       );
 
       if (error) {
+        console.error('Stripe error:', error);
         onError(error.message || "Erreur de paiement");
       } else if (paymentIntent.status === 'succeeded') {
         // Confirmer la commande côté serveur
-        await fetch('/api/payment/confirm', {
+        const confirmResponse = await fetch('/api/payment/confirm', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -128,9 +153,17 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           }),
         });
 
+        if (!confirmResponse.ok) {
+          const confirmError = await confirmResponse.json();
+          console.error('Erreur confirmation:', confirmError);
+          onError("Erreur lors de la confirmation de la commande");
+          return;
+        }
+
         onSuccess(orderId);
       }
     } catch (error) {
+      console.error('Payment error:', error);
       onError("Erreur lors du traitement du paiement");
     } finally {
       setProcessing(false);

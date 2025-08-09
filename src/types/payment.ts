@@ -34,6 +34,8 @@ export interface OrderItem {
   name: string;
   price: number;
   quantity: number;
+  productId: string; // Ajouté pour correspondre à votre CartItem
+  variantId: string; // Ajouté pour correspondre à votre CartItem
   variantInfo?: {
     size?: string;
     color?: string;

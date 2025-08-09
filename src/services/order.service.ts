@@ -40,7 +40,7 @@ export class OrderService {
           items: {
             create: data.items.map(item => ({
               product: {
-                connect: { id: item.id }
+                connect: { id: item.productId },
               },
               quantity: item.quantity,
               unitPrice: item.price,
