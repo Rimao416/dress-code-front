@@ -1,4 +1,4 @@
-// components/Header/Header.tsx - Version avec catégories dynamiques
+// components/Header/Header.tsx - Version avec catégories dynamiques corrigée
 "use client"
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
@@ -16,13 +16,14 @@ interface HeaderProps {
   forceScrolledStyle?: boolean;
 }
 
+// Type basé sur CategoryWithProducts (adapté selon votre API)
 interface CategoryData {
   id: string;
   name: string;
-  description?: string;
+  description: string | null; // Permet null comme dans CategoryWithProducts
   slug: string;
-  image?: string;
-  parentId?: string;
+  image?: string | null;
+  parentId?: string | null;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;
@@ -55,6 +56,16 @@ interface DropdownContent {
     description: string;
   }>;
 }
+
+// Type pour les éléments de navigation
+interface NavigationItem {
+  hasDropdown: boolean;
+  link?: string;
+  content?: DropdownContent;
+}
+
+// Type pour la structure complète de navigation
+type NavigationData = Record<string, NavigationItem>;
 
 const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isNavbarHovered, setIsNavbarHovered] = useState(false);
@@ -142,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     if (category.children && category.children.length > 0) {
       // Grouper les enfants par type ou créer des sections logiques
       // Pour l'exemple, on crée une section par enfant principal
-      category.children.forEach((child, index) => {
+      category.children.forEach((child) => {
         sections.push({
           title: child.name,
           items: child.children?.map(subChild => ({
@@ -171,12 +182,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   };
 
   // Créer la navigation dynamique basée sur les catégories API
-  const createNavigationData = () => {
+  const createNavigationData = (): NavigationData => {
     if (!categories || categories.length === 0) {
       return getStaticNavigationData();
     }
 
-    const navigationData: Record<string, any> = {};
+    const navigationData: NavigationData = {};
 
     // Ajouter les éléments statiques
     navigationData['Nouveau'] = {
@@ -237,7 +248,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   };
 
   // Navigation statique de fallback
-  const getStaticNavigationData = () => ({
+  const getStaticNavigationData = (): NavigationData => ({
     'Nouveau': {
       hasDropdown: false,
       link: '/nouveau'
@@ -454,7 +465,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                       </button>
                       {expandedMobileSection === item.key && navigationData[item.key]?.content && (
                         <div className="pb-4">
-                          {navigationData[item.key].content.left?.map((linkItem: any, index: number) => (
+                          {navigationData[item.key].content?.left?.map((linkItem, index) => (
                             <Link
                               key={index}
                               href={linkItem.link}
@@ -463,12 +474,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                               {linkItem.title}
                             </Link>
                           ))}
-                          {navigationData[item.key].content.right?.map((section: any, sectionIndex: number) => (
+                          {navigationData[item.key].content?.right?.map((section, sectionIndex) => (
                             <div key={sectionIndex} className="mt-4">
                               <h4 className="text-sm font-semibold text-gray-900 pl-4 mb-2 uppercase tracking-wide">
                                 {section.title}
                               </h4>
-                              {section.items?.map((linkItem: any, linkIndex: number) => (
+                              {section.items?.map((linkItem, linkIndex) => (
                                 <Link
                                   key={linkIndex}
                                   href={linkItem.link}
@@ -590,7 +601,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             </div>
 
             <nav className="hidden md:flex items-center space-x-4">
-              {Object.entries(navigationData).map(([key, nav]: [string, any]) => (
+              {Object.entries(navigationData).map(([key, nav]) => (
                 <div
                   key={key}
                   className="relative"
@@ -674,7 +685,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             onMouseEnter={() => handleMouseEnter(activeDropdown)}
             onMouseLeave={handleMouseLeave}
           >
-            {renderDropdownContent(navigationData[activeDropdown].content)}
+            {renderDropdownContent(navigationData[activeDropdown].content!)}
           </div>
         )}
       </header>

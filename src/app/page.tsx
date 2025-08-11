@@ -343,7 +343,7 @@ const HomePage = () => {
                 <div className="relative h-full w-full">
                   <Image
                     src={slide.image}
-                    alt={slide.title}
+                    alt={slide.title? slide.title : ''}
                     fill
                     className="object-cover"
                     priority={index === 0}
@@ -477,7 +477,7 @@ const HomePage = () => {
       </section>
 
       {/* Full Screen Split Section */}
-      <SplitSection {...trendingTopsSection} />
+      {/* <SplitSection {...trendingTopsSection} /> */}
 
       {/* Section Produits mis en avant */}
       <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-4 md:px-6 lg:px-8 bg-white">
@@ -517,7 +517,12 @@ const HomePage = () => {
         </div>
       </section>
 
-      <SplitSection {...occasionReadySection} />
+<SplitSection 
+  categories={categories}
+  title="Collections Phares"
+  subtitle="Découvrez nos catégories les plus populaires"
+/>
+
 
       {/* Section Catégories - AVEC VRAIES DONNÉES */}
       <section className="py-16 px-4 bg-white">
