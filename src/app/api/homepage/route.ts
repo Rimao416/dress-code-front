@@ -19,40 +19,41 @@ export async function GET(request: NextRequest) {
     // Exécuter toutes les requêtes en parallèle pour optimiser les performances
     const [sliders, newInProducts, featuredProducts, categories] = await Promise.all([
       // Récupérer les sliders actifs
-      prisma.slider.findMany({
-        where: {
-          isActive: filters.includeInactiveSliders ? undefined : true,
-          ...(filters.includeInactiveSliders ? {} : {
-            OR: [
-              { startDate: null },
-              { startDate: { lte: new Date() } }
-            ]
-          }),
-          ...(filters.includeInactiveSliders ? {} : {
-            OR: [
-              { endDate: null },
-              { endDate: { gte: new Date() } }
-            ]
-          })
-        },
-        orderBy: [
-          { sortOrder: 'asc' },
-          { createdAt: 'desc' }
-        ],
-        select: {
-          id: true,
-          subtitle: true,
-          image: true,
-          buttonText: true,
-          buttonLink: true,
-          isActive: true,
-          sortOrder: true,
-          startDate: true,
-          endDate: true,
-          createdAt: true,
-          updatedAt: true
-        }
-      }),
+   prisma.slider.findMany({
+  where: {
+    isActive: filters.includeInactiveSliders ? undefined : true,
+    ...(filters.includeInactiveSliders ? {} : {
+      OR: [
+        { startDate: null },
+        { startDate: { lte: new Date() } }
+      ]
+    }),
+    ...(filters.includeInactiveSliders ? {} : {
+      OR: [
+        { endDate: null },
+        { endDate: { gte: new Date() } }
+      ]
+    })
+  },
+  orderBy: [
+    { sortOrder: 'asc' },
+    { createdAt: 'desc' }
+  ],
+  select: {
+    id: true,
+    title: true,        // <- AJOUTEZ CETTE LIGNE
+    subtitle: true,
+    image: true,
+    buttonText: true,
+    buttonLink: true,
+    isActive: true,
+    sortOrder: true,
+    startDate: true,
+    endDate: true,
+    createdAt: true,
+    updatedAt: true
+  }
+}),
 
       // Récupérer les nouveaux produits
       prisma.product.findMany({

@@ -11,6 +11,7 @@ import LoginModal from '../modal/LoginModal';
 import CartSidebar from '../cart/CartSidebar';
 import { useAuth } from '@/context/AuthContext';
 import { useHomePage } from '@/hooks/useHomepage';
+import { CategoryWithProducts } from '@/types/homepage';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;
@@ -146,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   };
 
   // Fonction pour transformer une catégorie en contenu de dropdown
-  const categoryToDropdownContent = (category: CategoryData): DropdownContent => {
+  const categoryToDropdownContent = (category: CategoryWithProducts): DropdownContent => {
     // Créer les sections à partir des enfants
     const sections: NavSection[] = [];
     

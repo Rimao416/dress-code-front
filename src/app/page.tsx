@@ -22,6 +22,7 @@ import Input from '@/components/ui/input';
 import { occasionReadySection, trendingTopsSection } from '@/constant/data';
 import { useHomePage } from '@/hooks/useHomepage';
 import { ProductCardData } from '@/types/product';
+import { CategoryWithProducts } from '@/types/homepage';
 
 type FormErrors = {
   firstName?: string;
@@ -30,21 +31,6 @@ type FormErrors = {
   password?: string;
   acceptTerms?: string;
 };
-
-interface CategoryData {
-  id: string;
-  name: string;
-  description?: string;
-  slug: string;
-  image?: string;
-  parentId?: string;
-  isActive: boolean;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  productCount: number;
-  children: CategoryData[];
-}
 
 const HomePage = () => {
   const router = useRouter();
@@ -80,7 +66,7 @@ const HomePage = () => {
     }
   };
 
-  const handleCategoryClick = (category: CategoryData) => {
+  const handleCategoryClick = (category: CategoryWithProducts) => {
     router.push(`/categories/${category.slug}`);
   };
 
@@ -139,7 +125,7 @@ const HomePage = () => {
   ];
 
   // Fonction pour créer une grille adaptative basée sur le nombre de catégories
-  const createCategoryGrid = (categories: CategoryData[]) => {
+  const createCategoryGrid = (categories: CategoryWithProducts[]) => {
     const categoryCount = categories.length;
     
     if (categoryCount === 0) return null;

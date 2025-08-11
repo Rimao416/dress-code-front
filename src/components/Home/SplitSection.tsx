@@ -2,24 +2,12 @@
 import React, { useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CategoryWithProducts } from '@/types/homepage';
 
-interface CategoryData {
-  id: string;
-  name: string;
-  description?: string;
-  slug: string;
-  image?: string;
-  parentId?: string;
-  isActive: boolean;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  productCount: number;
-  children: CategoryData[];
-}
+
 
 interface CategorySplitSectionProps {
-  categories: CategoryData[];
+  categories: CategoryWithProducts[];
   title: string;
   subtitle: string;
 }
@@ -84,7 +72,7 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
   // Mélanger les catégories et choisir un layout aléatoirement à chaque rendu
   const { shuffledCategories, selectedLayout } = useMemo(() => {
     // Fonction pour mélanger un tableau
-    const shuffleArray = (array: CategoryData[]) => {
+    const shuffleArray = (array: CategoryWithProducts[]) => {
       const shuffled = [...array];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -132,7 +120,7 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
     height,
     index 
   }: { 
-    category: CategoryData; 
+    category: CategoryWithProducts; 
     span: string;
     height: string;
     index: number;
