@@ -1,69 +1,164 @@
-import { useState, useCallback, useEffect } from 'react';
+// hooks/product/useFavorites.ts
+import { ProductWithFullData } from '@/types/product';
+import { FavoriteItem } from '@/types/favorites';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
 
-interface UseFavoritesReturn {
-  favorites: string[];
-  isFavorite: (productId: string) => boolean;
-  toggleFavorite: (productId: string) => void;
-  addFavorite: (productId: string) => void;
-  removeFavorite: (productId: string) => void;
-  clearFavorites: () => void;
-  favoritesCount: number;
-}
+export const useFavorites = () => {
+  const {
+    items,
+    totalItems,
+    addItem,
+    removeItem,
+    toggleItem,
+    clearFavorites,
+    isFavorite,
+    getFavoritesCount,
+    getFavoriteItem
+  } = useFavoritesStore();
 
-export const useFavorites = (initialFavorites: string[] = []): UseFavoritesReturn => {
-  const [favorites, setFavorites] = useState<string[]>(initialFavorites);
-
-  // Charger les favoris depuis le localStorage au montage
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        const parsedFavorites = JSON.parse(savedFavorites);
-        setFavorites(Array.isArray(parsedFavorites) ? parsedFavorites : []);
-      } catch (error) {
-        console.error('Erreur lors du chargement des favoris:', error);
-      }
+  // Fonction pour ajouter un produit aux favoris avec validation
+  const addToFavorites = (product: ProductWithFullData) => {
+    try {
+      addItem(product);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erreur lors de l\'ajout aux favoris' 
+      };
     }
-  }, []);
+  };
 
-  // Sauvegarder les favoris dans le localStorage quand ils changent
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
+  // Fonction pour supprimer un produit des favoris
+  const removeFromFavorites = (productId: string) => {
+    try {
+      removeItem(productId);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erreur lors de la suppression des favoris' 
+      };
+    }
+  };
 
-  const isFavorite = useCallback((productId: string): boolean => {
-    return favorites.includes(productId);
-  }, [favorites]);
+  // Fonction pour basculer le statut favori d'un produit
+  const toggleFavorite = (product: ProductWithFullData) => {
+    try {
+      const wasAdded = toggleItem(product);
+      return { 
+        success: true, 
+        added: wasAdded,
+        message: wasAdded ? 'Ajouté aux favoris' : 'Retiré des favoris'
+      };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erreur lors du basculement des favoris' 
+      };
+    }
+  };
 
-  const toggleFavorite = useCallback((productId: string): void => {
-    setFavorites(prev => 
-      prev.includes(productId)
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  }, []);
+  // Fonction pour vider les favoris avec confirmation
+  const clearFavoritesWithConfirmation = (): boolean => {
+    if (items.length === 0) return true;
+    
+    const confirmed = window.confirm('Êtes-vous sûr de vouloir vider vos favoris ?');
+    if (confirmed) {
+      clearFavorites();
+      return true;
+    }
+    return false;
+  };
 
-  const addFavorite = useCallback((productId: string): void => {
-    setFavorites(prev => 
-      prev.includes(productId) ? prev : [...prev, productId]
-    );
-  }, []);
+  // Fonction pour obtenir les favoris triés par date d'ajout
+  const getFavoritesSortedByDate = (ascending: boolean = false): FavoriteItem[] => {
+    return [...items].sort((a, b) => {
+      const dateA = new Date(a.addedAt).getTime();
+      const dateB = new Date(b.addedAt).getTime();
+      return ascending ? dateA - dateB : dateB - dateA;
+    });
+  };
 
-  const removeFavorite = useCallback((productId: string): void => {
-    setFavorites(prev => prev.filter(id => id !== productId));
-  }, []);
+  // Fonction pour obtenir les favoris triés par nom
+  const getFavoritesSortedByName = (ascending: boolean = true): FavoriteItem[] => {
+    return [...items].sort((a, b) => {
+      const nameA = a.product.name.toLowerCase();
+      const nameB = b.product.name.toLowerCase();
+      if (ascending) {
+        return nameA.localeCompare(nameB);
+      } else {
+        return nameB.localeCompare(nameA);
+      }
+    });
+  };
 
-  const clearFavorites = useCallback((): void => {
-    setFavorites([]);
-  }, []);
+  // Fonction pour obtenir les favoris triés par prix
+  const getFavoritesSortedByPrice = (ascending: boolean = true): FavoriteItem[] => {
+    return [...items].sort((a, b) => {
+      const priceA = a.product.price;
+      const priceB = b.product.price;
+      return ascending ? priceA - priceB : priceB - priceA;
+    });
+  };
+
+  // Fonction pour filtrer les favoris par catégorie
+  const getFavoritesByCategory = (categoryId: string): FavoriteItem[] => {
+    return items.filter(item => item.product.categoryId === categoryId);
+  };
+
+  // Fonction pour filtrer les favoris par marque
+  const getFavoritesByBrand = (brandId: string): FavoriteItem[] => {
+    return items.filter(item => item.product.brandId === brandId);
+  };
+
+  // Fonction pour rechercher dans les favoris
+  const searchFavorites = (query: string): FavoriteItem[] => {
+    const searchTerm = query.toLowerCase().trim();
+    if (!searchTerm) return items;
+
+    return items.filter(item => {
+      const product = item.product;
+      return (
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.description?.toLowerCase().includes(searchTerm) ||
+        product.shortDescription?.toLowerCase().includes(searchTerm) ||
+        product.brand?.name.toLowerCase().includes(searchTerm) ||
+        product.category?.name.toLowerCase().includes(searchTerm) ||
+        product.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+      );
+    });
+  };
 
   return {
-    favorites,
-    isFavorite,
+    // État des favoris
+    items,
+    totalItems,
+    favoritesCount: totalItems, // Alias pour compatibilité
+    
+    // Actions de base
+    addToFavorites,
+    removeFromFavorites,
     toggleFavorite,
-    addFavorite,
-    removeFavorite,
     clearFavorites,
-    favoritesCount: favorites.length
+    clearFavoritesWithConfirmation,
+    
+    // Fonctions utilitaires
+    isFavorite,
+    getFavoritesCount,
+    getFavoriteItem,
+    
+    // Fonctions de tri et filtrage
+    getFavoritesSortedByDate,
+    getFavoritesSortedByName,
+    getFavoritesSortedByPrice,
+    getFavoritesByCategory,
+    getFavoritesByBrand,
+    searchFavorites,
+    
+    // États dérivés
+    isEmpty: items.length === 0,
+    hasItems: items.length > 0,
+    itemsCount: getFavoritesCount()
   };
 };
