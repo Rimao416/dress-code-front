@@ -1,19 +1,59 @@
-// components/Header/Header.tsx - Version mise à jour complète
+// components/Header/Header.tsx - Version avec catégories dynamiques
 "use client"
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
-import { DropdownContent, FeaturedItem, navigationData, NavigationItem, NavLink, NavSection } from '@/components/Header/NavigationData';
 import Link from 'next/link';
 import { useFavorites } from '@/hooks/product/useFavorites';
 import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 import SignUpModal from '../modal/SignUpModal';
-import LoginModal from '../modal/LoginModal'; // Import du nouveau modal
+import LoginModal from '../modal/LoginModal';
 import CartSidebar from '../cart/CartSidebar';
 import { useAuth } from '@/context/AuthContext';
+import { useHomePage } from '@/hooks/useHomepage';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;
+}
+
+interface CategoryData {
+  id: string;
+  name: string;
+  description?: string;
+  slug: string;
+  image?: string;
+  parentId?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  productCount: number;
+  children: CategoryData[];
+}
+
+interface NavSection {
+  title: string;
+  items: Array<{
+    title: string;
+    link: string;
+  }>;
+}
+
+interface DropdownContent {
+  left: Array<{
+    title: string;
+    link: string;
+  }>;
+  right: NavSection[];
+  featured?: {
+    image: string;
+    title: string;
+    description: string;
+  } | Array<{
+    image: string;
+    title: string;
+    description: string;
+  }>;
 }
 
 const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
@@ -29,11 +69,18 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
-
   const { user, isAuthenticated, loading, logout, checkAuthStatus } = useAuth();
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const { favoritesCount } = useFavorites();
   const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
+
+  // Charger les catégories depuis l'API
+  const { categories, isLoading } = useHomePage({
+    autoFetch: true,
+    filters: {
+      categoriesLimit: 20
+    }
+  });
 
   // Messages promotionnels rotatifs
   const promoMessages = [
@@ -87,14 +134,171 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     );
   };
 
+  // Fonction pour transformer une catégorie en contenu de dropdown
+  const categoryToDropdownContent = (category: CategoryData): DropdownContent => {
+    // Créer les sections à partir des enfants
+    const sections: NavSection[] = [];
+    
+    if (category.children && category.children.length > 0) {
+      // Grouper les enfants par type ou créer des sections logiques
+      // Pour l'exemple, on crée une section par enfant principal
+      category.children.forEach((child, index) => {
+        sections.push({
+          title: child.name,
+          items: child.children?.map(subChild => ({
+            title: subChild.name,
+            link: `/categories/${subChild.slug}`
+          })) || [{
+            title: "Voir tout",
+            link: `/categories/${child.slug}`
+          }]
+        });
+      });
+    }
+
+    return {
+      left: [{
+        title: `Tous les ${category.name}`,
+        link: `/categories/${category.slug}`
+      }],
+      right: sections.slice(0, 4), // Limiter à 4 sections pour l'affichage
+      featured: category.image ? {
+        image: category.image,
+        title: `Collection ${category.name}`,
+        description: category.description || `Découvrez notre sélection ${category.name.toLowerCase()}`
+      } : undefined
+    };
+  };
+
+  // Créer la navigation dynamique basée sur les catégories API
+  const createNavigationData = () => {
+    if (!categories || categories.length === 0) {
+      return getStaticNavigationData();
+    }
+
+    const navigationData: Record<string, any> = {};
+
+    // Ajouter les éléments statiques
+    navigationData['Nouveau'] = {
+      hasDropdown: false,
+      link: '/nouveau'
+    };
+
+    navigationData['Meilleures Ventes'] = {
+      hasDropdown: false,
+      link: '/meilleures-ventes'
+    };
+
+    // Prendre les 5 premières catégories principales
+    const mainCategories = categories.filter(cat => !cat.parentId).slice(0, 5);
+    
+    mainCategories.forEach(category => {
+      navigationData[category.name] = {
+        hasDropdown: category.children && category.children.length > 0,
+        link: category.children && category.children.length > 0 ? undefined : `/categories/${category.slug}`,
+        content: category.children && category.children.length > 0 ? categoryToDropdownContent(category) : undefined
+      };
+    });
+
+    // Créer la section "Plus" avec les catégories restantes
+    const remainingCategories = categories.filter(cat => !cat.parentId).slice(5);
+    if (remainingCategories.length > 0) {
+      navigationData['Plus'] = {
+        hasDropdown: true,
+        content: {
+          left: [{
+            title: "Toutes les catégories",
+            link: "/categories"
+          }],
+          right: remainingCategories.reduce((acc: NavSection[], category, index) => {
+            const sectionIndex = Math.floor(index / 3); // Grouper par 3
+            if (!acc[sectionIndex]) {
+              acc[sectionIndex] = {
+                title: `Catégories ${sectionIndex + 1}`,
+                items: []
+              };
+            }
+            acc[sectionIndex].items.push({
+              title: category.name,
+              link: `/categories/${category.slug}`
+            });
+            return acc;
+          }, []).slice(0, 4), // Limiter à 4 sections
+          featured: {
+            image: remainingCategories[0]?.image || '/placeholder-category.jpg',
+            title: "Explorez plus",
+            description: "Découvrez toutes nos autres catégories"
+          }
+        }
+      };
+    }
+
+    return navigationData;
+  };
+
+  // Navigation statique de fallback
+  const getStaticNavigationData = () => ({
+    'Nouveau': {
+      hasDropdown: false,
+      link: '/nouveau'
+    },
+    'Meilleures Ventes': {
+      hasDropdown: false,
+      link: '/meilleures-ventes'
+    },
+    'Vêtements': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: "Tous les vêtements", link: "/vetements" }
+        ],
+        right: [
+          {
+            title: "Hauts",
+            items: [
+              { title: "Chemisiers", link: "/vetements/chemisiers" },
+              { title: "T-shirts", link: "/vetements/t-shirts" },
+              { title: "Pulls", link: "/vetements/pulls" }
+            ]
+          },
+          {
+            title: "Bas",
+            items: [
+              { title: "Pantalons", link: "/vetements/pantalons" },
+              { title: "Jupes", link: "/vetements/jupes" },
+              { title: "Shorts", link: "/vetements/shorts" }
+            ]
+          }
+        ]
+      }
+    },
+    'Plus': {
+      hasDropdown: true,
+      content: {
+        left: [
+          { title: "Toutes les catégories", link: "/categories" }
+        ],
+        right: [
+          {
+            title: "Autres",
+            items: [
+              { title: "Accessoires", link: "/accessoires" },
+              { title: "Chaussures", link: "/chaussures" },
+              { title: "Bijoux", link: "/bijoux" }
+            ]
+          }
+        ]
+      }
+    }
+  });
+
+  const navigationData = createNavigationData();
+
   // Gestion des modals
   const handleUserClick = () => {
     if (user && isAuthenticated) {
-      // Si l'utilisateur est connecté, on peut soit afficher un menu, soit rediriger
-      // Pour l'instant, on ne fait rien, mais vous pouvez ajouter un menu utilisateur
       console.log('User is authenticated:', user);
     } else {
-      // Si l'utilisateur n'est pas connecté, ouvrir le modal d'inscription
       setIsSignUpModalOpen(true);
     }
   };
@@ -128,6 +332,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   const renderDropdownContent = (content: DropdownContent) => {
     if (!content) return null;
+
     return (
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -135,34 +340,34 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             {content.left && content.left.length > 0 && (
               <div className="col-span-2">
                 <div className="space-y-2">
-                  {content.left.map((item: NavLink, index: number) => (
-                    <a
+                  {content.left.map((item, index) => (
+                    <Link
                       key={index}
                       href={item.link}
                       className="block text-sm font-medium text-gray-900 hover:text-gray-600 py-1"
                     >
                       {item.title}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>
             )}
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
-                {content.right?.map((section: NavSection, index: number) => (
+                {content.right?.map((section, index) => (
                   <div key={index}>
                     <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
                       {section.title}
                     </h3>
                     <div className="space-y-1">
-                      {section.items?.map((item: NavLink, itemIndex: number) => (
-                        <a
+                      {section.items?.map((item, itemIndex) => (
+                        <Link
                           key={itemIndex}
                           href={item.link}
                           className="block text-sm text-gray-700 hover:text-gray-900 py-1"
                         >
                           {item.title}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -187,7 +392,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               )}
               {content.featured && Array.isArray(content.featured) && (
                 <div className="space-y-4">
-                  {content.featured.map((item: FeaturedItem, index: number) => (
+                  {content.featured.map((item, index) => (
                     <div key={index} className="bg-gray-50 p-4 rounded-lg">
                       <img
                         src={item.image}
@@ -212,18 +417,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   };
 
   const renderMobileMenu = () => {
-    const mobileMenuItems = [
-      { key: 'Nouveau', label: 'Nouveau', hasDropdown: false, link: '/nouveau' },
-      { key: 'Meilleures Ventes', label: 'Meilleures Ventes', hasDropdown: false, link: '/meilleures-ventes' },
-      { key: 'Vêtements', label: 'Vêtements', hasDropdown: true },
-      { key: 'Soutiens-gorge', label: 'Soutiens-gorge', hasDropdown: true },
-      { key: 'Sous-vêtements', label: 'Sous-vêtements', hasDropdown: true },
-      { key: 'Gainage', label: 'Gainage', hasDropdown: true },
-      { key: 'Maillots de bain', label: 'Maillots de bain', hasDropdown: true },
-      { key: 'Homme', label: 'Homme', hasDropdown: false, link: '/homme' },
-      { key: 'Collections', label: 'Collections', hasDropdown: true },
-      { key: 'Plus', label: 'Plus', hasDropdown: true }
-    ];
+    const mobileMenuItems = Object.entries(navigationData).map(([key, nav]) => ({
+      key,
+      label: key,
+      hasDropdown: nav.hasDropdown,
+      link: nav.link
+    }));
 
     return (
       <div className="md:hidden">
@@ -253,32 +452,30 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                           expandedMobileSection === item.key ? 'rotate-180' : ''
                         }`} />
                       </button>
-
                       {expandedMobileSection === item.key && navigationData[item.key]?.content && (
                         <div className="pb-4">
-                          {navigationData[item.key].content!.left.map((linkItem, index) => (
-                            <a
+                          {navigationData[item.key].content.left?.map((linkItem: any, index: number) => (
+                            <Link
                               key={index}
                               href={linkItem.link}
                               className="block py-2 pl-4 text-sm text-gray-700 hover:text-gray-900"
                             >
                               {linkItem.title}
-                            </a>
+                            </Link>
                           ))}
-
-                          {navigationData[item.key].content!.right.map((section, sectionIndex) => (
+                          {navigationData[item.key].content.right?.map((section: any, sectionIndex: number) => (
                             <div key={sectionIndex} className="mt-4">
                               <h4 className="text-sm font-semibold text-gray-900 pl-4 mb-2 uppercase tracking-wide">
                                 {section.title}
                               </h4>
-                              {section.items?.map((linkItem, linkIndex) => (
-                                <a
+                              {section.items?.map((linkItem: any, linkIndex: number) => (
+                                <Link
                                   key={linkIndex}
                                   href={linkItem.link}
                                   className="block py-2 pl-6 text-sm text-gray-700 hover:text-gray-900"
                                 >
                                   {linkItem.title}
-                                </a>
+                                </Link>
                               ))}
                             </div>
                           ))}
@@ -286,12 +483,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                       )}
                     </div>
                   ) : (
-                    <a
-                      href={item.link}
+                    <Link
+                      href={item.link || '#'}
                       className="block py-4 text-gray-900 font-medium"
                     >
                       {item.label}
-                    </a>
+                    </Link>
                   )}
                 </div>
               ))}
@@ -301,6 +498,19 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="text-2xl font-bold">DressCode</div>
+            <div className="animate-pulse">Chargement...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -322,7 +532,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               >
                 <ChevronLeft className="h-3 w-3" />
               </button>
-
               <div className="flex-1 text-center">
                 <span className={`transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-gray-800' : 'text-white'
@@ -330,7 +539,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   {promoMessages[currentPromoIndex]}
                 </span>
               </div>
-
               <button
                 onClick={nextPromo}
                 className={`p-1 rounded transition-colors ${
@@ -342,7 +550,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>
-
             {/* Informations utilisateur */}
             <div className="flex items-center space-x-6">
               <button
@@ -383,7 +590,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             </div>
 
             <nav className="hidden md:flex items-center space-x-4">
-              {Object.entries(navigationData).map(([key, nav]: [string, NavigationItem]) => (
+              {Object.entries(navigationData).map(([key, nav]: [string, any]) => (
                 <div
                   key={key}
                   className="relative"
@@ -421,7 +628,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               >
                 <Search className="h-5 w-5" />
               </button>
-
               <button
                 className={`p-2 relative transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
@@ -436,7 +642,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   </span>
                 )}
               </button>
-
               <button
                 onClick={toggleCartSidebar}
                 className={`p-2 relative transition-colors duration-300 ${
@@ -452,7 +657,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   </span>
                 )}
               </button>
-
               <button
                 className={`md:hidden p-2 transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
@@ -470,7 +674,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             onMouseEnter={() => handleMouseEnter(activeDropdown)}
             onMouseLeave={handleMouseLeave}
           >
-            {renderDropdownContent(navigationData[activeDropdown].content!)}
+            {renderDropdownContent(navigationData[activeDropdown].content)}
           </div>
         )}
       </header>
@@ -481,7 +685,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
         onClose={() => setIsSignUpModalOpen(false)}
         onSwitchToLogin={handleOpenLogin}
       />
-      
+     
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
