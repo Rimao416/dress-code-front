@@ -5,7 +5,7 @@ class CategoryService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api/categories';
+ this.baseUrl = process.env.NEXT_PUBLIC_API_URL+'/categories';
   }
 
   async getCategoryBySlug(slug: string): Promise<CategoryWithFullData> {

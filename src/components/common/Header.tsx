@@ -1,7 +1,7 @@
-// components/Header/Header.tsx - Version avec catégories dynamiques corrigée
+// components/Header/Header.tsx - Version avec navigation entièrement dynamique
 "use client"
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useFavorites } from '@/hooks/product/useFavorites';
 import { useCartStore } from '@/store/useCartStore';
@@ -15,22 +15,6 @@ import { CategoryWithProducts } from '@/types/homepage';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;
-}
-
-// Type basé sur CategoryWithProducts (adapté selon votre API)
-interface CategoryData {
-  id: string;
-  name: string;
-  description: string | null; // Permet null comme dans CategoryWithProducts
-  slug: string;
-  image?: string | null;
-  parentId?: string | null;
-  isActive: boolean;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  productCount: number;
-  children: CategoryData[];
 }
 
 interface NavSection {
@@ -51,21 +35,15 @@ interface DropdownContent {
     image: string;
     title: string;
     description: string;
-  } | Array<{
-    image: string;
-    title: string;
-    description: string;
-  }>;
+  };
 }
 
-// Type pour les éléments de navigation
 interface NavigationItem {
   hasDropdown: boolean;
-  link?: string;
+  link: string;
   content?: DropdownContent;
 }
 
-// Type pour la structure complète de navigation
 type NavigationData = Record<string, NavigationItem>;
 
 const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
@@ -74,11 +52,11 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
-  
+ 
   // États pour les modals
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  
+ 
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
   const { user, isAuthenticated, loading, logout, checkAuthStatus } = useAuth();
@@ -90,7 +68,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const { categories, isLoading } = useHomePage({
     autoFetch: true,
     filters: {
-      categoriesLimit: 20
+      categoriesLimit: 20 // Charger plus de catégories pour la navigation
     }
   });
 
@@ -101,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     "Retours gratuits sous 30 jours sur tous les articles"
   ];
 
-  // Fix hydration - s'assurer qu'on est côté client
+  // Fix hydration
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -146,101 +124,127 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     );
   };
 
-  // Fonction pour transformer une catégorie en contenu de dropdown
-  const categoryToDropdownContent = (category: CategoryWithProducts): DropdownContent => {
-    // Créer les sections à partir des enfants
+  // Fonction pour créer le contenu dropdown d'une catégorie
+  const createDropdownContent = (category: CategoryWithProducts): DropdownContent => {
     const sections: NavSection[] = [];
     
+    // Si la catégorie a des enfants, les organiser en sections
     if (category.children && category.children.length > 0) {
-      // Grouper les enfants par type ou créer des sections logiques
-      // Pour l'exemple, on crée une section par enfant principal
-      category.children.forEach((child) => {
+      // Limiter à 4 sections pour un bon affichage
+      const childrenToShow = category.children.slice(0, 4);
+      
+      childrenToShow.forEach((child) => {
+        const items = [];
+        
+        // Ajouter le lien vers la sous-catégorie elle-même
+        items.push({
+          title: `Tous les ${child.name}`,
+          link: `/collections/${child.slug}`
+        });
+        
+        // Ajouter les petits-enfants s'il y en a
+        if (child.children && child.children.length > 0) {
+          child.children.slice(0, 5).forEach((grandChild) => {
+            items.push({
+              title: grandChild.name,
+              link: `/collections/${grandChild.slug}`
+            });
+          });
+        }
+        
         sections.push({
           title: child.name,
-          items: child.children?.map(subChild => ({
-            title: subChild.name,
-            link: `/categories/${subChild.slug}`
-          })) || [{
-            title: "Voir tout",
-            link: `/categories/${child.slug}`
-          }]
+          items: items
         });
       });
     }
 
     return {
-      left: [{
-        title: `Tous les ${category.name}`,
-        link: `/categories/${category.slug}`
-      }],
-      right: sections.slice(0, 4), // Limiter à 4 sections pour l'affichage
+      left: [
+        {
+          title: `Tous les ${category.name}`,
+          link: `/collections/${category.slug}`
+        },
+        // Ajouter quelques liens rapides si nécessaire
+        ...(category.productCount > 0 ? [{
+          title: `Nouveautés ${category.name}`,
+          link: `/collections/${category.slug}?filter=new`
+        }] : [])
+      ],
+      right: sections,
       featured: category.image ? {
         image: category.image,
         title: `Collection ${category.name}`,
-        description: category.description || `Découvrez notre sélection ${category.name.toLowerCase()}`
+        description: category.description || `Découvrez notre sélection ${category.name.toLowerCase()} avec ${category.productCount} produits disponibles`
       } : undefined
     };
   };
 
-  // Créer la navigation dynamique basée sur les catégories API
-  const createNavigationData = (): NavigationData => {
+  // Créer la navigation dynamique basée uniquement sur les catégories de l'API
+  const createDynamicNavigation = (): NavigationData => {
     if (!categories || categories.length === 0) {
-      return getStaticNavigationData();
+      return {};
     }
 
     const navigationData: NavigationData = {};
 
-    // Ajouter les éléments statiques
-    navigationData['Nouveau'] = {
-      hasDropdown: false,
-      link: '/nouveau'
-    };
-
-    navigationData['Meilleures Ventes'] = {
-      hasDropdown: false,
-      link: '/meilleures-ventes'
-    };
-
-    // Prendre les 5 premières catégories principales
-    const mainCategories = categories.filter(cat => !cat.parentId).slice(0, 5);
+    // Prendre les catégories principales (sans parentId) 
+    const mainCategories = categories.filter(cat => !cat.parentId);
     
-    mainCategories.forEach(category => {
+    // Trier par sortOrder puis par nom
+    const sortedCategories = mainCategories.sort((a, b) => {
+      if (a.sortOrder !== b.sortOrder) {
+        return a.sortOrder - b.sortOrder;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    // Limiter à 6 catégories principales max pour la navigation
+    const categoriesToShow = sortedCategories.slice(0, 6);
+    
+    categoriesToShow.forEach(category => {
+      const hasChildren = category.children && category.children.length > 0;
+      
       navigationData[category.name] = {
-        hasDropdown: category.children && category.children.length > 0,
-        link: category.children && category.children.length > 0 ? undefined : `/categories/${category.slug}`,
-        content: category.children && category.children.length > 0 ? categoryToDropdownContent(category) : undefined
+        hasDropdown: hasChildren,
+        link: `/collections/${category.slug}`,
+        content: hasChildren ? createDropdownContent(category) : undefined
       };
     });
 
-    // Créer la section "Plus" avec les catégories restantes
-    const remainingCategories = categories.filter(cat => !cat.parentId).slice(5);
+    // Si il y a plus de 6 catégories, créer un menu "Plus"
+    const remainingCategories = sortedCategories.slice(6);
     if (remainingCategories.length > 0) {
+      const moreSections: NavSection[] = [];
+      
+      // Organiser les catégories restantes en sections de 4
+      for (let i = 0; i < remainingCategories.length; i += 4) {
+        const sectionCategories = remainingCategories.slice(i, i + 4);
+        
+        moreSections.push({
+          title: `Collections ${Math.floor(i/4) + 1}`,
+          items: sectionCategories.map(cat => ({
+            title: cat.name,
+            link: `/collections/${cat.slug}`
+          }))
+        });
+      }
+
       navigationData['Plus'] = {
         hasDropdown: true,
+        link: '/collections',
         content: {
-          left: [{
-            title: "Toutes les catégories",
-            link: "/categories"
-          }],
-          right: remainingCategories.reduce((acc: NavSection[], category, index) => {
-            const sectionIndex = Math.floor(index / 3); // Grouper par 3
-            if (!acc[sectionIndex]) {
-              acc[sectionIndex] = {
-                title: `Catégories ${sectionIndex + 1}`,
-                items: []
-              };
-            }
-            acc[sectionIndex].items.push({
-              title: category.name,
-              link: `/categories/${category.slug}`
-            });
-            return acc;
-          }, []).slice(0, 4), // Limiter à 4 sections
-          featured: {
-            image: remainingCategories[0]?.image || '/placeholder-category.jpg',
-            title: "Explorez plus",
-            description: "Découvrez toutes nos autres catégories"
-          }
+          left: [
+            { title: "Toutes les collections", link: "/collections" },
+            { title: "Nouveautés", link: "/collections?filter=new" },
+            { title: "Meilleures ventes", link: "/collections?filter=bestsellers" }
+          ],
+          right: moreSections.slice(0, 3), // Limiter à 3 sections
+          featured: remainingCategories[0]?.image ? {
+            image: remainingCategories[0].image,
+            title: "Découvrez plus",
+            description: `Explorez ${remainingCategories.length} autres collections`
+          } : undefined
         }
       };
     }
@@ -248,63 +252,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     return navigationData;
   };
 
-  // Navigation statique de fallback
-  const getStaticNavigationData = (): NavigationData => ({
-    'Nouveau': {
-      hasDropdown: false,
-      link: '/nouveau'
-    },
-    'Meilleures Ventes': {
-      hasDropdown: false,
-      link: '/meilleures-ventes'
-    },
-    'Vêtements': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: "Tous les vêtements", link: "/vetements" }
-        ],
-        right: [
-          {
-            title: "Hauts",
-            items: [
-              { title: "Chemisiers", link: "/vetements/chemisiers" },
-              { title: "T-shirts", link: "/vetements/t-shirts" },
-              { title: "Pulls", link: "/vetements/pulls" }
-            ]
-          },
-          {
-            title: "Bas",
-            items: [
-              { title: "Pantalons", link: "/vetements/pantalons" },
-              { title: "Jupes", link: "/vetements/jupes" },
-              { title: "Shorts", link: "/vetements/shorts" }
-            ]
-          }
-        ]
-      }
-    },
-    'Plus': {
-      hasDropdown: true,
-      content: {
-        left: [
-          { title: "Toutes les catégories", link: "/categories" }
-        ],
-        right: [
-          {
-            title: "Autres",
-            items: [
-              { title: "Accessoires", link: "/accessoires" },
-              { title: "Chaussures", link: "/chaussures" },
-              { title: "Bijoux", link: "/bijoux" }
-            ]
-          }
-        ]
-      }
-    }
-  });
-
-  const navigationData = createNavigationData();
+  const navigationData = createDynamicNavigation();
 
   // Gestion des modals
   const handleUserClick = () => {
@@ -349,6 +297,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-12 gap-8">
+            {/* Colonne gauche - Liens principaux */}
             {content.left && content.left.length > 0 && (
               <div className="col-span-2">
                 <div className="space-y-2">
@@ -364,6 +313,8 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 </div>
               </div>
             )}
+
+            {/* Colonne centrale - Sections de catégories */}
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
                 {content.right?.map((section, index) => (
@@ -386,8 +337,10 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 ))}
               </div>
             </div>
+
+            {/* Colonne droite - Image mise en avant */}
             <div className="col-span-4">
-              {content.featured && !Array.isArray(content.featured) && (
+              {content.featured && (
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <img
                     src={content.featured.image}
@@ -400,25 +353,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   <p className="text-sm text-gray-600">
                     {content.featured.description}
                   </p>
-                </div>
-              )}
-              {content.featured && Array.isArray(content.featured) && (
-                <div className="space-y-4">
-                  {content.featured.map((item, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-24 object-cover rounded mb-2"
-                      />
-                      <h3 className="font-semibold text-gray-900 text-sm mb-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-gray-600">
-                        {item.description}
-                      </p>
-                    </div>
-                  ))}
                 </div>
               )}
             </div>
@@ -455,15 +389,22 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 <div key={item.key} className="border-b border-gray-200">
                   {item.hasDropdown ? (
                     <div>
-                      <button
-                        onClick={() => toggleMobileSection(item.key)}
-                        className="w-full flex items-center justify-between py-4 text-left text-gray-900 font-medium"
-                      >
-                        {item.label}
-                        <ChevronDown className={`h-4 w-4 transform transition-transform ${
-                          expandedMobileSection === item.key ? 'rotate-180' : ''
-                        }`} />
-                      </button>
+                      <div className="flex items-center">
+                        <Link
+                          href={item.link}
+                          className="flex-1 py-4 text-left text-gray-900 font-medium"
+                        >
+                          {item.label}
+                        </Link>
+                        <button
+                          onClick={() => toggleMobileSection(item.key)}
+                          className="p-4"
+                        >
+                          <ChevronDown className={`h-4 w-4 transform transition-transform ${
+                            expandedMobileSection === item.key ? 'rotate-180' : ''
+                          }`} />
+                        </button>
+                      </div>
                       {expandedMobileSection === item.key && navigationData[item.key]?.content && (
                         <div className="pb-4">
                           {navigationData[item.key].content?.left?.map((linkItem, index) => (
@@ -496,7 +437,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                     </div>
                   ) : (
                     <Link
-                      href={item.link || '#'}
+                      href={item.link}
                       className="block py-4 text-gray-900 font-medium"
                     >
                       {item.label}
@@ -511,16 +452,46 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     );
   };
 
+  // Loading state
   if (isLoading) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            <div className="text-2xl font-bold">DressCode</div>
-            <div className="animate-pulse">Chargement...</div>
+      <>
+        {/* Sub-Header Skeleton */}
+        <div className="fixed top-0 left-0 right-0 z-40 bg-gray-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between h-10">
+              <div className="flex items-center space-x-2 flex-1">
+                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="flex-1 text-center">
+                  <div className="w-80 h-3 bg-gray-200 rounded mx-auto animate-pulse"></div>
+                </div>
+                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Header principal Skeleton */}
+        <header className="fixed top-10 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm shadow-sm">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between h-16">
+              <div className="w-32 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <nav className="hidden md:flex items-center space-x-4">
+                {[1, 2, 3, 4, 5].map((item) => (
+                  <div key={item} className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
+                ))}
+              </nav>
+              <div className="flex items-center space-x-3">
+                <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                <div className="md:hidden w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </header>
+      </>
     );
   }
 
@@ -562,6 +533,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>
+
             {/* Informations utilisateur */}
             <div className="flex items-center space-x-6">
               <button
@@ -601,6 +573,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               </Link>
             </div>
 
+            {/* Navigation dynamique basée sur les catégories */}
             <nav className="hidden md:flex items-center space-x-4">
               {Object.entries(navigationData).map(([key, nav]) => (
                 <div
@@ -609,25 +582,15 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   onMouseEnter={() => nav.hasDropdown && handleMouseEnter(key)}
                   onMouseLeave={() => nav.hasDropdown && handleMouseLeave()}
                 >
-                  {nav.hasDropdown ? (
-                    <button
-                      className={`flex items-center text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
-                        shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
-                      }`}
-                    >
-                      {key}
-                      <ChevronDown className="ml-1 h-3 w-3" />
-                    </button>
-                  ) : nav.link ? (
-                    <Link
-                      href={nav.link}
-                      className={`text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
-                        shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
-                      }`}
-                    >
-                      {key}
-                    </Link>
-                  ) : null}
+                  <Link
+                    href={nav.link}
+                    className={`flex items-center text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
+                      shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                    }`}
+                  >
+                    {key}
+                    {nav.hasDropdown && <ChevronDown className="ml-1 h-3 w-3" />}
+                  </Link>
                 </div>
               ))}
             </nav>
@@ -640,6 +603,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               >
                 <Search className="h-5 w-5" />
               </button>
+
               <button
                 className={`p-2 relative transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
@@ -654,6 +618,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   </span>
                 )}
               </button>
+
               <button
                 onClick={toggleCartSidebar}
                 className={`p-2 relative transition-colors duration-300 ${
@@ -669,6 +634,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   </span>
                 )}
               </button>
+
               <button
                 className={`md:hidden p-2 transition-colors duration-300 ${
                   shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
@@ -681,6 +647,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
           </div>
         </div>
 
+        {/* Dropdown content */}
         {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
           <div
             onMouseEnter={() => handleMouseEnter(activeDropdown)}

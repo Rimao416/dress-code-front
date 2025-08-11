@@ -137,7 +137,7 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
 
     return (
       <div className={`${span} ${height} relative overflow-hidden group cursor-pointer`}>
-        <Link href={`/categories/${category.slug}`} className="block h-full">
+        <Link href={`/collections/${category.slug}`} className="block h-full">
           <Image
             src={category.image || '/placeholder-category.jpg'}
             alt={category.name}
@@ -202,9 +202,7 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
           {subtitle}
         </p>
         {/* Indicateur du layout actuel (optionnel, pour debug) */}
-        <div className="text-xs text-gray-400 mt-2 opacity-50">
-          Layout: {selectedLayout.name}
-        </div>
+      
       </div>
 
       {/* Section dynamique */}

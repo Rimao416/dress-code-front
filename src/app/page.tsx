@@ -18,11 +18,18 @@ import ProductCard from '@/components/common/ProductCard';
 import { useFavorites } from '@/hooks/product/useFavorites';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/input';
-// Données statiques qui ne viennent pas de la base de données
-import { occasionReadySection, trendingTopsSection } from '@/constant/data';
 import { useHomePage } from '@/hooks/useHomepage';
 import { ProductCardData } from '@/types/product';
 import { CategoryWithProducts } from '@/types/homepage';
+
+// Import des skeletons
+import {
+  HeroSkeletonLoader,
+  NewInSectionSkeleton,
+  FeaturedProductsSkeleton,
+  CategoriesSectionSkeleton,
+  ProductCardSkeleton
+} from '@/components/ui/SkeletonLoaders';
 
 type FormErrors = {
   firstName?: string;
@@ -67,7 +74,7 @@ const HomePage = () => {
   };
 
   const handleCategoryClick = (category: CategoryWithProducts) => {
-    router.push(`/categories/${category.slug}`);
+    router.push(`/collections/${category.slug}`);
   };
 
   const [formData, setFormData] = useState({
@@ -298,7 +305,10 @@ const HomePage = () => {
     <div className="min-h-screen">
       {/* Hero Section avec slider */}
       <div className="relative h-screen w-full overflow-hidden">
-        {sliders.length > 0 ? (
+        {isLoading ? (
+          // Afficher le skeleton pendant le chargement des sliders
+          <HeroSkeletonLoader />
+        ) : sliders.length > 0 ? (
           <Swiper
             modules={[Navigation, Pagination, Autoplay, EffectFade]}
             spaceBetween={0}
@@ -359,208 +369,197 @@ const HomePage = () => {
             ))}
           </Swiper>
         ) : (
-          // Fallback si pas de sliders ou en cours de chargement
+          // Fallback si pas de sliders
           <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-            {isLoading ? (
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
-                <p className="mt-4 text-gray-600">Chargement...</p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900">Bienvenue sur DRESSCODE</h2>
-              </div>
-            )}
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Bienvenue sur DRESSCODE</h2>
+            </div>
           </div>
         )}
        
-        <div className="swiper-pagination !bottom-8 !right-8 !left-auto !w-auto flex space-x-2"></div>
+        {!isLoading && (
+          <div className="swiper-pagination !bottom-8 !right-8 !left-auto !w-auto flex space-x-2"></div>
+        )}
         <Header/>
       </div>
 
       {/* Section Nouveautés */}
-      <section className="py-16 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-12">
-            <div className="lg:w-1/3 flex flex-col justify-center">
-              <div className="text-sm text-gray-600 mb-2 tracking-wider uppercase">
-                {newInProducts.length} NOUVEAUTÉS
+      {isLoading ? (
+        <NewInSectionSkeleton />
+      ) : (
+        <section className="py-16 px-4 bg-gray-50">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col lg:flex-row gap-12">
+              <div className="lg:w-1/3 flex flex-col justify-center">
+                <div className="text-sm text-gray-600 mb-2 tracking-wider uppercase">
+                  {newInProducts.length} NOUVEAUTÉS
+                </div>
+                <h2 className="text-4xl lg:text-5xl font-serif text-black mb-6">
+                  Nouveautés
+                </h2>
+                <p className="text-gray-700 mb-8 leading-relaxed">
+                  Nouveautés disponibles dès maintenant cinq jours par semaine - découvrez les dernières sorties sur le site du lundi au vendredi
+                </p>
+             
               </div>
-              <h2 className="text-4xl lg:text-5xl font-serif text-black mb-6">
-                Nouveautés
-              </h2>
-              <p className="text-gray-700 mb-8 leading-relaxed">
-                Nouveautés disponibles dès maintenant cinq jours par semaine - découvrez les dernières sorties sur le site du lundi au vendredi
-              </p>
-              <div className="flex gap-4">
-                <Button size="md" variant='black' className="w-fit">
-                  Acheter maintenant
-                </Button>
-              </div>
-            </div>
-           
-            <div className="lg:w-2/3">
-              <div className="relative">
-                {newInProducts.length > 0 ? (
-                  <Swiper
-                    modules={[Navigation]}
-                    spaceBetween={20}
-                    slidesPerView={1.2}
-                    navigation={{
-                      nextEl: '.new-in-button-next',
-                      prevEl: '.new-in-button-prev',
-                    }}
-                    onSwiper={(swiper) => {
-                      setIsNewInBeginning(swiper.isBeginning);
-                      setIsNewInEnd(swiper.isEnd);
-                    }}
-                    onSlideChange={(swiper) => {
-                      setNewInSlideIndex(swiper.activeIndex);
-                      setIsNewInBeginning(swiper.isBeginning);
-                      setIsNewInEnd(swiper.isEnd);
-                    }}
-                    breakpoints={{
-                      640: { slidesPerView: 2.2 },
-                      768: { slidesPerView: 2.5 },
-                      1024: { slidesPerView: 3.2 },
-                    }}
-                    className="overflow-visible"
-                  >
-                    {newInProducts.map((product) => (
-                      <SwiperSlide key={product.id}>
-                        <ProductCard
-                          product={product}
-                          isFavorite={isFavorite(product.id)}
-                          onToggleFavorite={toggleFavorite}
-                          onClick={handleProductClick}
-                          showBrand={true}
-                          showPrice={true}
-                        />
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-600">Aucun nouveau produit disponible</p>
-                  </div>
-                )}
-               
-                {/* Navigation Arrows */}
-                {!isNewInBeginning && (
-                  <button className="new-in-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
-                    <ChevronDown className="h-5 w-5 rotate-90 text-black" />
-                  </button>
-                )}
-                {!isNewInEnd && (
-                  <button className="new-in-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
-                    <ChevronDown className="h-5 w-5 -rotate-90 text-black" />
-                  </button>
-                )}
+             
+              <div className="lg:w-2/3">
+                <div className="relative">
+                  {newInProducts.length > 0 ? (
+                    <Swiper
+                      modules={[Navigation]}
+                      spaceBetween={20}
+                      slidesPerView={1.2}
+                      navigation={{
+                        nextEl: '.new-in-button-next',
+                        prevEl: '.new-in-button-prev',
+                      }}
+                      onSwiper={(swiper) => {
+                        setIsNewInBeginning(swiper.isBeginning);
+                        setIsNewInEnd(swiper.isEnd);
+                      }}
+                      onSlideChange={(swiper) => {
+                        setNewInSlideIndex(swiper.activeIndex);
+                        setIsNewInBeginning(swiper.isBeginning);
+                        setIsNewInEnd(swiper.isEnd);
+                      }}
+                      breakpoints={{
+                        640: { slidesPerView: 2.2 },
+                        768: { slidesPerView: 2.5 },
+                        1024: { slidesPerView: 3.2 },
+                      }}
+                      className="overflow-visible"
+                    >
+                      {newInProducts.map((product) => (
+                        <SwiperSlide key={product.id}>
+                          <ProductCard
+                            product={product}
+                            isFavorite={isFavorite(product.id)}
+                            onToggleFavorite={toggleFavorite}
+                            onClick={handleProductClick}
+                            showBrand={true}
+                            showPrice={true}
+                          />
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600">Aucun nouveau produit disponible</p>
+                    </div>
+                  )}
+                 
+                  {/* Navigation Arrows */}
+                  {!isNewInBeginning && (
+                    <button className="new-in-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
+                      <ChevronDown className="h-5 w-5 rotate-90 text-black" />
+                    </button>
+                  )}
+                  {!isNewInEnd && (
+                    <button className="new-in-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
+                      <ChevronDown className="h-5 w-5 -rotate-90 text-black" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Full Screen Split Section */}
       {/* <SplitSection {...trendingTopsSection} /> */}
 
       {/* Section Produits mis en avant */}
-      <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-4 md:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 sm:mb-10 md:mb-12">
-            <h2 className="text-xs sm:text-sm font-medium text-black tracking-[0.15em] sm:tracking-[0.2em] uppercase px-4">
-              Les marques qui retiennent notre attention
-            </h2>
+      {isLoading ? (
+        <FeaturedProductsSkeleton />
+      ) : (
+        <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-4 md:px-6 lg:px-8 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-8 sm:mb-10 md:mb-12">
+              <h2 className="text-xs sm:text-sm font-medium text-black tracking-[0.15em] sm:tracking-[0.2em] uppercase px-4">
+                Les marques qui retiennent notre attention
+              </h2>
+            </div>
+           
+            {featuredProducts.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-1">
+                {featuredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    isFavorite={isFavorite(product.id)}
+                    onToggleFavorite={toggleFavorite}
+                    onClick={handleProductClick}
+                    showBrand={true}
+                    showPrice={true}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Aucun produit mis en avant disponible</p>
+                <Button
+                  className="mt-4"
+                  onClick={() => refreshSection('featured')}
+                  disabled={isAnyLoading}
+                >
+                  Actualiser
+                </Button>
+              </div>
+            )}
           </div>
-         
-          {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-1">
-              {featuredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isFavorite={isFavorite(product.id)}
-                  onToggleFavorite={toggleFavorite}
-                  onClick={handleProductClick}
-                  showBrand={true}
-                  showPrice={true}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Aucun produit mis en avant disponible</p>
-              <Button
-                className="mt-4"
-                onClick={() => refreshSection('featured')}
-                disabled={isAnyLoading}
-              >
-                Actualiser
-              </Button>
-            </div>
-          )}
-        </div>
-      </section>
+        </section>
+      )}
 
-<SplitSection 
-  categories={categories}
-  title="Collections Phares"
-  subtitle="Découvrez nos catégories les plus populaires"
-/>
-
+      <SplitSection 
+        categories={categories}
+        title="Collections Phares"
+        subtitle="Découvrez nos catégories les plus populaires"
+      />
 
       {/* Section Catégories - AVEC VRAIES DONNÉES */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          {/* Titre */}
-          <div className="text-center mb-12">
-            <h2 className="text-4xl lg:text-5xl font-serif text-black mb-4">
-              Parcourir par catégorie
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Découvrez nos collections avec {categories.length} catégories disponibles
-            </p>
-          </div>
-
-          {/* Affichage des catégories */}
-          {isLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
-              <p className="text-gray-600">Chargement des catégories...</p>
+      {isLoading ? (
+        <CategoriesSectionSkeleton />
+      ) : (
+        <section className="py-16 px-4 bg-white">
+          <div className="max-w-7xl mx-auto">
+            {/* Titre */}
+            <div className="text-center mb-12">
+              <h2 className="text-4xl lg:text-5xl font-serif text-black mb-4">
+                Parcourir par catégorie
+              </h2>
+              <p className="text-gray-600 text-lg">
+                Découvrez nos collections avec {categories.length} catégories disponibles
+              </p>
             </div>
-          ) : categories.length > 0 ? (
-            <>
-              {/* Grille adaptative des catégories */}
-              {createCategoryGrid(categories)}
-              
-              {/* Lien vers toutes les catégories */}
-              <div className="text-center mt-8">
-                <Link
-                  href="/categories"
-                  className="inline-flex items-center px-6 py-3 border border-black text-black hover:bg-black hover:text-white transition-colors duration-200"
+
+            {/* Affichage des catégories */}
+            {categories.length > 0 ? (
+              <>
+                {/* Grille adaptative des catégories */}
+                {createCategoryGrid(categories)}
+                
+                {/* Lien vers toutes les catégories */}
+               
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600 mb-4">Aucune catégorie disponible</p>
+                <Button
+                  onClick={() => refreshSection('categories')}
+                  disabled={isAnyLoading}
+                  variant="black"
                 >
-                  Voir toutes les catégories
-                  <ChevronDown className="ml-2 h-4 w-4 -rotate-90" />
-                </Link>
+                  Actualiser les catégories
+                </Button>
               </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">Aucune catégorie disponible</p>
-              <Button
-                onClick={() => refreshSection('categories')}
-                disabled={isAnyLoading}
-                variant="black"
-              >
-                Actualiser les catégories
-              </Button>
-            </div>
-          )}
-        </div>
-      </section>
+            )}
+          </div>
+        </section>
+      )}
 
-      {/* Section Support */}
+      {/* Section Support - Toujours affichée car statique */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -588,7 +587,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Section Newsletter */}
+      {/* Section Newsletter - Toujours affichée car statique */}
       <section className="py-16 bg-gray-100">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -706,7 +705,6 @@ const HomePage = () => {
       </section>
 
       <Footer/>
-      
       {/* Styles personnalisés pour Swiper */}
       <style jsx global>{`
         .swiper-pagination-bullet {
