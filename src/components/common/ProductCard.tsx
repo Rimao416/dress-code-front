@@ -6,11 +6,10 @@ import {
   normalizeProductForCard,
   ProductCardItem,
 } from "@/types/product";
+import { useFavorites } from "@/hooks/product/useFavorites";
 
 interface ProductCardProps {
   product: ProductCardItem;
-  isFavorite: boolean;
-  onToggleFavorite: (productId: string) => void;
   onClick?: (product: ProductCardItem) => void;
   className?: string;
   showBrand?: boolean;
@@ -21,8 +20,6 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
-  isFavorite,
-  onToggleFavorite,
   onClick,
   className = "",
   showBrand = true,
@@ -32,25 +29,40 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const normalizedProduct = normalizeProductForCard(product);
   
+  // Utilisation du hook useFavorites pour la gestion des favoris
+  const { isFavorite, toggleFavorite } = useFavorites();
+  
+  // Vérifier si le produit est dans les favoris
+  const isProductFavorite = isFavorite(product.id);
+ 
   const handleClick = () => {
     if (onClick) {
       onClick(product);
     }
   };
-  
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+ 
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onToggleFavorite(product.id);
+    
+    // Utiliser toggleFavorite qui retourne un objet avec success et added
+    const result = toggleFavorite(normalizedProduct);
+    
+    // Optionnel : afficher un feedback à l'utilisateur
+    if (result.success) {
+      console.log(result.message); // "Ajouté aux favoris" ou "Retiré des favoris"
+    } else if (result.error) {
+      console.error('Erreur favoris:', result.error);
+    }
   };
-  
+ 
   // Image par défaut SVG en base64
   const defaultImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K";
-  
+ 
   // Correction : utiliser l'image par défaut si pas d'image disponible
-  const productImage = product.images?.[0] && product.images[0].trim() !== "" 
-    ? product.images[0] 
+  const productImage = product.images?.[0] && product.images[0].trim() !== ""
+    ? product.images[0]
     : defaultImage;
-  
+ 
   return (
     <div
       className={`group cursor-pointer ${className}`}
@@ -70,17 +82,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
             e.currentTarget.src = defaultImage;
           }}
         />
-        {/* Bouton favori */}
+        {/* Bouton favori avec logique intégrée */}
         <button
           onClick={handleFavoriteClick}
           className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/heart"
-          aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+          aria-label={isProductFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
           <Heart
             className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${
-              isFavorite
-                ? "fill-black text-black"
-                : "text-gray-600 hover:text-black"
+              isProductFavorite
+                ? "fill-red-500 text-red-500"
+                : "text-gray-600 hover:text-red-500"
             }`}
           />
         </button>
@@ -90,12 +102,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
             NOUVEAU
           </div>
         )}
-        {/* Badge vedette */}
-        {/* {product.featured && (
-          <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 bg-red-600 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
-            VEDETTE
-          </div>
-        )} */}
       </div>
       {/* Informations produit */}
       <div className={`pt-2 sm:pt-3 space-y-1 ${contentClassName}`}>

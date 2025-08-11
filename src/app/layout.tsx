@@ -5,7 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { MessageProvider } from "@/context/NotificationContext";
 import MessageDisplay from "@/components/MessageDisplay";
-import { FavoritesProvider } from "@/context/FavoritesContext";
+
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,12 +26,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
-          <FavoritesProvider> {/* ✅ ← Ajout ici */}
+
             <MessageProvider>
               <MessageDisplay />
               {children}
             </MessageProvider>
-          </FavoritesProvider>
         </AuthProvider>
       </body>
     </html>
