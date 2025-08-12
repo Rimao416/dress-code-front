@@ -482,7 +482,7 @@ const CheckoutPaiement: React.FC<Props> = ({
         </motion.label>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
@@ -510,7 +510,7 @@ const CheckoutPaiement: React.FC<Props> = ({
             <span>{orderSummary.total.toFixed(2)} €</span>
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
     </>
   );
 };

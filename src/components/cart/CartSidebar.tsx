@@ -4,6 +4,7 @@ import React from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/hooks/cart/useCart';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 interface CartSidebarProps {
@@ -12,6 +13,7 @@ interface CartSidebarProps {
 }
 
 const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
+  const router = useRouter();
   const {
     items,
     totalPrice,
@@ -23,12 +25,20 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
     totalSavings
   } = useCart();
 
+  // Gestion de la redirection vers checkout
+  const handleCheckout = () => {
+    // Fermer le sidebar d'abord
+    onClose();
+    // Rediriger vers la page checkout
+    router.push('/checkout');
+  };
+
   // Correction 1: Typer correctement les variants avec le type "spring"
   const sidebarVariants: Variants = {
     closed: {
       x: '100%',
       transition: {
-        type: 'spring' as const, // Ajout de "as const" pour que TypeScript reconnaisse le type literal
+        type: 'spring' as const,
         stiffness: 300,
         damping: 30
       }
@@ -133,6 +143,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
+            
             {/* Content */}
             {isEmpty ? (
               <div className="flex-1 flex items-center justify-center p-6">
@@ -170,18 +181,16 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                         {/* Product Image */}
                         <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                           <Image
-                            // Correction 2: item.product.images est un array de strings, pas d'objets
                             src={item.product.images[0] || '/placeholder-image.jpg'}
-                            // Correction 3: Utiliser item.product.name au lieu de title
                             alt={item.product.name}
                             width={64}
                             height={64}
                             className="w-full h-full object-cover"
                           />
                         </div>
+                        
                         {/* Product Details */}
                         <div className="flex-1 min-w-0">
-                          {/* Correction 4: Utiliser item.product.name au lieu de title */}
                           <h3 className="font-medium text-gray-900 text-sm mb-1 truncate">
                             {item.product.name}
                           </h3>
@@ -195,6 +204,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                               <p>Couleur: {item.selectedColor}</p>
                             )}
                           </div>
+                          
                           {/* Price */}
                           <div className="mt-2 flex items-center space-x-2">
                             <span className="font-semibold text-gray-900">
@@ -206,6 +216,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                               </span>
                             )}
                           </div>
+                          
                           {/* Quantity Controls */}
                           <div className="mt-3 flex items-center justify-between">
                             <div className="flex items-center border border-gray-300 rounded-lg">
@@ -239,6 +250,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                     ))}
                   </AnimatePresence>
                 </div>
+                
                 {/* Footer */}
                 <div className="border-t border-gray-200 p-6 bg-gray-50">
                   {/* Savings */}
@@ -250,14 +262,19 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                       </span>
                     </div>
                   )}
+                  
                   {/* Total */}
                   <div className="flex justify-between items-center mb-4 text-lg font-semibold">
                     <span>Total:</span>
                     <span>{formatPrice(totalPrice)}</span>
                   </div>
+                  
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <button className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                    <button 
+                      onClick={handleCheckout}
+                      className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                    >
                       Finaliser la commande
                     </button>
                     <div className="flex space-x-3">
