@@ -44,33 +44,6 @@ async function getProductData(slug: string) {
             createdAt: 'asc',
           },
         },
-        reviews: {
-          where: {
-            isVisible: true,
-          },
-          include: {
-            client: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-          take: 10, // Limiter à 10 avis récents
-        },
-        _count: {
-          select: {
-            reviews: {
-              where: {
-                isVisible: true,
-              },
-            },
-            favorites: true,
-          },
-        },
       },
     })
 
@@ -78,14 +51,8 @@ async function getProductData(slug: string) {
       return null
     }
 
-    // Calcul de la note moyenne
-    const averageRating = product.reviews.length > 0
-      ? Math.round((product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length) * 10) / 10
-      : 0
-
     return {
       ...product,
-      averageRating,
     }
   } catch (error) {
     console.error('Erreur lors de la récupération du produit:', error)
