@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useFavorites } from '@/hooks/product/useFavorites';
+
 import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 import SignUpModal from '../modal/SignUpModal';
@@ -61,7 +61,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isClient, setIsClient] = useState(false);
   const { user, isAuthenticated, loading, logout, checkAuthStatus } = useAuth();
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
-  const { favoritesCount } = useFavorites();
   const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
 
   // Charger les catégories depuis l'API
@@ -603,22 +602,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               >
                 <Search className="h-5 w-5" />
               </button>
-
-              <button
-                className={`p-2 relative transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
-                }`}
-              >
-                <Heart className="h-5 w-5" />
-                {isClient && favoritesCount > 0 && (
-                  <span className={`absolute -top-1 -right-1 text-xs font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 transform ${
-                    shouldApplyScrolledStyle ? 'bg-black text-white' : 'bg-white text-black'
-                  } ${favoritesCount > 99 ? 'scale-110' : ''}`}>
-                    {favoritesCount > 99 ? '99+' : favoritesCount}
-                  </span>
-                )}
-              </button>
-
               <button
                 onClick={toggleCartSidebar}
                 className={`p-2 relative transition-colors duration-300 ${

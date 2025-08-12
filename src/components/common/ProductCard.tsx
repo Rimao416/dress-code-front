@@ -6,7 +6,6 @@ import {
   normalizeProductForCard,
   ProductCardItem,
 } from "@/types/product";
-import { useFavorites } from "@/hooks/product/useFavorites";
 
 interface ProductCardProps {
   product: ProductCardItem;
@@ -29,32 +28,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const normalizedProduct = normalizeProductForCard(product);
   
-  // Utilisation du hook useFavorites pour la gestion des favoris
-  const { isFavorite, toggleFavorite } = useFavorites();
   
-  // Vérifier si le produit est dans les favoris
-  const isProductFavorite = isFavorite(product.id);
- 
+
   const handleClick = () => {
     if (onClick) {
       onClick(product);
     }
   };
- 
-  const handleFavoriteClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    // CORRECTION: Passer le produit original au lieu du normalisé
-    const result = toggleFavorite(product); // ✅ Utiliser product au lieu de normalizedProduct
-    
-    // Optionnel : afficher un feedback à l'utilisateur
-    if (result.success) {
-      console.log(result.message); // "Ajouté aux favoris" ou "Retiré des favoris"
-    } else if (result.error) {
-      console.error('Erreur favoris:', result.error);
-    }
-  };
- 
+
   // Image par défaut SVG en base64
   const defaultImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K";
  
@@ -83,19 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           }}
         />
         {/* Bouton favori avec logique intégrée */}
-        <button
-          onClick={handleFavoriteClick}
-          className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/heart"
-          aria-label={isProductFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-        >
-          <Heart
-            className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${
-              isProductFavorite
-                ? "fill-red-500 text-red-500"
-                : "text-gray-600 hover:text-red-500"
-            }`}
-          />
-        </button>
+      
         {/* Badge nouveau */}
         {normalizedProduct.isNewIn && (
           <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">

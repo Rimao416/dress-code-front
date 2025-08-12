@@ -15,7 +15,6 @@ import Footer from '@/components/common/Footer';
 import Button from '@/components/ui/button';
 import ButtonLink from '@/components/ui/buttonLink';
 import ProductCard from '@/components/common/ProductCard';
-import { useFavorites } from '@/hooks/product/useFavorites';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/input';
 import { useHomePage } from '@/hooks/useHomepage';
@@ -41,7 +40,6 @@ type FormErrors = {
 
 const HomePage = () => {
   const router = useRouter();
-  const { isFavorite, toggleFavorite } = useFavorites();
  
   // Utiliser le nouveau hook pour charger les données
   const {
