@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Minus, Plus, Check, X, ShoppingBag } from 'lucide-react';
 import { ProductWithFullData, ProductVariant } from '@/types/product';
-import Header from '../common/Header';
 import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 
@@ -152,7 +151,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
 
   return (
     <>
-      <Header forceScrolledStyle={true} />
       
       {/* Mini-panier flottant */}
       {showMiniCart && addedItem && (
