@@ -434,8 +434,6 @@ const HomePage = () => {
                         <SwiperSlide key={product.id}>
                           <ProductCard
                             product={product}
-                            isFavorite={isFavorite(product.id)}
-                            onToggleFavorite={toggleFavorite}
                             onClick={handleProductClick}
                             showBrand={true}
                             showPrice={true}
@@ -488,8 +486,6 @@ const HomePage = () => {
                   <ProductCard
                     key={product.id}
                     product={product}
-                    isFavorite={isFavorite(product.id)}
-                    onToggleFavorite={toggleFavorite}
                     onClick={handleProductClick}
                     showBrand={true}
                     showPrice={true}

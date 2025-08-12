@@ -1,5 +1,5 @@
 // hooks/product/useFavorites.ts
-import { ProductWithFullData } from '@/types/product';
+import { ProductWithFullData, ProductCardItem, isFullProduct } from '@/types/product';
 import { FavoriteItem } from '@/types/favorites';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 
@@ -16,10 +16,52 @@ export const useFavorites = () => {
     getFavoriteItem
   } = useFavoritesStore();
 
+  // Fonction utilitaire pour convertir ProductCardItem vers ProductWithFullData
+  const convertToFullProduct = (product: ProductCardItem): ProductWithFullData => {
+    if (isFullProduct(product)) {
+      return product;
+    }
+    
+    // Convertir ProductCardData vers ProductWithFullData avec des valeurs par défaut
+    return {
+      ...product,
+      description: '',
+      shortDescription: null,
+      categoryId: '',
+      brandId: product.brand ? 'unknown' : null,
+      sku: '',
+      stock: product.stock ?? 10,
+      available: true,
+      featured: product.featured ?? false,
+      isNewIn: product.isNewIn ?? false,
+      tags: [],
+      metaTitle: null,
+      metaDescription: null,
+      slug: product.name.toLowerCase().replace(/\s+/g, '-'),
+      weight: null,
+      dimensions: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      category: {
+        id: '',
+        name: '',
+        slug: ''
+      },
+      variants: [],
+      reviews: [],
+      averageRating: 0,
+      _count: {
+        reviews: 0,
+        favorites: 0
+      }
+    } as ProductWithFullData;
+  };
+
   // Fonction pour ajouter un produit aux favoris avec validation
-  const addToFavorites = (product: ProductWithFullData) => {
+  const addToFavorites = (product: ProductCardItem) => {
     try {
-      addItem(product);
+      const fullProduct = convertToFullProduct(product);
+      addItem(fullProduct);
       return { success: true };
     } catch (error) {
       return { 
@@ -43,9 +85,10 @@ export const useFavorites = () => {
   };
 
   // Fonction pour basculer le statut favori d'un produit
-  const toggleFavorite = (product: ProductWithFullData) => {
+  const toggleFavorite = (product: ProductCardItem) => {
     try {
-      const wasAdded = toggleItem(product);
+      const fullProduct = convertToFullProduct(product);
+      const wasAdded = toggleItem(fullProduct);
       return { 
         success: true, 
         added: wasAdded,

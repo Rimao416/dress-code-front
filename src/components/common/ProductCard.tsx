@@ -44,8 +44,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Utiliser toggleFavorite qui retourne un objet avec success et added
-    const result = toggleFavorite(normalizedProduct);
+    // CORRECTION: Passer le produit original au lieu du normalisé
+    const result = toggleFavorite(product); // ✅ Utiliser product au lieu de normalizedProduct
     
     // Optionnel : afficher un feedback à l'utilisateur
     if (result.success) {
@@ -58,9 +58,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // Image par défaut SVG en base64
   const defaultImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K";
  
-  // Correction : utiliser l'image par défaut si pas d'image disponible
-  const productImage = product.images?.[0] && product.images[0].trim() !== ""
-    ? product.images[0]
+  // Utiliser le produit normalisé pour l'affichage
+  const productImage = normalizedProduct.images?.[0] && normalizedProduct.images[0].trim() !== ""
+    ? normalizedProduct.images[0]
     : defaultImage;
  
   return (
@@ -73,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       >
         <Image
           src={productImage}
-          alt={product.name}
+          alt={normalizedProduct.name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -97,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
         </button>
         {/* Badge nouveau */}
-        {product.isNewIn && (
+        {normalizedProduct.isNewIn && (
           <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
             NOUVEAU
           </div>
@@ -105,35 +105,35 @@ const ProductCard: React.FC<ProductCardProps> = ({
       </div>
       {/* Informations produit */}
       <div className={`pt-2 sm:pt-3 space-y-1 ${contentClassName}`}>
-        {showBrand && product.brand && (
+        {showBrand && normalizedProduct.brand && (
           <h3 className="text-[10px] sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
-            {product.brand.name}
+            {normalizedProduct.brand.name}
           </h3>
         )}
         <p className="text-xs sm:text-sm text-black font-medium line-clamp-2 leading-tight">
-          {product.name}
+          {normalizedProduct.name}
         </p>
         {showPrice && (
           <div className="flex items-center space-x-2">
             <p className="text-xs sm:text-sm font-semibold text-black">
-              ${product.price.toFixed(2)}
+              ${normalizedProduct.price.toFixed(2)}
             </p>
-            {product.comparePrice &&
-              product.comparePrice > product.price && (
+            {normalizedProduct.comparePrice &&
+              normalizedProduct.comparePrice > normalizedProduct.price && (
                 <p className="text-xs sm:text-sm text-gray-500 line-through">
-                  ${product.comparePrice.toFixed(2)}
+                  ${normalizedProduct.comparePrice.toFixed(2)}
                 </p>
               )}
           </div>
         )}
         {/* Stock faible */}
-        {typeof product.stock === "number" && product.stock > 0 && product.stock <= 5 && (
+        {typeof normalizedProduct.stock === "number" && normalizedProduct.stock > 0 && normalizedProduct.stock <= 5 && (
           <p className="text-[10px] sm:text-xs text-red-600 font-medium">
-            Plus que {product.stock} en stock
+            Plus que {normalizedProduct.stock} en stock
           </p>
         )}
         {/* Rupture de stock */}
-        {product.stock === 0 && (
+        {normalizedProduct.stock === 0 && (
           <p className="text-[10px] sm:text-xs text-red-600 font-medium">
             Rupture de stock
           </p>
