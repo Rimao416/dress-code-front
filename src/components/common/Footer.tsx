@@ -40,7 +40,6 @@ function Footer() {
                   <li><a href="#" className="hover:text-gray-900">À propos de nous</a></li>
                   <li><a href="#" className="hover:text-gray-900">Boutiques partenaires DRESSCODE</a></li>
                   <li><a href="#" className="hover:text-gray-900">Carrières (site en anglais)</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Appli DRESSCODE</a></li>
                   <li><a href="#" className="hover:text-gray-900">Déclarations sur l'esclavage moderne</a></li>
                   <li><a href="#" className="hover:text-gray-900">DRESSCODE Advertising</a></li>
                 </ul>
