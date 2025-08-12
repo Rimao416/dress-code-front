@@ -17,74 +17,79 @@ async function getRecommendedProductsData(productSlug: string, limit = 5) {
       return []
     }
 
-    return await prisma.product.findMany({
-      where: {
-        available: true,
-        id: {
-          not: currentProduct.id,
-        },
-        OR: [
-          // Produits de la même marque
-          currentProduct.brandId ? {
+    // SOLUTION 1: Séparer les requêtes au lieu d'utiliser OR complexe
+    const queries = []
+
+    // Produits de la même marque (si elle existe)
+    if (currentProduct.brandId) {
+      queries.push(
+        prisma.product.findMany({
+          where: {
+            available: true,
             brandId: currentProduct.brandId,
-          } : {},
-          // Produits populaires (avec beaucoup d'avis positifs)
-          {
-            reviews: {
-              some: {
-                isVisible: true,
-                rating: {
-                  gte: 4, // Avis >= 4 étoiles
-                },
-              },
-            },
+            id: { not: currentProduct.id },
           },
-          // Produits mis en avant
-          {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            price: true,
+            comparePrice: true,
+            images: true,
             featured: true,
-          },
-          // Nouveautés
-          {
             isNewIn: true,
+            brand: { select: { name: true } },
+            category: { select: { name: true } },
           },
+          take: Math.ceil(limit / 2), // Diviser la limite
+        })
+      )
+    }
+
+    // Produits mis en avant et nouveautés
+    queries.push(
+      prisma.product.findMany({
+        where: {
+          available: true,
+          id: { not: currentProduct.id },
+          OR: [
+            { featured: true },
+            { isNewIn: true },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          price: true,
+          comparePrice: true,
+          images: true,
+          featured: true,
+          isNewIn: true,
+          brand: { select: { name: true } },
+          category: { select: { name: true } },
+        },
+        orderBy: [
+          { featured: 'desc' },
+          { isNewIn: 'desc' },
+          { createdAt: 'desc' },
         ],
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        price: true,
-        comparePrice: true,
-        images: true,
-        featured: true,
-        isNewIn: true,
-        brand: {
-          select: {
-            name: true,
-          },
-        },
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        _count: {
-          select: {
-            reviews: {
-              where: {
-                isVisible: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: [
-        { featured: 'desc' },
-        { isNewIn: 'desc' },
-        { createdAt: 'desc' },
-      ],
-      take: limit,
-    })
+        take: Math.ceil(limit / 2),
+      })
+    )
+
+    // Exécuter les requêtes en parallèle
+    const results = await Promise.all(queries)
+    
+    // Combiner et dédupliquer les résultats
+    const allProducts = results.flat()
+    const uniqueProducts = Array.from(
+      new Map(allProducts.map(product => [product.id, product])).values()
+    )
+
+    // Retourner seulement la limite demandée
+    return uniqueProducts.slice(0, limit)
+
   } catch (error) {
     console.error('Erreur lors de la récupération des produits recommandés:', error)
     return []

@@ -220,11 +220,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
           <span className="text-2xl font-bold text-black">
             €{currentPrice.toFixed(2)}
           </span>
-          {product.comparePrice && product.comparePrice > currentPrice && (
+          {/* {product.comparePrice && product.comparePrice > currentPrice && (
             <span className="text-lg text-gray-500 line-through">
               €{product.comparePrice.toFixed(2)}
             </span>
-          )}
+          )} */}
         </div>
 
         {/* Sélecteur de taille */}
@@ -343,13 +343,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
         </button>
 
         {/* Final Sale */}
-        {product.comparePrice && product.comparePrice > currentPrice && (
+        {/* {product.comparePrice && product.comparePrice > currentPrice && (
           <div className="text-center">
             <span className="text-sm text-red-600 font-semibold">
              Article non échangeable, non remboursable
             </span>
           </div>
-        )}
+        )} */}
 
         {/* Description courte */}
         {product.shortDescription && (
