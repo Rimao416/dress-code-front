@@ -231,7 +231,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
         ) : (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg">
-              Aucun produit trouvé dans cette catégorie
+              Aucun produit trouvé dans cette collecion
             </p>
           </div>
         )}
