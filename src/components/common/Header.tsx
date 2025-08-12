@@ -71,13 +71,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     }
   });
 
-  // Messages promotionnels rotatifs
-  const promoMessages = [
-    "Livraison gratuite pour les membres du programme DressCode Premium",
-    "Nouvelle collection automne-hiver maintenant disponible",
-    "Retours gratuits sous 30 jours sur tous les articles"
-  ];
-
+ 
   // Fix hydration
   useEffect(() => {
     setIsClient(true);
@@ -100,28 +94,10 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   }, []);
 
   // Rotation automatique des messages promo
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPromoIndex((prevIndex) =>
-        prevIndex === promoMessages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+
 
   const shouldApplyScrolledStyle = forceScrolledStyle || isNavbarHovered || isScrolled;
 
-  const nextPromo = () => {
-    setCurrentPromoIndex((prevIndex) =>
-      prevIndex === promoMessages.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  const prevPromo = () => {
-    setCurrentPromoIndex((prevIndex) =>
-      prevIndex === 0 ? promoMessages.length - 1 : prevIndex - 1
-    );
-  };
 
   // Fonction pour créer le contenu dropdown d'une catégorie
   const createDropdownContent = (category: CategoryWithProducts): DropdownContent => {
@@ -455,24 +431,9 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   if (isLoading) {
     return (
       <>
-        {/* Sub-Header Skeleton */}
-        <div className="fixed top-0 left-0 right-0 z-40 bg-gray-50 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center justify-between h-10">
-              <div className="flex items-center space-x-2 flex-1">
-                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="flex-1 text-center">
-                  <div className="w-80 h-3 bg-gray-200 rounded mx-auto animate-pulse"></div>
-                </div>
-                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-              <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-
+    
         {/* Header principal Skeleton */}
-        <header className="fixed top-10 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm shadow-sm">
+        <header className="fixed left-0 right-0 z-30 bg-white/95 backdrop-blur-sm shadow-sm">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex items-center justify-between h-16">
               <div className="w-32 h-6 bg-gray-200 rounded animate-pulse"></div>
@@ -496,64 +457,11 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   return (
     <>
-      {/* Sub-Header avec promotion et informations utilisateur */}
-      <div className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        shouldApplyScrolledStyle ? 'bg-gray-50 border-b border-gray-200' : 'bg-white/10 backdrop-blur-sm'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-10 text-sm">
-            {/* Message promotionnel avec navigation */}
-            <div className="flex items-center space-x-2 flex-1">
-              <button
-                onClick={prevPromo}
-                className={`p-1 rounded transition-colors ${
-                  shouldApplyScrolledStyle
-                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-                    : 'text-white/80 hover:text-white hover:bg-white/20'
-                }`}
-              >
-                <ChevronLeft className="h-3 w-3" />
-              </button>
-              <div className="flex-1 text-center">
-                <span className={`transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-gray-800' : 'text-white'
-                }`}>
-                  {promoMessages[currentPromoIndex]}
-                </span>
-              </div>
-              <button
-                onClick={nextPromo}
-                className={`p-1 rounded transition-colors ${
-                  shouldApplyScrolledStyle
-                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-                    : 'text-white/80 hover:text-white hover:bg-white/20'
-                }`}
-              >
-                <ChevronRight className="h-3 w-3" />
-              </button>
-            </div>
 
-            {/* Informations utilisateur */}
-            <div className="flex items-center space-x-6">
-              <button
-                onClick={handleUserClick}
-                className={`flex items-center space-x-1 hover:underline transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-gray-700 hover:text-gray-900' : 'text-white/90 hover:text-white'
-                }`}
-              >
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {user ? `Bonjour ${user.client?.firstName}` : 'Rejoignez-nous'}
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Header principal */}
       <header
-        className={`fixed top-10 left-0 right-0 z-30 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
           shouldApplyScrolledStyle ? 'bg-white/95 backdrop-blur-sm shadow-sm' : 'bg-transparent'
         }`}
         onMouseEnter={() => setIsNavbarHovered(true)}
