@@ -30,9 +30,6 @@ function Footer() {
                   <li><a href="#" className="hover:text-gray-900">Commandes & livraison</a></li>
                   <li><a href="#" className="hover:text-gray-900">Retours & remboursements</a></li>
                   <li><a href="#" className="hover:text-gray-900">Paiements & tarification</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Paiements en crypto-monnaie</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Conditions des promotions</a></li>
-                  <li><a href="#" className="hover:text-gray-900">La garantie DRESSCODE</a></li>
                 </ul>
               </div>
 
@@ -49,16 +46,6 @@ function Footer() {
                 </ul>
               </div>
 
-              {/* Programme de fidélité */}
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-4">Programme de fidélité</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li><a href="#" className="hover:text-gray-900">Programme d'affiliation</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Programme de parrainage</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Programme de fidélité</a></li>
-                  <li><a href="#" className="hover:text-gray-900">Student Beans & Diplômé·es</a></li>
-                </ul>
-              </div>
 
               {/* Suivez-nous */}
               <div>
