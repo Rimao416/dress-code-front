@@ -254,15 +254,6 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                 {/* Footer */}
                 <div className="border-t border-gray-200 p-6 bg-gray-50">
                   {/* Savings */}
-                  {totalSavings > 0 && (
-                    <div className="flex justify-between items-center mb-3 text-sm text-green-600">
-                      <span>Vous économisez:</span>
-                      <span className="font-semibold">
-                        -{formatPrice(totalSavings)}
-                      </span>
-                    </div>
-                  )}
-                  
                   {/* Total */}
                   <div className="flex justify-between items-center mb-4 text-lg font-semibold">
                     <span>Total:</span>
