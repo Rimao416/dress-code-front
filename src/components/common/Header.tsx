@@ -6,10 +6,7 @@ import Link from 'next/link';
 
 import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
-import SignUpModal from '../modal/SignUpModal';
-import LoginModal from '../modal/LoginModal';
 import CartSidebar from '../cart/CartSidebar';
-import { useAuth } from '@/context/AuthContext';
 import { useHomePage } from '@/hooks/useHomepage';
 import { CategoryWithProducts } from '@/types/homepage';
 
@@ -37,12 +34,9 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
  
-  // États pour les modals
-  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
- 
+  // États pour les modals 
   const [isClient, setIsClient] = useState(false);
-  const { user, isAuthenticated, loading, checkAuthStatus } = useAuth();
+
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
 
@@ -59,11 +53,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (isClient && !loading && !user) {
-      checkAuthStatus();
-    }
-  }, [isClient]);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -126,24 +116,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   const navigationData = createSimpleNavigation();
 
-  // Gestion des modals
-  const handleUserClick = () => {
-    if (user && isAuthenticated) {
-      console.log('User is authenticated:', user);
-    } else {
-      setIsSignUpModalOpen(true);
-    }
-  };
 
-  const handleOpenLogin = () => {
-    setIsSignUpModalOpen(false);
-    setIsLoginModalOpen(true);
-  };
-
-  const handleOpenSignUp = () => {
-    setIsLoginModalOpen(false);
-    setIsSignUpModalOpen(true);
-  };
 
   const handleMouseEnter = (menu: string) => {
     setActiveDropdown(menu);
@@ -361,17 +334,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       </header>
 
       {/* Modals */}
-      <SignUpModal
-        isOpen={isSignUpModalOpen}
-        onClose={() => setIsSignUpModalOpen(false)}
-        onSwitchToLogin={handleOpenLogin}
-      />
-     
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onSwitchToSignUp={handleOpenSignUp}
-      />
+    
 
       {/* Sidebar Panier */}
       <CartSidebar
