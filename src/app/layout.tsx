@@ -1,8 +1,7 @@
-
-// 1. Modifier app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+
 import { MessageProvider } from "@/context/NotificationContext";
 import MessageDisplay from "@/components/MessageDisplay";
 
