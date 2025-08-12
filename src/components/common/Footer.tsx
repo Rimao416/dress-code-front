@@ -44,8 +44,6 @@ function Footer() {
                   <li><a href="#" className="hover:text-gray-900">DRESSCODE Advertising</a></li>
                 </ul>
               </div>
-
-
               {/* Suivez-nous */}
               <div>
                 <h4 className="font-semibold text-gray-900 mb-4">Suivez-nous</h4>

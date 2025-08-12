@@ -6,8 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useProduct, 
   useProductNavigation, 
   useSimilarProducts, 
-  useRecommendedProducts, 
-  useFavorites } from '@/hooks/product/useProduct';
+  useRecommendedProducts } from '@/hooks/product/useProduct';
 import { ProductVariant } from '@/types/product';
 import ProductGallery from '@/components/product/productGallery';
 import ProductInfo from '@/components/product/productInfo';
@@ -27,7 +26,6 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
   const { breadcrumbs } = useProductNavigation();
   const { similarProducts, isLoading: isLoadingSimilar } = useSimilarProducts(slug, 5);
   const { recommendedProducts, isLoading: isLoadingRecommended } = useRecommendedProducts(slug, 5);
-  const { toggleFavorite, isFavorite } = useFavorites();
 
   // Handlers
   const handleAddToBag = (variant?: ProductVariant) => {
@@ -135,8 +133,6 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
             <ProductGallery
               images={product.images}
               productName={product.name}
-              isFavorite={isFavorite(product.id)}
-              onToggleFavorite={() => toggleFavorite(product.id)}
             />
           </div>
 
@@ -158,8 +154,8 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
           products={recommendedProducts}
           isLoading={isLoadingRecommended}
           onProductClick={handleProductClick}
-          onToggleFavorite={toggleFavorite}
-          isFavorite={isFavorite}
+          onToggleFavorite={() => {}}
+          isFavorite={() => false}
         />
 
         {/* Similar Styles */}
@@ -168,8 +164,8 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
           products={similarProducts}
           isLoading={isLoadingSimilar}
           onProductClick={handleProductClick}
-          onToggleFavorite={toggleFavorite}
-          isFavorite={isFavorite}
+          onToggleFavorite={() => {}}
+          isFavorite={() => false}
         />
       </div>
     </div>

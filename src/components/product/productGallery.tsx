@@ -3,20 +3,16 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Heart, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 interface ProductGalleryProps {
   images: string[];
   productName: string;
-  isFavorite?: boolean;
-  onToggleFavorite?: () => void;
 }
 
 const ProductGallery: React.FC<ProductGalleryProps> = ({
   images,
   productName,
-  isFavorite = false,
-  onToggleFavorite,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -41,13 +37,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
   const goToImage = (index: number) => {
     setCurrentIndex(index);
-  };
-
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onToggleFavorite) {
-      onToggleFavorite();
-    }
   };
 
   return (
@@ -116,23 +105,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <ChevronRight className="h-5 w-5 text-gray-700" />
               </button>
             </>
-          )}
-
-          {/* Bouton favori */}
-          {onToggleFavorite && (
-            <button
-              onClick={handleFavoriteClick}
-              className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200"
-              aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-            >
-              <Heart
-                className={`h-5 w-5 transition-all duration-200 ${
-                  isFavorite
-                    ? "fill-black text-black"
-                    : "text-gray-600 hover:text-black"
-                }`}
-              />
-            </button>
           )}
 
           {/* Bouton zoom */}
