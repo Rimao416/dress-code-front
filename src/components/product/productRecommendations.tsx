@@ -166,8 +166,6 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
             <SwiperSlide key={product.id}>
               <ProductCard
                 product={product}
-                isFavorite={isFavorite(product.id)}
-                onToggleFavorite={onToggleFavorite}
                 onClick={() => handleProductClick(product)}
                 className="h-full"
               />

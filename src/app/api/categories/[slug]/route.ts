@@ -97,7 +97,7 @@ export async function GET(
 
     // Collecter tous les produits avec typage strict (sans any)
     const collectAllProducts = (cat: Category): Product[] => {
-      let allProducts: Product[] = [...cat.products];
+      const allProducts: Product[] = [...cat.products];
      
       if (cat.children && cat.children.length > 0) {
         cat.children.forEach((child: Category) => {

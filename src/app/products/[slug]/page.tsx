@@ -13,14 +13,13 @@ import ProductInfo from '@/components/product/productInfo';
 import ProductRecommendations from '@/components/product/productRecommendations';
 import Header from '@/components/common/Header';
 
-interface SingleProductProps {
-  slug?: string;
-}
+// Supprimez complètement l'interface SingleProductProps
+// et utilisez directement les props de Next.js si nécessaire
 
-const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
+const SingleProduct: React.FC = () => {
   const params = useParams();
   const router = useRouter();
-  const slug = propSlug || (params?.slug as string);
+  const slug = params?.slug as string;
 
   // Hooks pour les données
   const { product, isLoading, error } = useProduct(slug);
