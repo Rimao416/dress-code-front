@@ -1,49 +1,44 @@
 // app/api/payment/confirm/route.ts
-import { NextRequest, NextResponse } from 'next/server';
 import { PaymentStatus } from '@/generated/prisma';
 import { OrderService } from '@/services/order.service';
+import { NextRequest, NextResponse } from 'next/server';
 import { StripeService } from '@/services/stripe.service';
+
 export async function POST(request: NextRequest) {
   try {
-    const { paymentIntentId, orderId } = await request.json();
+    const { paymentIntentId } = await request.json();
 
-    // Confirmer le paiement avec Stripe
+    if (!paymentIntentId) {
+      return NextResponse.json(
+        { error: 'PaymentIntent ID manquant' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier le statut du paiement avec Stripe
     const paymentResult = await StripeService.confirmPayment(paymentIntentId);
-    
+   
     if (!paymentResult.success) {
       return NextResponse.json(
-        { error: 'Erreur lors de la confirmation du paiement' },
+        { error: 'Erreur lors de la vérification du paiement' },
         { status: 400 }
       );
     }
 
-    // Mettre à jour le statut de la commande
-    const paymentStatus = paymentResult.status === 'succeeded' 
-      ? PaymentStatus.COMPLETED 
-      : PaymentStatus.FAILED;
+    console.log('Paiement confirmé:', {
+      paymentIntentId,
+      status: paymentResult.status
+    });
 
-    const orderResult = await OrderService.updateOrderPaymentStatus(
-      orderId,
-      paymentStatus,
-      paymentIntentId
-    );
-
-    if (!orderResult.success) {
-      return NextResponse.json(
-        { error: 'Erreur lors de la mise à jour de la commande' },
-        { status: 400 }
-      );
-    }
-
-    // Si le paiement est réussi, vider le panier
-    if (paymentStatus === PaymentStatus.COMPLETED && orderResult.order) {
-      await OrderService.clearCart(orderResult.order.clientId);
-    }
+    // Optionnel : Envoyer un email de confirmation ici
+    // await sendConfirmationEmail(paymentResult.paymentIntent.metadata);
 
     return NextResponse.json({
       success: true,
       paymentStatus: paymentResult.status,
-      order: orderResult.order,
+      paymentIntentId: paymentIntentId,
+      // Retourner les métadonnées pour affichage de confirmation
+      orderDetails: paymentResult.paymentIntent?.metadata || {}
     });
 
   } catch (error) {

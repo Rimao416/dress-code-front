@@ -6,41 +6,42 @@ import { StripeService } from '@/services/stripe.service';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CreateOrderRequest = await request.json();
+    const body = await request.json();
+    const { totals, formData, items } = body;
 
-    // Créer la commande
-    const orderResult = await OrderService.createOrder(body);
-    console.log('Commande crée:', orderResult);
-    if (!orderResult.success) {
-      return NextResponse.json(
-        { error: 'Erreur lors de la création de la commande'   },
-        { status: 400 }
-      );
-    }
-
-    // Créer le PaymentIntent Stripe
-    const paymentResult = await StripeService.createPaymentIntent(
-      body.totals.totalAmount
-    );
-
-    if (!paymentResult.success) {
-      return NextResponse.json(
-        { error: 'Erreur lors de la création du paiement' },
-        { status: 400 }
-      );
-    }
+    // Créer le PaymentIntent Stripe directement
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(totals.totalAmount * 100), // Montant en centimes
+      currency: 'eur',
+      metadata: {
+        // Stocker les informations importantes dans les métadonnées
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        customerEmail: formData.email,
+        customerPhone: formData.phone || '',
+        shippingAddress: JSON.stringify({
+          address: formData.address,
+          city: formData.city,
+          postalCode: formData.postalCode,
+          country: formData.country
+        }),
+        orderItems: JSON.stringify(items),
+        subtotal: totals.subtotal.toString(),
+        shipping: totals.shippingCost.toString(),
+        tax: totals.taxAmount.toString(),
+        total: totals.totalAmount.toString(),
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      orderId: orderResult.order?.id,
-      clientSecret: paymentResult.clientSecret,
-      paymentIntentId: paymentResult.paymentIntentId,
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
     });
 
   } catch (error) {
     console.error('Erreur API create-intent:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur interne' },
+      { error: 'Erreur lors de la création du paiement' },
       { status: 500 }
     );
   }
