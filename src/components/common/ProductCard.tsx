@@ -1,112 +1,172 @@
-"use client";
-import React from "react";
-import { Heart } from "lucide-react";
-import Image from "next/image";
-import {
-  normalizeProductForCard,
-  ProductCardItem,
-} from "@/types/product";
+import { Check, Heart, Plus } from "lucide-react";
+import { useState, MouseEvent } from "react";
+import Button from "../ui/button";
 
-interface ProductCardProps {
-  product: ProductCardItem;
-  onClick?: (product: ProductCardItem) => void;
-  className?: string;
-  showBrand?: boolean;
-  showPrice?: boolean;
-  imageClassName?: string;
-  contentClassName?: string;
+// Type pour un produit (déduit de productsData)
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  shortDescription: string;
+  price: number;
+  comparePrice: number | null;
+  images: string[];
+  categoryId: string;
+  brandId: string;
+  brand?: { name: string };
+  sku: string;
+  stock: number;
+  available: boolean;
+  featured: boolean;
+  isNewIn: boolean;
+  tags: string[];
+  slug: string;
+  averageRating: number;
+  reviewCount: number;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({
+interface ProductCardProps {
+  product: Product;
+  featured?: boolean;
+  showBrand?: boolean;
+  showPrice?: boolean;
+  onClick?: (product: Product) => void;
+}
+
+const ProductCard = ({
   product,
-  onClick,
-  className = "",
+  featured = false,
   showBrand = true,
   showPrice = true,
-  imageClassName = "",
-  contentClassName = "",
-}) => {
-  const normalizedProduct = normalizeProductForCard(product);
-  
-  
+  onClick,
+}: ProductCardProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [showAddedFeedback, setShowAddedFeedback] = useState(false);
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick(product);
-    }
+  const handleAddToBag = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setShowAddedFeedback(true);
+    setTimeout(() => setShowAddedFeedback(false), 2000);
   };
 
-  // Image par défaut SVG en base64
-  const defaultImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K";
- 
-  // Utiliser le produit normalisé pour l'affichage
-  const productImage = normalizedProduct.images?.[0] && normalizedProduct.images[0].trim() !== ""
-    ? normalizedProduct.images[0]
-    : defaultImage;
- 
+  const handleProductClick = () => {
+    onClick?.(product);
+  };
+
   return (
     <div
-      className={`group cursor-pointer ${className}`}
-      onClick={handleClick}
+      className={`group relative overflow-hidden cursor-pointer ${
+        featured ? "col-span-2 row-span-2" : ""
+      }`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleProductClick}
     >
       <div
-        className={`aspect-square overflow-hidden bg-gray-100 relative rounded-sm ${imageClassName}`}
+        className={`relative overflow-hidden bg-gray-50 ${
+          featured ? "h-96" : "h-80"
+        }`}
       >
-        <Image
-          src={productImage}
-          alt={normalizedProduct.name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            // Fallback SVG en cas d'erreur
-            e.currentTarget.src = defaultImage;
-          }}
-        />
-        {/* Bouton favori avec logique intégrée */}
-      
-        {/* Badge nouveau */}
-        {normalizedProduct.isNewIn && (
-          <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
-            NOUVEAU
+        {/* Badge Nouveau */}
+        {product.isNewIn && (
+          <div className="absolute top-3 left-3 z-10">
+            <span className="bg-black text-white text-xs font-medium px-2 py-1 rounded">
+              Nouveau
+            </span>
           </div>
         )}
+        {/* Bouton Favoris */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorited(!isFavorited);
+          }}
+          className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 hover:bg-white hover:scale-110"
+        >
+          <Heart
+            className={`w-4 h-4 ${
+              isFavorited
+                ? "fill-red-500 text-red-500"
+                : "text-gray-600"
+            }`}
+          />
+        </button>
+        {/* Image du produit */}
+        <div className="absolute inset-0 flex items-center justify-center p-8">
+          <div
+            className={`w-full h-full bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 transition-transform duration-500 ${
+              isHovered ? "scale-105" : ""
+            }`}
+          >
+            <span className="text-6xl font-light">
+              {product.name.charAt(0)}
+            </span>
+          </div>
+        </div>
+        {/* Overlay hover */}
+        <div
+          className={`absolute inset-0 bg-black/10 transition-opacity duration-300 ${
+            isHovered ? "opacity-100" : "opacity-0"
+          }`}
+        ></div>
+        {/* Bouton d'action */}
+        <div
+          className={`absolute bottom-3 left-3 right-3 transition-all duration-300 transform ${
+            isHovered
+              ? "translate-y-0 opacity-100"
+              : "translate-y-2 opacity-0"
+          }`}
+        >
+          <Button
+            variant="white"
+            size="sm"
+            className="w-full shadow-lg"
+            onClick={handleAddToBag}
+          >
+            {showAddedFeedback ? (
+              <>
+                <Check className="h-4 w-4 mr-2 text-green-600" />
+                Ajouté
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter au panier
+              </>
+            )}
+          </Button>
+        </div>
       </div>
       {/* Informations produit */}
-      <div className={`pt-2 sm:pt-3 space-y-1 ${contentClassName}`}>
-        {showBrand && normalizedProduct.brand && (
-          <h3 className="text-[10px] sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
-            {normalizedProduct.brand.name}
-          </h3>
-        )}
-        <p className="text-xs sm:text-sm text-black font-medium line-clamp-2 leading-tight">
-          {normalizedProduct.name}
-        </p>
-        {showPrice && (
-          <div className="flex items-center space-x-2">
-            <p className="text-xs sm:text-sm font-semibold text-black">
-              ${normalizedProduct.price.toFixed(2)}
-            </p>
-            {normalizedProduct.comparePrice &&
-              normalizedProduct.comparePrice > normalizedProduct.price && (
-                <p className="text-xs sm:text-sm text-gray-500 line-through">
-                  ${normalizedProduct.comparePrice.toFixed(2)}
-                </p>
-              )}
+      <div className="p-4 space-y-2">
+        {showBrand && product.brand && (
+          <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+            {product.brand.name}
           </div>
         )}
-        {/* Stock faible */}
-        {typeof normalizedProduct.stock === "number" && normalizedProduct.stock > 0 && normalizedProduct.stock <= 5 && (
-          <p className="text-[10px] sm:text-xs text-red-600 font-medium">
-            Plus que {normalizedProduct.stock} en stock
-          </p>
-        )}
-        {/* Rupture de stock */}
-        {normalizedProduct.stock === 0 && (
-          <p className="text-[10px] sm:text-xs text-red-600 font-medium">
-            Rupture de stock
-          </p>
-        )}
+
+        <h3 className="font-medium text-gray-900 line-clamp-2 text-sm leading-tight">
+          {product.name}
+        </h3>
+
+        <p className="text-xs text-gray-500 line-clamp-1">
+          {product.shortDescription}
+        </p>
+        <div className="flex items-center justify-between">
+          {showPrice && (
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold text-gray-900 text-sm">
+                €{product.price.toFixed(2)}
+              </span>
+              {product.comparePrice && (
+                <span className="text-xs text-gray-400 line-through">
+                  €{product.comparePrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

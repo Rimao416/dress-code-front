@@ -62,7 +62,7 @@ export const newInData = [
   }
 ];
 
-[
+export const productsData = [
   {
     "id": "prd0001",
     "name": "Sweat à Capuche Uniqlo",
@@ -75,19 +75,16 @@ export const newInData = [
     ],
     "categoryId": "cat0001",
     "brandId": "brand0001",
+    "brand": { "name": "UNIQLO" },
     "sku": "SKU-1001",
     "stock": 58,
     "available": true,
     "featured": true,
     "isNewIn": false,
     "tags": ["coton", "bio", "décontracté"],
-    "metaTitle": "Sweat à Capuche Uniqlo",
-    "metaDescription": "Sweat en coton bio avec capuche",
     "slug": "sweat-a-capuche-uniqlo",
-    "weight": 0.85,
-    "dimensions": { "width": 25, "height": 6, "length": 30 },
-    "createdAt": "2025-07-31 14:15:00",
-    "updatedAt": "2025-07-31 14:15:00"
+    "averageRating": 4.8,
+    "reviewCount": 124
   },
   {
     "id": "prd0002",
@@ -101,19 +98,16 @@ export const newInData = [
     ],
     "categoryId": "cat0002",
     "brandId": "brand0002",
+    "brand": { "name": "NORDIC DESIGN" },
     "sku": "SKU-1002",
     "stock": 24,
     "available": true,
     "featured": false,
     "isNewIn": true,
     "tags": ["design", "bois", "maison"],
-    "metaTitle": "Chaise Scandinave",
-    "metaDescription": "Chaise design scandinave en bois",
     "slug": "chaise-scandinave",
-    "weight": 6.4,
-    "dimensions": { "width": 45, "height": 85, "length": 45 },
-    "createdAt": "2025-07-31 14:16:00",
-    "updatedAt": "2025-07-31 14:16:00"
+    "averageRating": 4.6,
+    "reviewCount": 89
   },
   {
     "id": "prd0003",
@@ -127,19 +121,16 @@ export const newInData = [
     ],
     "categoryId": "cat0003",
     "brandId": "brand0003",
+    "brand": { "name": "APPLE" },
     "sku": "SKU-1003",
     "stock": 35,
     "available": true,
     "featured": true,
     "isNewIn": true,
     "tags": ["ordinateur", "apple", "retina"],
-    "metaTitle": "MacBook Air M3",
-    "metaDescription": "MacBook Air 13 pouces puce M3",
     "slug": "macbook-air-m3",
-    "weight": 1.29,
-    "dimensions": { "width": 30, "height": 2, "length": 21 },
-    "createdAt": "2025-07-31 14:17:00",
-    "updatedAt": "2025-07-31 14:17:00"
+    "averageRating": 4.9,
+    "reviewCount": 256
   },
   {
     "id": "prd0004",
@@ -153,21 +144,18 @@ export const newInData = [
     ],
     "categoryId": "cat0004",
     "brandId": "brand0004",
+    "brand": { "name": "DIPTYQUE" },
     "sku": "SKU-1004",
     "stock": 120,
     "available": true,
     "featured": false,
     "isNewIn": true,
     "tags": ["parfum", "maison", "artisanale"],
-    "metaTitle": "Bougie parfumée Diptyque",
-    "metaDescription": "Bougie parfumée artisanale Diptyque",
     "slug": "bougie-parfumee-diptyque",
-    "weight": 0.4,
-    "dimensions": { "width": 8, "height": 9, "length": 8 },
-    "createdAt": "2025-07-31 14:18:00",
-    "updatedAt": "2025-07-31 14:18:00"
+    "averageRating": 4.7,
+    "reviewCount": 67
   }
-]
+];
 
 
 export const trendingTopsSection = {

@@ -1,89 +1,45 @@
-import React, { forwardRef } from 'react';
+import { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'outline'
-  | 'ghost'
-  | 'danger'
-  | 'black'
-  | 'black-outline';
+type ButtonVariant = "black" | "white" | "outline";
+type ButtonSize = "sm" | "md" | "lg";
 
-type ButtonSize = 'sm' | 'md' | 'lg';
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
-  loading?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+  className?: string;
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      children,
-      variant = 'primary',
-      size = 'md',
-      disabled = false,
-      loading = false,
-      leftIcon,
-      rightIcon,
-      className = '',
-      ...props
-    },
-    ref
-  ) => {
-    const baseClasses =
-      'font-medium rounded-md transition-all duration-200 transform hover:scale-[1.01] active:scale-[0.97] flex items-center justify-center gap-2';
+const Button = ({
+  children,
+  variant = "black",
+  size = "md",
+  className = "",
+  ...props
+}: ButtonProps) => {
+  const baseClasses =
+    "inline-flex items-center justify-center font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
-    const variantClasses: Record<ButtonVariant, string> = {
-      primary:
-        'bg-gradient-to-r from-red-800 to-red-700 text-white hover:from-red-900 hover:to-red-800 shadow-md',
-      secondary:
-        'border border-stone-200 bg-white text-gray-700 hover:bg-stone-100 hover:border-stone-300',
-      outline:
-        'border border-red-800 text-red-800 hover:bg-red-800 hover:text-white',
-      ghost:
-        'text-red-800 hover:bg-red-50',
-      danger:
-        'bg-red-600 text-white hover:bg-red-700',
-      black:
-        'bg-neutral-900 text-white hover:bg-neutral-800',
-      'black-outline':
-        'border border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white',
-    };
+  const variants: Record<ButtonVariant, string> = {
+    black: "bg-black text-white hover:bg-gray-800 active:bg-gray-900",
+    white: "bg-white text-black border border-gray-300 hover:bg-gray-50 active:bg-gray-100",
+    outline: "border-2 border-black text-black hover:bg-black hover:text-white",
+  };
 
-    const sizeClasses: Record<ButtonSize, string> = {
-      sm: 'px-3 py-2 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg',
-    };
+  const sizes: Record<ButtonSize, string> = {
+    sm: "px-4 py-2 text-sm",
+    md: "px-6 py-3 text-sm",
+    lg: "px-8 py-4 text-base",
+  };
 
-    return (
-      <button
-        ref={ref}
-        disabled={disabled || loading}
-        className={`
-          ${baseClasses}
-          ${variantClasses[variant]}
-          ${sizeClasses[size]}
-          ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}
-          ${className}
-        `}
-        {...props}
-      >
-        {loading && (
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-        )}
-        {leftIcon && !loading && leftIcon}
-        {children}
-        {rightIcon && !loading && rightIcon}
-      </button>
-    );
-  }
-);
-
-Button.displayName = 'Button';
+  return (
+    <button
+      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
 
 export default Button;
