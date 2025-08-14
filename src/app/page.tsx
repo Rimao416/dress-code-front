@@ -1,612 +1,469 @@
 "use client"
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-fade';
-import Image from 'next/image';
-import Link from 'next/link';
-import Header from '@/components/common/Header';
-import SplitSection from '@/components/Home/SplitSection';
-import Footer from '@/components/common/Footer';
-import Button from '@/components/ui/button';
-import ButtonLink from '@/components/ui/buttonLink';
-import ProductCard from '@/components/common/ProductCard';
-import { useRouter } from 'next/navigation';
-import Input from '@/components/ui/input';
-import { useHomePage } from '@/hooks/useHomepage';
-import { ProductCardData } from '@/types/product';
-import { CategoryWithProducts } from '@/types/homepage';
+import { ChevronDown, ArrowRight, Star, Heart, ShoppingBag } from 'lucide-react';
 
-// Import des skeletons
-import {
-  HeroSkeletonLoader,
-  NewInSectionSkeleton,
-  FeaturedProductsSkeleton,
-  CategoriesSectionSkeleton,
-  ProductCardSkeleton
-} from '@/components/ui/SkeletonLoaders';
+const productsData = [
+  {
+    "id": "prd0001",
+    "name": "Sweat à Capuche Uniqlo",
+    "description": "Sweat en coton bio avec capuche ajustable et poche kangourou",
+    "shortDescription": "Sweat à capuche coton bio",
+    "price": 39.99,
+    "comparePrice": 49.99,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/hoodie-uniqlo.jpg"
+    ],
+    "categoryId": "cat0001",
+    "brandId": "brand0001",
+    "sku": "SKU-1001",
+    "stock": 58,
+    "available": true,
+    "featured": true,
+    "isNewIn": false,
+    "tags": ["coton", "bio", "décontracté"],
+    "slug": "sweat-a-capuche-uniqlo"
+  },
+  {
+    "id": "prd0002",
+    "name": "Chaise Scandinave",
+    "description": "Chaise design scandinave en bois et assise rembourrée",
+    "shortDescription": "Chaise bois et tissu scandinave",
+    "price": 119.99,
+    "comparePrice": 149.99,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/chair-scandinave.jpg"
+    ],
+    "categoryId": "cat0002",
+    "brandId": "brand0002",
+    "sku": "SKU-1002",
+    "stock": 24,
+    "available": true,
+    "featured": false,
+    "isNewIn": true,
+    "tags": ["design", "bois", "maison"],
+    "slug": "chaise-scandinave"
+  },
+  {
+    "id": "prd0003",
+    "name": "MacBook Air M3",
+    "description": "Ordinateur portable Apple avec puce M3 et écran Retina",
+    "shortDescription": "MacBook Air 13'' M3",
+    "price": 1399.99,
+    "comparePrice": null,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/macbook-air-m3.jpg"
+    ],
+    "categoryId": "cat0003",
+    "brandId": "brand0003",
+    "sku": "SKU-1003",
+    "stock": 35,
+    "available": true,
+    "featured": true,
+    "isNewIn": true,
+    "tags": ["ordinateur", "apple", "retina"],
+    "slug": "macbook-air-m3"
+  },
+  {
+    "id": "prd0004",
+    "name": "Bougie parfumée Diptyque",
+    "description": "Bougie parfumée artisanale aux notes florales et boisées",
+    "shortDescription": "Bougie Diptyque parfum floral",
+    "price": 54.99,
+    "comparePrice": null,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/bougie-diptyque.jpg"
+    ],
+    "categoryId": "cat0004",
+    "brandId": "brand0004",
+    "sku": "SKU-1004",
+    "stock": 120,
+    "available": true,
+    "featured": false,
+    "isNewIn": true,
+    "tags": ["parfum", "maison", "artisanale"],
+    "slug": "bougie-parfumee-diptyque"
+  }
+];
 
-type FormErrors = {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
-  acceptTerms?: string;
+// Header Component (simplifié pour l'exemple)
+const Header = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-sm' : 'bg-transparent'
+    }`}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex-shrink-0">
+            <a href="/" className={`text-2xl font-bold tracking-tight transition-colors duration-300 ${
+              isScrolled ? 'text-black' : 'text-white'
+            }`}>
+              DressCode
+            </a>
+          </div>
+          <nav className="hidden md:flex items-center space-x-8">
+            {['Femme', 'Homme', 'Enfant', 'Sport', 'Nouveautés'].map((item) => (
+              <a key={item} href="#" className={`text-sm font-medium transition-colors duration-300 ${
+                isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+              }`}>
+                {item}
+              </a>
+            ))}
+          </nav>
+          <div className="flex items-center space-x-4">
+            <button className={`transition-colors duration-300 ${
+              isScrolled ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+            }`}>
+              <ShoppingBag className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 };
 
-const HomePage = () => {
-  const router = useRouter();
- 
-  // Utiliser le nouveau hook pour charger les données
-  const {
-    sliders,
-    newInProducts,
-    featuredProducts,
-    categories,
-    isLoading,
-    isAnyLoading,
-    errors,
-    refresh,
-    refreshSection
-  } = useHomePage({
-    autoFetch: true,
-    filters: {
-      newInLimit: 12,
-      featuredLimit: 24,
-      categoriesLimit: 9 // Limite le nombre de catégories principales affichées
-    }
-  });
+// Product Card Component
+const ProductCard = ({ product, featured = false }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  console.log('Categories loaded:', categories);  
-  
-  const handleProductClick = (product: ProductCardData) => {
-    if (product.slug) {
-      router.push(`/products/${product.slug}`);
-    } else {
-      router.push(`/products/${product.id}`);
-    }
-  };
+  return (
+    <div 
+      className={`group relative overflow-hidden rounded-2xl ${featured ? 'col-span-2 row-span-2' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className={`relative overflow-hidden rounded-2xl ${featured ? 'h-96' : 'h-80'}`}>
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-100 via-neutral-50 to-white"></div>
+        
+        {/* Badge Nouveau */}
+        {product.isNewIn && (
+          <div className="absolute top-4 left-4 z-10">
+            <span className="bg-black text-white text-xs font-medium px-3 py-1 rounded-full">
+              Nouveau
+            </span>
+          </div>
+        )}
 
-  const handleCategoryClick = (category: CategoryWithProducts) => {
-    router.push(`/collections/${category.slug}`);
-  };
+        {/* Bouton Favoris */}
+        <button 
+          onClick={() => setIsFavorited(!isFavorited)}
+          className="absolute top-4 right-4 z-10 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 hover:bg-white"
+        >
+          <Heart className={`w-4 h-4 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+        </button>
 
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    acceptNewsletters: false,
-    acceptTerms: false
-  });
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [newInSlideIndex, setNewInSlideIndex] = useState(0);
-  const [isNewInBeginning, setIsNewInBeginning] = useState(true);
-  const [isNewInEnd, setIsNewInEnd] = useState(false);
+        {/* Image du produit */}
+        <div className="absolute inset-0 flex items-center justify-center p-8">
+          <div className={`w-full h-full bg-neutral-200 rounded-xl flex items-center justify-center text-neutral-400 transition-transform duration-500 ${isHovered ? 'scale-105' : ''}`}>
+            <span className="text-6xl font-light">{product.name.charAt(0)}</span>
+          </div>
+        </div>
 
-  const handleInputChange = (field: keyof FormErrors, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
+        {/* Overlay hover */}
+        <div className={`absolute inset-0 bg-black/10 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}></div>
 
+        {/* Bouton d'action */}
+        <div className={`absolute bottom-4 left-4 right-4 transition-all duration-300 transform ${
+          isHovered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+        }`}>
+          <button className="w-full bg-white text-black font-medium py-3 rounded-xl hover:bg-neutral-50 transition-colors duration-200">
+            Ajouter au panier
+          </button>
+        </div>
+      </div>
+
+      {/* Informations produit */}
+      <div className="p-4">
+        <h3 className="font-medium text-gray-900 mb-1 line-clamp-1">{product.name}</h3>
+        <p className="text-sm text-gray-500 mb-2 line-clamp-2">{product.shortDescription}</p>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="font-semibold text-gray-900">{product.price}€</span>
+            {product.comparePrice && (
+              <span className="text-sm text-gray-400 line-through">{product.comparePrice}€</span>
+            )}
+          </div>
+          
+          {product.featured && (
+            <div className="flex items-center space-x-1">
+              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <span className="text-sm text-gray-600">4.8</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Newsletter Component
+const Newsletter = () => {
+  const [email, setEmail] = useState('');
+
+  return (
+    <section className="py-20 bg-neutral-900">
+      <div className="max-w-4xl mx-auto px-6 text-center">
+        <h2 className="text-4xl font-light text-white mb-4">
+          Restez informé
+        </h2>
+        <p className="text-neutral-300 mb-8 text-lg">
+          Découvrez en avant-première nos nouveautés et offres exclusives
+        </p>
+        
+        <div className="max-w-md mx-auto">
+          <div className="flex rounded-full bg-white p-1">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Votre adresse email"
+              className="flex-1 px-4 py-3 rounded-full border-none outline-none text-gray-900 placeholder-gray-500"
+            />
+            <button className="bg-neutral-900 text-white px-6 py-3 rounded-full font-medium hover:bg-neutral-800 transition-colors duration-200">
+              S'inscrire
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Categories Component
+const Categories = () => {
+  const categories = [
+    { name: 'Vêtements', count: '2,400 produits', color: 'from-pink-100 to-rose-100' },
+    { name: 'Maison', count: '890 produits', color: 'from-blue-100 to-indigo-100' },
+    { name: 'Tech', count: '340 produits', color: 'from-gray-100 to-slate-100' },
+    { name: 'Parfums', count: '156 produits', color: 'from-purple-100 to-violet-100' }
+  ];
+
+  return (
+    <section className="py-20 bg-neutral-50">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-light text-gray-900 mb-4">
+            Explorez nos collections
+          </h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Découvrez une sélection soigneusement choisie de produits dans chaque catégorie
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {categories.map((category, index) => (
+            <div key={index} className="group cursor-pointer">
+              <div className={`h-48 rounded-2xl bg-gradient-to-br ${category.color} p-8 flex flex-col justify-between transition-transform duration-300 group-hover:scale-105`}>
+                <div className="self-end">
+                  <ArrowRight className="w-6 h-6 text-gray-600 transition-transform duration-300 group-hover:translate-x-1" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-lg mb-1">{category.name}</h3>
+                  <p className="text-gray-600 text-sm">{category.count}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Support Section Component
+const SupportSection = () => {
   const supportItems = [
     {
-      icon: (
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-      ),
+      icon: "👤",
       title: "PASSER COMMANDE",
       description: "Votre guide shopping sur DRESSCODE"
     },
     {
-      icon: (
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-          <path d="M12 17h.01"/>
-        </svg>
-      ),
+      icon: "❓",
       title: "FAQ",
       description: "Toutes nos réponses à vos questions"
     },
     {
-      icon: (
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-      ),
-      title: "BESOIN D&apos;AIDE ?",
+      icon: "💬",
+      title: "BESOIN D'AIDE ?",
       description: "Contactez les conseillers de notre Service client"
     }
   ];
 
-  // Fonction pour créer une grille adaptative basée sur le nombre de catégories
-  const createCategoryGrid = (categories: CategoryWithProducts[]) => {
-    const categoryCount = categories.length;
-    
-    if (categoryCount === 0) return null;
-
-    // Définir la configuration de la grille selon le nombre de catégories
-    let gridConfig = {
-      className: "grid gap-4",
-      style: {},
-      areas: [] as string[]
-    };
-
-    switch(categoryCount) {
-      case 1:
-        gridConfig = {
-          className: "grid gap-4",
-          style: {
-            gridTemplateColumns: '1fr',
-            gridTemplateRows: '300px'
-          },
-          areas: ['a']
-        };
-        break;
-      case 2:
-        gridConfig = {
-          className: "grid gap-4",
-          style: {
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gridTemplateRows: '300px'
-          },
-          areas: ['a', 'b']
-        };
-        break;
-      case 3:
-        gridConfig = {
-          className: "grid gap-4",
-          style: {
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gridTemplateRows: '300px'
-          },
-          areas: ['a', 'b', 'c']
-        };
-        break;
-      case 4:
-        gridConfig = {
-          className: "grid gap-4",
-          style: {
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gridTemplateRows: 'repeat(2, 200px)'
-          },
-          areas: ['a', 'b', 'c', 'd']
-        };
-        break;
-      case 6:
-        gridConfig = {
-          className: "grid gap-4",
-          style: {
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gridTemplateRows: 'repeat(2, 200px)',
-            gridTemplateAreas: `
-              "a a b b c c"
-              "d d e e f f"
-            `
-          },
-          areas: ['a', 'b', 'c', 'd', 'e', 'f']
-        };
-        break;
-      default: // Pour 9+ catégories, utiliser la grille complexe
-        gridConfig = {
-          className: "grid gap-4",
-          style: {
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gridTemplateRows: 'repeat(4, 150px)',
-            gridTemplateAreas: `
-              "a a b b c c"
-              "a a d d e e"
-              "f f g g e e"
-              "f f h h i i"
-            `
-          },
-          areas: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
-        };
-    }
-
-    return (
-      <div className={gridConfig.className} style={gridConfig.style}>
-        {categories.slice(0, gridConfig.areas.length).map((category, index) => {
-          const area = gridConfig.areas[index];
-          const hasSubcategories = category.children && category.children.length > 0;
-          
-          return (
-            <div
-              key={category.id}
-              className="relative overflow-hidden group cursor-pointer"
-              style={{ gridArea: area }}
-              onClick={() => handleCategoryClick(category)}
-            >
-              {/* Image de la catégorie */}
-              {category.image ? (
-                <Image
-                  src={category.image}
-                  alt={category.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                  <span className="text-4xl text-white font-bold">
-                    {category.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-             
-              {/* Dégradé sombre vers le bas */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-10"></div>
-              
-              {/* Contenu texte */}
-              <div className="absolute left-5 bottom-5 text-white z-20">
-                <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wide">
-                  {category.name}
-                </h3>
-                {category.description && (
-                  <p className="text-sm opacity-90 mt-1 line-clamp-2">
-                    {category.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-2 mt-2 text-xs opacity-80">
-                  <span>{category.productCount} produits</span>
-                  {hasSubcategories && (
-                    <>
-                      <span>•</span>
-                      <span>{category.children.length} sous-catégories</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Badge pour les catégories avec enfants */}
-              {hasSubcategories && (
-                <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white z-20">
-                  +{category.children.length}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Affichage d'erreur si quelque chose ne va pas
-  if (errors.hasError && !isAnyLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Oops! Quelque chose s&apos;est mal passé
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {errors.error || 'Une erreur est survenue lors du chargement des données'}
-          </p>
-          <Button onClick={() => refresh()} variant="black">
-            Réessayer
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen">
-      {/* Hero Section avec slider */}
-      <div className="relative h-screen w-full overflow-hidden">
-        {isLoading ? (
-          // Afficher le skeleton pendant le chargement des sliders
-          <HeroSkeletonLoader />
-        ) : sliders.length > 0 ? (
-          <Swiper
-            modules={[Navigation, Pagination, Autoplay, EffectFade]}
-            spaceBetween={0}
-            slidesPerView={1}
-            effect="fade"
-            fadeEffect={{
-              crossFade: true
-            }}
-            navigation={{
-              nextEl: '.swiper-button-next',
-              prevEl: '.swiper-button-prev',
-            }}
-            pagination={{
-              el: '.swiper-pagination',
-              clickable: true,
-              bulletClass: 'swiper-pagination-bullet',
-              bulletActiveClass: 'swiper-pagination-bullet-active',
-            }}
-            autoplay={{
-              delay: 5000,
-              disableOnInteraction: false,
-            }}
-            onSlideChange={(swiper) => setActiveSlide(swiper.activeIndex)}
-            className="h-full w-full"
-          >
-            {sliders.map((slide, index) => (
-              <SwiperSlide key={slide.id}>
-                <div className="relative h-full w-full">
-                  <Image
-                    src={slide.image}
-                    alt={slide.title? slide.title : ''}
-                    fill
-                    className="object-cover"
-                    priority={index === 0}
-                    onError={(e) => {
-                      console.error('Erreur de chargement de l\'image:', slide.image);
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                 
-                  <div className="absolute bottom-8 left-8 z-20 text-white max-w-sm">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 uppercase tracking-wide">
-                      {slide.title}
-                    </h2>
-                    {slide.subtitle && (
-                      <p className="text-lg mb-6 opacity-90 font-light">
-                        {slide.subtitle}
-                      </p>
-                    )}
-                    {slide.buttonText && slide.buttonLink && (
-                      <ButtonLink size="md" href={slide.buttonLink}>
-                        {slide.buttonText}
-                      </ButtonLink>
-                    )}
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        ) : (
-          // Fallback si pas de sliders
-          <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900">Bienvenue sur DRESSCODE</h2>
-            </div>
-          </div>
-        )}
-       
-        {!isLoading && (
-          <div className="swiper-pagination !bottom-8 !right-8 !left-auto !w-auto flex space-x-2"></div>
-        )}
-        <Header/>
-      </div>
-
-      {/* Section Nouveautés */}
-      {isLoading ? (
-        <NewInSectionSkeleton />
-      ) : (
-        <section className="py-16 px-4 bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row gap-12">
-              <div className="lg:w-1/3 flex flex-col justify-center">
-                <div className="text-sm text-gray-600 mb-2 tracking-wider uppercase">
-                  {newInProducts.length} NOUVEAUTÉS
-                </div>
-                <h2 className="text-4xl lg:text-5xl font-serif text-black mb-6">
-                  Nouveautés
-                </h2>
-                <p className="text-gray-700 mb-8 leading-relaxed">
-                  Nouveautés disponibles dès maintenant cinq jours par semaine - découvrez les dernières sorties sur le site du lundi au vendredi
-                </p>
-             
+    <section className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {supportItems.map((item, index) => (
+            <div key={index} className="text-center group cursor-pointer">
+              <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl transition-transform duration-300 group-hover:scale-110">
+                {item.icon}
               </div>
-             
-              <div className="lg:w-2/3">
-                <div className="relative">
-                  {newInProducts.length > 0 ? (
-                    <Swiper
-                      modules={[Navigation]}
-                      spaceBetween={20}
-                      slidesPerView={1.2}
-                      navigation={{
-                        nextEl: '.new-in-button-next',
-                        prevEl: '.new-in-button-prev',
-                      }}
-                      onSwiper={(swiper) => {
-                        setIsNewInBeginning(swiper.isBeginning);
-                        setIsNewInEnd(swiper.isEnd);
-                      }}
-                      onSlideChange={(swiper) => {
-                        setNewInSlideIndex(swiper.activeIndex);
-                        setIsNewInBeginning(swiper.isBeginning);
-                        setIsNewInEnd(swiper.isEnd);
-                      }}
-                      breakpoints={{
-                        640: { slidesPerView: 2.2 },
-                        768: { slidesPerView: 2.5 },
-                        1024: { slidesPerView: 3.2 },
-                      }}
-                      className="overflow-visible"
-                    >
-                      {newInProducts.map((product) => (
-                        <SwiperSlide key={product.id}>
-                          <ProductCard
-                            product={product}
-                            onClick={handleProductClick}
-                            showBrand={true}
-                            showPrice={true}
-                          />
-                        </SwiperSlide>
-                      ))}
-                    </Swiper>
-                  ) : (
-                   <></>
-                  )}
-                 
-                  {/* Navigation Arrows */}
-                  {!isNewInBeginning && (
-                    <button className="new-in-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
-                      <ChevronDown className="h-5 w-5 rotate-90 text-black" />
-                    </button>
-                  )}
-                  {!isNewInEnd && (
-                    <button className="new-in-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg p-3 hover:bg-gray-50 transition-all duration-200 border border-gray-200">
-                      <ChevronDown className="h-5 w-5 -rotate-90 text-black" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Full Screen Split Section */}
-      {/* <SplitSection {...trendingTopsSection} /> */}
-
-      {/* Section Produits mis en avant */}
-      {isLoading ? (
-        <FeaturedProductsSkeleton />
-      ) : (
-        <section className="py-8 sm:py-12 md:py-16 px-3 sm:px-4 md:px-6 lg:px-8 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-8 sm:mb-10 md:mb-12">
-              <h2 className="text-xs sm:text-sm font-medium text-black tracking-[0.15em] sm:tracking-[0.2em] uppercase px-4">
-                Les marques qui retiennent notre attention
-              </h2>
-            </div>
-           
-            {featuredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-1">
-                {featuredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onClick={handleProductClick}
-                    showBrand={true}
-                    showPrice={true}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Aucun produit mis en avant disponible</p>
-                <Button
-                  className="mt-4"
-                  onClick={() => refreshSection('featured')}
-                  disabled={isAnyLoading}
-                >
-                  Actualiser
-                </Button>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      <SplitSection 
-        categories={categories}
-        title="Collections Phares"
-        subtitle="Découvrez nos catégories les plus populaires"
-      />
-
-      {/* Section Catégories - AVEC VRAIES DONNÉES */}
-      {isLoading ? (
-        <CategoriesSectionSkeleton />
-      ) : (
-        <section className="py-16 px-4 bg-white">
-          <div className="max-w-7xl mx-auto">
-            {/* Titre */}
-            <div className="text-center mb-12">
-              <h2 className="text-4xl lg:text-5xl font-serif text-black mb-4">
-                Parcourir par catégorie
-              </h2>
-              <p className="text-gray-600 text-lg">
-                Découvrez nos collections avec {categories.length} catégories disponibles
+              <h3 className="font-semibold text-gray-900 text-lg mb-2">
+                {item.title}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {item.description}
               </p>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
 
-            {/* Affichage des catégories */}
-            {categories.length > 0 ? (
-              <>
-                {/* Grille adaptative des catégories */}
-                {createCategoryGrid(categories)}
-                
-                {/* Lien vers toutes les catégories */}
-               
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600 mb-4">Aucune catégorie disponible</p>
-                <Button
-                  onClick={() => refreshSection('categories')}
-                  disabled={isAnyLoading}
-                  variant="black"
-                >
-                  Actualiser les catégories
-                </Button>
-              </div>
-            )}
+// Footer Component
+const Footer = () => {
+  return (
+    <footer className="bg-neutral-900 text-white py-16">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <h3 className="font-bold text-xl mb-4">DressCode</h3>
+            <p className="text-neutral-400 leading-relaxed">
+              Votre destination mode et lifestyle pour une garde-robe moderne et élégante.
+            </p>
           </div>
-        </section>
-      )}
+          
+          <div>
+            <h4 className="font-medium mb-4">Collections</h4>
+            <ul className="space-y-2 text-neutral-400">
+              <li><a href="#" className="hover:text-white transition-colors">Femme</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Homme</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Enfant</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Sport</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-medium mb-4">Aide</h4>
+            <ul className="space-y-2 text-neutral-400">
+              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Livraison</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Retours</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-medium mb-4">Suivez-nous</h4>
+            <ul className="space-y-2 text-neutral-400">
+              <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Facebook</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Pinterest</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="border-t border-neutral-800 pt-8 text-center text-neutral-400">
+          <p>&copy; 2025 DressCode. Tous droits réservés.</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
 
-      {/* Section Support - Toujours affichée car statique */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {supportItems.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300 cursor-pointer"
-              >
-                <div className="flex flex-col items-start space-y-4">
-                  <div className="text-gray-700">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-lg mb-2">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
+const HomePage = () => {
+  const featuredProducts = productsData.filter(product => product.featured);
+  const newProducts = productsData.filter(product => product.isNewIn);
+  
+  return (
+    <div className="min-h-screen bg-white">
+      <Header />
+      
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItaDJWMzRoLTJ6TTM0IDM0djItMlYzNGgyem0wIDJoMnYtMmgtMnYyek0zMCAzNHYySDI4VjM0aDJ6bTAgMmgydi0yaC0ydjJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
+        
+        <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-6">
+          <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight">
+            Style moderne,<br />
+            <span className="italic">simplicité absolue</span>
+          </h1>
+          <p className="text-xl md:text-2xl font-light mb-8 text-neutral-300">
+            Découvrez notre collection soigneusement sélectionnée
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="bg-white text-black px-8 py-4 rounded-full font-medium text-lg hover:bg-neutral-100 transition-all duration-200 transform hover:scale-105">
+              Découvrir la collection
+            </button>
+            <button className="border-2 border-white text-white px-8 py-4 rounded-full font-medium text-lg hover:bg-white hover:text-black transition-all duration-200">
+              Nouveautés
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-light text-gray-900 mb-4">
+              Nos favoris
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Une sélection de produits qui définissent notre style
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProducts.map((product, index) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                featured={index === 0}
+              />
             ))}
           </div>
         </div>
       </section>
 
+      {/* Categories */}
+      <Categories />
 
-      <Footer/>
-      {/* Styles personnalisés pour Swiper */}
-      <style jsx global>{`
-        .swiper-pagination-bullet {
-          width: 12px !important;
-          height: 12px !important;
-          background: rgba(255, 255, 255, 0.5) !important;
-          opacity: 1 !important;
-        }
-       
-        .swiper-pagination-bullet-active {
-          background: white !important;
-        }
-       
-        .swiper-button-next:after,
-        .swiper-button-prev:after {
-          font-size: 20px !important;
-          font-weight: bold !important;
-        }
+      {/* New Products */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-light text-gray-900 mb-4">
+              Nouveautés
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Les dernières additions à notre collection
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {newProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
 
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
+      {/* Newsletter */}
+      <Newsletter />
+
+      {/* Support Section */}
+      <SupportSection />
+
+      <Footer />
     </div>
   );
 };

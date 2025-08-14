@@ -62,56 +62,112 @@ export const newInData = [
   }
 ];
 
-export const productsData = [
+[
   {
-    id: 1,
-    brand: "Dries Van Noten",
-    name: "Veste en Coton Coupe Décontractée",
-    price: 890,
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970637/uploads/interracial-young-couple-with-many-shopping-bags-looking-camera.jpg",
-    alt: "Veste en coton coupe décontractée Dries Van Noten"
+    "id": "prd0001",
+    "name": "Sweat à Capuche Uniqlo",
+    "description": "Sweat en coton bio avec capuche ajustable et poche kangourou",
+    "shortDescription": "Sweat à capuche coton bio",
+    "price": 39.99,
+    "comparePrice": 49.99,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/hoodie-uniqlo.jpg"
+    ],
+    "categoryId": "cat0001",
+    "brandId": "brand0001",
+    "sku": "SKU-1001",
+    "stock": 58,
+    "available": true,
+    "featured": true,
+    "isNewIn": false,
+    "tags": ["coton", "bio", "décontracté"],
+    "metaTitle": "Sweat à Capuche Uniqlo",
+    "metaDescription": "Sweat en coton bio avec capuche",
+    "slug": "sweat-a-capuche-uniqlo",
+    "weight": 0.85,
+    "dimensions": { "width": 25, "height": 6, "length": 30 },
+    "createdAt": "2025-07-31 14:15:00",
+    "updatedAt": "2025-07-31 14:15:00"
   },
   {
-    id: 2,
-    brand: "Enfants Riches Déprimés",
-    name: "T-Shirt en Coton à Imprimé Logo",
-    price: 320,
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970633/uploads/two-fashionable-young-women-casual-trendy-spring-coat-boots-with-heels-black-hat-stylish-handbag.jpg",
-    alt: "T-shirt à logo Enfants Riches Déprimés"
+    "id": "prd0002",
+    "name": "Chaise Scandinave",
+    "description": "Chaise design scandinave en bois et assise rembourrée",
+    "shortDescription": "Chaise bois et tissu scandinave",
+    "price": 119.99,
+    "comparePrice": 149.99,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/chair-scandinave.jpg"
+    ],
+    "categoryId": "cat0002",
+    "brandId": "brand0002",
+    "sku": "SKU-1002",
+    "stock": 24,
+    "available": true,
+    "featured": false,
+    "isNewIn": true,
+    "tags": ["design", "bois", "maison"],
+    "metaTitle": "Chaise Scandinave",
+    "metaDescription": "Chaise design scandinave en bois",
+    "slug": "chaise-scandinave",
+    "weight": 6.4,
+    "dimensions": { "width": 45, "height": 85, "length": 45 },
+    "createdAt": "2025-07-31 14:16:00",
+    "updatedAt": "2025-07-31 14:16:00"
   },
   {
-    id: 3,
-    brand: "Loewe",
-    name: "Veste en Laine Structurée",
-    price: 1250,
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970633/uploads/two-fashionable-young-women-casual-trendy-spring-coat-boots-with-heels-black-hat-stylish-handbag.jpg",
-    alt: "Veste en laine structurée Loewe"
+    "id": "prd0003",
+    "name": "MacBook Air M3",
+    "description": "Ordinateur portable Apple avec puce M3 et écran Retina",
+    "shortDescription": "MacBook Air 13'' M3",
+    "price": 1399.99,
+    "comparePrice": null,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/macbook-air-m3.jpg"
+    ],
+    "categoryId": "cat0003",
+    "brandId": "brand0003",
+    "sku": "SKU-1003",
+    "stock": 35,
+    "available": true,
+    "featured": true,
+    "isNewIn": true,
+    "tags": ["ordinateur", "apple", "retina"],
+    "metaTitle": "MacBook Air M3",
+    "metaDescription": "MacBook Air 13 pouces puce M3",
+    "slug": "macbook-air-m3",
+    "weight": 1.29,
+    "dimensions": { "width": 30, "height": 2, "length": 21 },
+    "createdAt": "2025-07-31 14:17:00",
+    "updatedAt": "2025-07-31 14:17:00"
   },
   {
-    id: 4,
-    brand: "Gallery Dept.",
-    name: "T-Shirt Graphique Délavé",
-    price: 285,
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970624/uploads/fashion-portrait-young-elegant-woman%20%282%29.jpg",
-    alt: "T-shirt graphique délavé Gallery Dept."
-  },
-  {
-    id: 5,
-    brand: "Jacques Marie Mage",
-    name: "Lunettes Aviateur",
-    price: 650,
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970622/uploads/beautiful-young-woman-with-shopping-bags.jpg",
-    alt: "Lunettes aviateur Jacques Marie Mage"
-  },
-  {
-    id: 6,
-    brand: "CELINE HOMME",
-    name: "Sweat à Capuche en Coton Oversize",
-    price: 890,
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970619/uploads/portrait-young-japanese-woman-with-jacket.jpg",
-    alt: "Sweat à capuche en coton oversize Celine Homme"
+    "id": "prd0004",
+    "name": "Bougie parfumée Diptyque",
+    "description": "Bougie parfumée artisanale aux notes florales et boisées",
+    "shortDescription": "Bougie Diptyque parfum floral",
+    "price": 54.99,
+    "comparePrice": null,
+    "images": [
+      "https://res.cloudinary.com/demo/image/upload/v1753970634/uploads/bougie-diptyque.jpg"
+    ],
+    "categoryId": "cat0004",
+    "brandId": "brand0004",
+    "sku": "SKU-1004",
+    "stock": 120,
+    "available": true,
+    "featured": false,
+    "isNewIn": true,
+    "tags": ["parfum", "maison", "artisanale"],
+    "metaTitle": "Bougie parfumée Diptyque",
+    "metaDescription": "Bougie parfumée artisanale Diptyque",
+    "slug": "bougie-parfumee-diptyque",
+    "weight": 0.4,
+    "dimensions": { "width": 8, "height": 9, "length": 8 },
+    "createdAt": "2025-07-31 14:18:00",
+    "updatedAt": "2025-07-31 14:18:00"
   }
-];
+]
 
 
 export const trendingTopsSection = {

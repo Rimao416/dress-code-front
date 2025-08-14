@@ -1,4 +1,4 @@
-// components/Header/Header.tsx - Version simplifiée
+// components/Header/Header.tsx - Version sans useHomePage
 "use client"
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, ShoppingBag, Menu, X } from 'lucide-react';
@@ -7,8 +7,6 @@ import Link from 'next/link';
 import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 import CartSidebar from '../cart/CartSidebar';
-import { useHomePage } from '@/hooks/useHomepage';
-import { CategoryWithProducts } from '@/types/homepage';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;
@@ -40,20 +38,10 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
 
-  // Charger les catégories depuis l'API
-  const { categories, isLoading } = useHomePage({
-    autoFetch: true,
-    filters: {
-      categoriesLimit: 20
-    }
-  });
-
   // Fix hydration
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,57 +54,70 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   const shouldApplyScrolledStyle = forceScrolledStyle || isNavbarHovered || isScrolled;
 
-  // Créer la navigation dynamique simplifiée
-  const createSimpleNavigation = (): NavigationData => {
-    if (!categories || categories.length === 0) {
-      return {};
+  // Navigation statique simplifiée
+  const navigationData: NavigationData = {
+    "Femme": {
+      hasDropdown: true,
+      link: "/collections/femme",
+      items: [
+        { title: "Tous les vêtements femme", link: "/collections/femme" },
+        { title: "Robes", link: "/collections/femme/robes" },
+        { title: "Tops & T-shirts", link: "/collections/femme/tops" },
+        { title: "Pantalons", link: "/collections/femme/pantalons" },
+        { title: "Jeans", link: "/collections/femme/jeans" },
+        { title: "Vestes", link: "/collections/femme/vestes" },
+        { title: "Chaussures", link: "/collections/femme/chaussures" },
+        { title: "Accessoires", link: "/collections/femme/accessoires" }
+      ]
+    },
+    "Homme": {
+      hasDropdown: true,
+      link: "/collections/homme",
+      items: [
+        { title: "Tous les vêtements homme", link: "/collections/homme" },
+        { title: "T-shirts", link: "/collections/homme/tshirts" },
+        { title: "Chemises", link: "/collections/homme/chemises" },
+        { title: "Pantalons", link: "/collections/homme/pantalons" },
+        { title: "Jeans", link: "/collections/homme/jeans" },
+        { title: "Vestes", link: "/collections/homme/vestes" },
+        { title: "Chaussures", link: "/collections/homme/chaussures" },
+        { title: "Accessoires", link: "/collections/homme/accessoires" }
+      ]
+    },
+    "Enfant": {
+      hasDropdown: true,
+      link: "/collections/enfant",
+      items: [
+        { title: "Tous les vêtements enfant", link: "/collections/enfant" },
+        { title: "Filles", link: "/collections/enfant/filles" },
+        { title: "Garçons", link: "/collections/enfant/garcons" },
+        { title: "Bébé", link: "/collections/enfant/bebe" },
+        { title: "Chaussures", link: "/collections/enfant/chaussures" },
+        { title: "Accessoires", link: "/collections/enfant/accessoires" }
+      ]
+    },
+    "Sport": {
+      hasDropdown: true,
+      link: "/collections/sport",
+      items: [
+        { title: "Tous les articles sport", link: "/collections/sport" },
+        { title: "Running", link: "/collections/sport/running" },
+        { title: "Fitness", link: "/collections/sport/fitness" },
+        { title: "Football", link: "/collections/sport/football" },
+        { title: "Basketball", link: "/collections/sport/basketball" },
+        { title: "Natation", link: "/collections/sport/natation" },
+        { title: "Équipements", link: "/collections/sport/equipements" }
+      ]
+    },
+    "Nouveautés": {
+      hasDropdown: false,
+      link: "/collections/nouveautes"
+    },
+    "Soldes": {
+      hasDropdown: false,
+      link: "/collections/soldes"
     }
-
-    const navigationData: NavigationData = {};
-    const mainCategories = categories.filter(cat => !cat.parentId);
-    const sortedCategories = mainCategories
-      .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
-      .slice(0, 6);
-
-    sortedCategories.forEach(category => {
-      const hasChildren = category.children && category.children.length > 0;
-      
-      navigationData[category.name] = {
-        hasDropdown: hasChildren,
-        link: `/collections/${category.slug}`,
-        items: hasChildren ? [
-          { title: `Tous les ${category.name}`, link: `/collections/${category.slug}` },
-          ...category.children!.slice(0, 8).map(child => ({
-            title: child.name,
-            link: `/collections/${child.slug}`
-          }))
-        ] : undefined
-      };
-    });
-
-    // Menu "Plus" pour les catégories restantes
-    const remainingCategories = mainCategories.slice(6);
-    if (remainingCategories.length > 0) {
-      navigationData['Plus'] = {
-        hasDropdown: true,
-        link: '/collections',
-        items: [
-          { title: "Toutes les collections", link: "/collections" },
-          { title: "Nouveautés", link: "/collections?filter=new" },
-          ...remainingCategories.slice(0, 6).map(cat => ({
-            title: cat.name,
-            link: `/collections/${cat.slug}`
-          }))
-        ]
-      };
-    }
-
-    return navigationData;
   };
-
-  const navigationData = createSimpleNavigation();
-
-
 
   const handleMouseEnter = (menu: string) => {
     setActiveDropdown(menu);
@@ -218,29 +219,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     );
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <header className="fixed left-0 right-0 z-30 bg-white/95 backdrop-blur-sm shadow-sm">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            <div className="w-32 h-6 bg-gray-200 rounded animate-pulse"></div>
-            <nav className="hidden md:flex items-center space-x-4">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div key={item} className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
-              ))}
-            </nav>
-            <div className="flex items-center space-x-3">
-              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-              <div className="md:hidden w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
-
   return (
     <>
       <header
@@ -263,7 +241,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               </Link>
             </div>
 
-            {/* Navigation simplifiée */}
+            {/* Navigation statique */}
             <nav className="hidden md:flex items-center space-x-6">
               {Object.entries(navigationData).map(([key, nav]) => (
                 <div
@@ -332,9 +310,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
           </div>
         </div>
       </header>
-
-      {/* Modals */}
-    
 
       {/* Sidebar Panier */}
       <CartSidebar
