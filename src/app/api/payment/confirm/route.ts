@@ -1,5 +1,3 @@
-// app/api/payment/confirm/route.ts
-import { PaymentStatus } from '@/generated/prisma';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { StripeService } from '@/services/stripe.service';
