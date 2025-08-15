@@ -135,6 +135,8 @@ const HomePage = () => {
       <Categories />
 
       {/* Section Nouveautés */}
+      {newProducts.length > 0 && (
+        
       <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
@@ -165,6 +167,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Section avec ProductSplitSection pour les nouveautés */}
 

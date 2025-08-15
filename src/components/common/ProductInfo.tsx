@@ -1,0 +1,220 @@
+import { ChevronDown, ChevronUp, Minus, Plus, Star } from "lucide-react";
+import { useState } from "react";
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  shortDescription: string;
+  price: number;
+  comparePrice: number | null;
+  images: string[];
+  categoryId: string;
+  brandId: string;
+  brand?: { name: string };
+  sku: string;
+  stock: number;
+  available: boolean;
+  featured: boolean;
+  isNewIn: boolean;
+  tags: string[];
+  slug: string;
+  averageRating: number;
+  reviewCount: number;
+}
+
+type ExpandedSectionsType = {
+  details: boolean;
+  fit: boolean;
+  shipping: boolean;
+};
+
+type SectionKey = keyof ExpandedSectionsType;
+
+interface ProductInfoProps {
+  product: Product;
+  onAddToBag?: (product: Product, quantity: number) => void;
+}
+
+const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
+  const [quantity, setQuantity] = useState<number>(1);
+  const [expandedSections, setExpandedSections] = useState<ExpandedSectionsType>({
+    details: false,
+    fit: false,
+    shipping: false,
+  });
+
+  const handleAddToBag = (): void => {
+    onAddToBag?.(product, quantity);
+  };
+
+  const handleQuantityChange = (newQuantity: number): void => {
+    if (newQuantity >= 1 && newQuantity <= product.stock) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const toggleSection = (section: SectionKey): void => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+
+
+
+  return (
+    <div className="space-y-6">
+      {product.brand && (
+        <div className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+          {product.brand.name}
+        </div>
+      )}
+
+      <h1 className="text-2xl sm:text-3xl font-bold text-black">
+        {product.name}
+      </h1>
+
+      <div className="flex items-center space-x-3">
+        <span className="text-2xl font-bold text-black">
+          €{product.price.toFixed(2)}
+        </span>
+        {product.comparePrice && product.comparePrice > product.price && (
+          <span className="text-lg text-gray-500 line-through">
+            €{product.comparePrice.toFixed(2)}
+          </span>
+        )}
+      </div>
+
+      
+
+     
+
+   
+        <div className="space-y-3">
+          <span className="text-sm font-medium">Sélectionner la quantité</span>
+          <div className="flex items-center">
+            <button
+              onClick={() => handleQuantityChange(quantity - 1)}
+              disabled={quantity <= 1}
+              className={`w-12 h-12 flex items-center justify-center border border-r-0 ${
+                quantity <= 1
+                  ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                  : 'border-gray-300 text-gray-600 hover:border-black hover:text-black'
+              } transition-colors`}
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+           
+            <div className="w-16 h-12 flex items-center justify-center border-t border-b border-gray-300 bg-white">
+              <span className="text-sm font-medium">{quantity}</span>
+            </div>
+           
+            <button
+              onClick={() => handleQuantityChange(quantity + 1)}
+              disabled={quantity >= product.stock}
+              className={`w-12 h-12 flex items-center justify-center border border-l-0 ${
+                quantity >= product.stock
+                  ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                  : 'border-gray-300 text-gray-600 hover:border-black hover:text-black'
+              } transition-colors`}
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+     
+      <button
+        onClick={handleAddToBag}
+
+        className={`w-full py-4 px-6 text-sm font-semibold uppercase tracking-wide transition-all
+            bg-black text-white hover:bg-gray-800`}
+      >
+        { 'Ajouter au panier'}
+      </button>
+
+    
+
+      {product.shortDescription && (
+        <p className="text-sm text-gray-600 leading-relaxed">
+          {product.shortDescription}
+        </p>
+      )}
+
+      <div className="space-y-4 border-t pt-6">
+        <div className="border-b border-gray-200">
+          <button
+            onClick={() => toggleSection('details')}
+            className="w-full flex items-center justify-between py-4 text-left"
+          >
+            <span className="font-medium">Détails</span>
+            {expandedSections.details ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </button>
+          {expandedSections.details && (
+            <div className="pb-4 text-sm text-gray-600 space-y-2">
+              <p>{product.description}</p>
+              {product.tags.length > 0 && (
+                <div>
+                  <strong>Tags:</strong> {product.tags.join(', ')}
+                </div>
+              )}
+              <div>
+                <strong>SKU:</strong> {product.sku}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="border-b border-gray-200">
+          <button
+            onClick={() => toggleSection('fit')}
+            className="w-full flex items-center justify-between py-4 text-left"
+          >
+            <span className="font-medium">Fit & Fabric</span>
+            {expandedSections.fit ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </button>
+          {expandedSections.fit && (
+            <div className="pb-4 text-sm text-gray-600 space-y-2">
+              <p>Informations sur la coupe et le tissu...</p>
+              <p>Matériaux de qualité premium</p>
+              <p>Coupe moderne et confortable</p>
+            </div>
+          )}
+        </div>
+
+        <div className="border-b border-gray-200">
+          <button
+            onClick={() => toggleSection('shipping')}
+            className="w-full flex items-center justify-between py-4 text-left"
+          >
+            <span className="font-medium">Shipping & Returns</span>
+            {expandedSections.shipping ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </button>
+          {expandedSections.shipping && (
+            <div className="pb-4 text-sm text-gray-600 space-y-2">
+              <p>Livraison gratuite pour les commandes de plus de 50€</p>
+              <p>Retours gratuits sous 30 jours</p>
+              <p>Livraison standard: 3-5 jours ouvrables</p>
+              <p>Livraison express: 1-2 jours ouvrables</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductInfo;
