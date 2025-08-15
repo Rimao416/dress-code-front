@@ -1,6 +1,6 @@
 // stores/useCartStore.ts
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { CartStore, CartItem } from '@/types/cart';
 import { ProductWithFullData, ProductVariant } from '@/types/product';
 
@@ -10,26 +10,17 @@ export const useCartStore = create<CartStore>()(
       items: [],
       totalItems: 0,
       totalPrice: 0,
-      _hasHydrated: false,
-
-      // Méthode pour marquer comme hydraté
-      setHasHydrated: (state: boolean) => {
-        set({
-          _hasHydrated: state,
-        });
-      },
 
       addItem: (
-        product: ProductWithFullData,
-        variant: ProductVariant,
+        product: ProductWithFullData, 
+        variant: ProductVariant, 
         quantity: number = 1,
         selectedSize?: string,
         selectedColor?: string
       ) => {
-        const state = get();
-        const existingItemIndex = state.items.findIndex(
-          item =>
-            item.productId === product.id &&
+        const existingItemIndex = get().items.findIndex(
+          item => 
+            item.productId === product.id && 
             item.variant.id === variant.id &&
             item.selectedSize === selectedSize &&
             item.selectedColor === selectedColor
@@ -37,24 +28,22 @@ export const useCartStore = create<CartStore>()(
 
         if (existingItemIndex >= 0) {
           // Update existing item quantity
-          const updatedItems = [...state.items];
+          const updatedItems = [...get().items];
           const existingItem = updatedItems[existingItemIndex];
           const newQuantity = existingItem.quantity + quantity;
-         
+          
           // Check stock limit
           if (newQuantity <= variant.stock) {
             updatedItems[existingItemIndex] = {
               ...existingItem,
               quantity: newQuantity
             };
-            
-            const priceToAdd = (variant.price || product.price) * quantity;
-            
-            set({
+
+            set(state => ({
               items: updatedItems,
               totalItems: state.totalItems + quantity,
-              totalPrice: state.totalPrice + priceToAdd
-            });
+              totalPrice: state.totalPrice + (variant.price || product.price) * quantity
+            }));
           }
         } else {
           // Add new item
@@ -68,29 +57,24 @@ export const useCartStore = create<CartStore>()(
             selectedColor,
             addedAt: new Date()
           };
-          
-          const priceToAdd = (variant.price || product.price) * quantity;
-          
-          set({
+
+          set(state => ({
             items: [...state.items, newItem],
             totalItems: state.totalItems + quantity,
-            totalPrice: state.totalPrice + priceToAdd
-          });
+            totalPrice: state.totalPrice + (variant.price || product.price) * quantity
+          }));
         }
       },
 
       removeItem: (itemId: string) => {
-        const state = get();
-        const item = state.items.find(item => item.id === itemId);
+        const item = get().items.find(item => item.id === itemId);
         if (!item) return;
 
-        const priceToRemove = (item.variant.price || item.product.price) * item.quantity;
-
-        set({
+        set(state => ({
           items: state.items.filter(item => item.id !== itemId),
           totalItems: state.totalItems - item.quantity,
-          totalPrice: state.totalPrice - priceToRemove
-        });
+          totalPrice: state.totalPrice - (item.variant.price || item.product.price) * item.quantity
+        }));
       },
 
       updateQuantity: (itemId: string, quantity: number) => {
@@ -99,26 +83,23 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
-        const state = get();
-        const itemIndex = state.items.findIndex(item => item.id === itemId);
+        const itemIndex = get().items.findIndex(item => item.id === itemId);
         if (itemIndex === -1) return;
 
-        const item = state.items[itemIndex];
+        const item = get().items[itemIndex];
         const quantityDifference = quantity - item.quantity;
 
         // Check stock limit
         if (quantity > item.variant.stock) return;
 
-        const updatedItems = [...state.items];
+        const updatedItems = [...get().items];
         updatedItems[itemIndex] = { ...item, quantity };
 
-        const priceDifference = (item.variant.price || item.product.price) * quantityDifference;
-
-        set({
+        set(state => ({
           items: updatedItems,
           totalItems: state.totalItems + quantityDifference,
-          totalPrice: state.totalPrice + priceDifference
-        });
+          totalPrice: state.totalPrice + (item.variant.price || item.product.price) * quantityDifference
+        }));
       },
 
       clearCart: () => {
@@ -135,59 +116,15 @@ export const useCartStore = create<CartStore>()(
 
       getCartTotal: () => {
         return get().totalPrice;
-      },
-
-      // Recalculer les totaux (utile après hydratation)
-      recalculateTotals: () => {
-        const state = get();
-        const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-        const totalPrice = state.items.reduce(
-          (sum, item) => sum + (item.variant.price || item.product.price) * item.quantity,
-          0
-        );
-
-        set({
-          totalItems,
-          totalPrice
-        });
       }
     }),
     {
       name: 'cart-storage',
-      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         items: state.items,
         totalItems: state.totalItems,
-        totalPrice: state.totalPrice,
+        totalPrice: state.totalPrice
       }),
-      onRehydrateStorage: () => (state) => {
-        // Cette fonction est appelée après l'hydratation
-        if (state) {
-          state.setHasHydrated(true);
-          // Recalculer les totaux pour s'assurer de la cohérence
-          state.recalculateTotals();
-        }
-      },
-      // Sérialisation personnalisée pour les dates
-      serialize: (state) => {
-        return JSON.stringify({
-          ...state,
-          items: state.items.map(item => ({
-            ...item,
-            addedAt: item.addedAt instanceof Date ? item.addedAt.toISOString() : item.addedAt
-          }))
-        });
-      },
-      deserialize: (str) => {
-        const parsed = JSON.parse(str);
-        return {
-          ...parsed,
-          items: parsed.items?.map((item: any) => ({
-            ...item,
-            addedAt: item.addedAt ? new Date(item.addedAt) : new Date()
-          })) || []
-        };
-      }
     }
   )
 );
