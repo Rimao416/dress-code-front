@@ -1,11 +1,11 @@
-// components/Cart/CartSidebar.tsx
-"use client"
-import React from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
-import { useCart } from '@/hooks/cart/useCart';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+"use client";
+
+import React from "react";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
+import { useCart } from "@/hooks/cart/useCart";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -22,89 +22,41 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
     clearCart,
     isEmpty,
     itemsCount,
-    totalSavings
   } = useCart();
 
-  // Gestion de la redirection vers checkout
   const handleCheckout = () => {
-    // Fermer le sidebar d'abord
     onClose();
-    // Rediriger vers la page checkout
-    router.push('/checkout');
+    router.push("/checkout");
   };
 
-  // Correction 1: Typer correctement les variants avec le type "spring"
   const sidebarVariants: Variants = {
-    closed: {
-      x: '100%',
-      transition: {
-        type: 'spring' as const,
-        stiffness: 300,
-        damping: 30
-      }
-    },
-    open: {
-      x: 0,
-      transition: {
-        type: 'spring' as const,
-        stiffness: 300,
-        damping: 30
-      }
-    }
+    closed: { x: "100%", transition: { type: "spring", stiffness: 300, damping: 30 } },
+    open: { x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
   };
 
   const overlayVariants: Variants = {
-    closed: {
-      opacity: 0,
-      transition: {
-        duration: 0.3
-      }
-    },
-    open: {
-      opacity: 1,
-      transition: {
-        duration: 0.3
-      }
-    }
+    closed: { opacity: 0, transition: { duration: 0.3 } },
+    open: { opacity: 1, transition: { duration: 0.3 } },
   };
 
   const itemVariants: Variants = {
-    hidden: {
-      opacity: 0,
-      x: 20,
-      transition: {
-        duration: 0.2
-      }
-    },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.3
-      }
-    },
-    exit: {
-      opacity: 0,
-      x: 20,
-      transition: {
-        duration: 0.2
-      }
-    }
+    hidden: { opacity: 0, x: 20, transition: { duration: 0.2 } },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: 20, transition: { duration: 0.2 } },
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(price);
-  };
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(price);
 
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeItem(itemId);
-    } else {
-      updateQuantity(itemId, newQuantity);
-    }
+    if (newQuantity <= 0) removeItem(itemId);
+    else updateQuantity(itemId, newQuantity);
+  };
+
+  // ✅ Fonction qui sécurise le chemin de l'image
+  const getImagePath = (path?: string) => {
+    if (!path) return "/placeholder-image.jpg";
+    return path.startsWith("/") ? path : `/${path}`;
   };
 
   return (
@@ -120,6 +72,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
             className="fixed inset-0 bg-black/60 z-40"
             onClick={onClose}
           />
+
           {/* Sidebar */}
           <motion.div
             variants={sidebarVariants}
@@ -143,7 +96,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
-            
+
             {/* Content */}
             {isEmpty ? (
               <div className="flex-1 flex items-center justify-center p-6">
@@ -181,47 +134,47 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                         {/* Product Image */}
                         <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                           <Image
-                            src={item.product.images[0] || '/placeholder-image.jpg'}
+                            src={getImagePath(item.product.images?.[0])}
                             alt={item.product.name}
                             width={64}
                             height={64}
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        
+
                         {/* Product Details */}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-gray-900 text-sm mb-1 truncate">
                             {item.product.name}
                           </h3>
-                         
+
                           {/* Variant Info */}
                           <div className="text-xs text-gray-500 space-y-1">
-                            {item.selectedSize && (
-                              <p>Taille: {item.selectedSize}</p>
-                            )}
-                            {item.selectedColor && (
-                              <p>Couleur: {item.selectedColor}</p>
-                            )}
+                            {item.selectedSize && <p>Taille: {item.selectedSize}</p>}
+                            {item.selectedColor && <p>Couleur: {item.selectedColor}</p>}
                           </div>
-                          
+
                           {/* Price */}
                           <div className="mt-2 flex items-center space-x-2">
                             <span className="font-semibold text-gray-900">
                               {formatPrice(item.variant.price || item.product.price)}
                             </span>
-                            {item.product.comparePrice && item.product.comparePrice > (item.variant.price || item.product.price) && (
-                              <span className="text-sm text-gray-500 line-through">
-                                {formatPrice(item.product.comparePrice)}
-                              </span>
-                            )}
+                            {item.product.comparePrice &&
+                              item.product.comparePrice >
+                                (item.variant.price || item.product.price) && (
+                                <span className="text-sm text-gray-500 line-through">
+                                  {formatPrice(item.product.comparePrice)}
+                                </span>
+                              )}
                           </div>
-                          
+
                           {/* Quantity Controls */}
                           <div className="mt-3 flex items-center justify-between">
                             <div className="flex items-center border border-gray-300 rounded-lg">
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                onClick={() =>
+                                  handleQuantityChange(item.id, item.quantity - 1)
+                                }
                                 className="p-1.5 hover:bg-gray-100 transition-colors"
                                 disabled={item.quantity <= 1}
                               >
@@ -231,7 +184,9 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                                 {item.quantity}
                               </span>
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                onClick={() =>
+                                  handleQuantityChange(item.id, item.quantity + 1)
+                                }
                                 className="p-1.5 hover:bg-gray-100 transition-colors"
                                 disabled={item.quantity >= item.variant.stock}
                               >
@@ -250,19 +205,16 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                     ))}
                   </AnimatePresence>
                 </div>
-                
+
                 {/* Footer */}
                 <div className="border-t border-gray-200 p-6 bg-gray-50">
-                  {/* Savings */}
-                  {/* Total */}
                   <div className="flex justify-between items-center mb-4 text-lg font-semibold">
                     <span>Total:</span>
                     <span>{formatPrice(totalPrice)}</span>
                   </div>
-                  
-                  {/* Action Buttons */}
+
                   <div className="space-y-3">
-                    <button 
+                    <button
                       onClick={handleCheckout}
                       className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
                     >

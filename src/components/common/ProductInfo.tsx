@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Minus, Plus, Star, Check, X, ShoppingBag } from
 import { useState } from "react";
 import { useCart } from "@/hooks/cart/useCart";
 import { useCartSidebarStore } from "@/store/useCartSidebarStore";
+import { ProductWithFullData } from "@/types/product";
 
 export interface Product {
   id: string;
@@ -49,13 +50,43 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const [showMiniCart, setShowMiniCart] = useState<boolean>(false);
   const [addedItem, setAddedItem] = useState<any>(null);
 
-  // const { addToCart, itemsCount } = useCart();
-  // const { openSidebar } = useCartSidebarStore();
+  // DÉCOMMENTEZ CES LIGNES !
+  const { addToCart, itemsCount } = useCart();
+  const { openSidebar } = useCartSidebarStore();
 
-  const handleAddToBag = (): void => {
-    // Simulation simple d'ajout au panier
-    console.log('Ajout au panier:', { product: product.name, quantity, selectedSize, selectedColor });
-    
+const handleAddToBag = (): void => {
+  // Créer un variant temporaire
+  const variant = {
+    id: `${product.id}-default`,
+    price: product.price,
+    stock: product.stock,
+    available: product.available
+  };
+
+  // ✅ Adapter le produit pour correspondre à ProductWithFullData
+  const productWithFullData: ProductWithFullData = {
+    ...product,
+    // Adapter la brand si elle existe
+    brand: product.brand ? {
+      id: product.brandId, // Utilise brandId comme fallback
+      name: product.brand.name,
+      slug: undefined,
+      description: undefined
+    } : undefined
+  };
+
+  // AJOUT RÉEL AU PANIER
+  const result = addToCart(
+    productWithFullData,
+    variant,
+    quantity,
+    selectedSize,
+    selectedColor
+  );
+
+  if (result.success) {
+    console.log('✅ Produit ajouté au panier avec succès');
+   
     setAddedItem({
       product,
       quantity,
@@ -65,8 +96,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
    
     setShowMiniCart(true);
     setTimeout(() => setShowMiniCart(false), 5000);
-  };
-
+  } else {
+    console.error('❌ Erreur lors de l\'ajout:', result.error);
+  }
+};
   const handleQuantityChange = (newQuantity: number): void => {
     if (newQuantity >= 1) {
       setQuantity(newQuantity);
@@ -143,11 +176,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
             className="w-full mt-4 bg-gray-900 text-white py-2 px-4 rounded text-sm font-medium hover:bg-gray-800 transition-colors"
             onClick={() => {
               setShowMiniCart(false);
-              console.log('Ouverture du panier');
+              openSidebar(); // Ouvre réellement la sidebar du panier
             }}
           >
             <ShoppingBag className="h-4 w-4 inline mr-2" />
-         Voir le panier ({addedItem.quantity})
+            Voir le panier ({itemsCount}) {/* Affiche le vrai count */}
           </button>
         </div>
       )}

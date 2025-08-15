@@ -1,4 +1,4 @@
-import { Product } from "./product";
+import { ProductWithFullData } from "./product";
 
 // types/category.ts - Version compatible avec Prisma
 
@@ -15,12 +15,12 @@ export interface Category {
   createdAt: Date;
   updatedAt: Date;
   children: Category[];
-  products: Product[];
+  products: ProductWithFullData[];
 }
 
 export interface CategoryWithFullData extends Category {
   // Ajoute tous les produits des catégories enfants
-  allProducts: Product[];
+  allProducts: ProductWithFullData[];
   // Nombre total de produits (direct + enfants)
   totalProductsCount: number;
 }
