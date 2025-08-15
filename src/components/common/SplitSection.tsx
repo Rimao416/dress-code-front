@@ -216,7 +216,7 @@ const ProductSplitSection: React.FC<ProductSplitSectionProps> = ({
             index % 4 === 2 ? 'top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8' :
             'top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 text-right'
           } ${variation.textColor} z-10 max-w-xs sm:max-w-sm md:max-w-md`}>
-            <h3 className={`${variation.textSize} font-bold mb-2 sm:mb-3 md:mb-4 tracking-wide uppercase line-clamp-2`}>
+            {/* <h3 className={`${variation.textSize} font-bold mb-2 sm:mb-3 md:mb-4 tracking-wide uppercase line-clamp-2`}>
               {product.name}
             </h3>
             
@@ -229,13 +229,13 @@ const ProductSplitSection: React.FC<ProductSplitSectionProps> = ({
             <p className="text-sm sm:text-base md:text-lg mb-3 sm:mb-4 md:mb-5 opacity-90 leading-relaxed line-clamp-2">
               {product.shortDescription || product.description}
             </p>
-            
+             */}
             <div className="flex flex-col gap-3 items-start">
               {/* Prix */}
               <div className="flex items-center gap-2">
-                <span className="text-lg sm:text-xl md:text-2xl font-bold">
+                {/* <span className="text-lg sm:text-xl md:text-2xl font-bold">
                   {formatPrice(product.price)}
-                </span>
+                </span> */}
                 {product.comparePrice && product.comparePrice > product.price && (
                   <span className="text-sm opacity-70 line-through">
                     {formatPrice(product.comparePrice)}
@@ -275,14 +275,14 @@ const ProductSplitSection: React.FC<ProductSplitSectionProps> = ({
   return (
     <section className="w-full">
       {/* En-tête de section */}
-      <div className="text-center py-8 sm:py-12">
+      {/* <div className="text-center py-8 sm:py-12">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
           {title}
         </h2>
         <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto px-4">
           {subtitle}
         </p>
-      </div>
+      </div> */}
 
       {/* Section dynamique */}
       <div className={selectedLayout.containerClass}>

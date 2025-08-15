@@ -55,7 +55,7 @@ const HomePage = () => {
 
   // Diviser tous les produits (pas seulement les featured) en groupes de 4
   const allProducts = productsData;
-  const productChunks = chunkProducts(allProducts, 4);
+  const productChunks = chunkProducts(allProducts, 8);
 
   return (
     <div className="min-h-screen bg-white">
@@ -167,11 +167,7 @@ const HomePage = () => {
       </section>
 
       {/* Section avec ProductSplitSection pour les nouveautés */}
-      <ProductSplitSection
-        products={newProducts}
-        title="Focus Nouveautés"
-        subtitle="Nos dernières créations mises en avant"
-      />
+
 
       {/* Section Engagement/Valeurs */}
       <Nouveaute />
