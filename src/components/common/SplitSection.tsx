@@ -1,10 +1,31 @@
-// components/Home/CategorySplitSection.tsx
+// components/Home/ProductSplitSection.tsx
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { Category } from '@/app/page';
 
-interface CategorySplitSectionProps {
-  categories: Category[];
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  shortDescription: string;
+  price: number;
+  comparePrice: number | null;
+  images: string[];
+  categoryId: string;
+  brandId: string;
+  brand?: { name: string };
+  sku: string;
+  stock: number;
+  available: boolean;
+  featured: boolean;
+  isNewIn: boolean;
+  tags: string[];
+  slug: string;
+  averageRating: number;
+  reviewCount: number;
+}
+
+interface ProductSplitSectionProps {
+  products: Product[];
   title: string;
   subtitle: string;
 }
@@ -38,7 +59,7 @@ const LAYOUT_VARIANTS = [
     ],
     containerClass: 'flex flex-col gap-4'
   },
-  // Layout 4: Grid 2x2 (utilise 4 catégories)
+  // Layout 4: Grid 2x2 (utilise 4 produits)
   {
     name: 'grid_2x2',
     structure: [
@@ -61,15 +82,15 @@ const LAYOUT_VARIANTS = [
   }
 ];
 
-const SplitSection: React.FC<CategorySplitSectionProps> = ({ 
-  categories, 
-  title, 
-  subtitle 
+const ProductSplitSection: React.FC<ProductSplitSectionProps> = ({
+  products,
+  title,
+  subtitle
 }) => {
-  // Mélanger les catégories et choisir un layout aléatoirement à chaque rendu
-  const { shuffledCategories, selectedLayout } = useMemo(() => {
+  // Mélanger les produits et choisir un layout aléatoirement à chaque rendu
+  const { shuffledProducts, selectedLayout } = useMemo(() => {
     // Fonction pour mélanger un tableau
-    const shuffleArray = (array: Category[]) => {
+    const shuffleArray = (array: Product[]) => {
       const shuffled = [...array];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -78,46 +99,46 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
       return shuffled;
     };
 
-    // Mélanger les catégories
-    const shuffled = shuffleArray(categories);
-    
-    // Choisir un layout aléatoire en fonction du nombre de catégories disponibles
+    // Mélanger les produits
+    const shuffled = shuffleArray(products);
+   
+    // Choisir un layout aléatoire en fonction du nombre de produits disponibles
     const availableLayouts = LAYOUT_VARIANTS.filter(layout => {
       return layout.structure.length <= shuffled.length;
     });
-    
-    const randomLayout = availableLayouts.length > 0 
+   
+    const randomLayout = availableLayouts.length > 0
       ? availableLayouts[Math.floor(Math.random() * availableLayouts.length)]
       : LAYOUT_VARIANTS[0]; // Fallback sur le premier layout
 
     return {
-      shuffledCategories: shuffled,
+      shuffledProducts: shuffled,
       selectedLayout: randomLayout
     };
-  }, [categories]);
+  }, [products]);
 
-  if (!shuffledCategories || shuffledCategories.length === 0) {
+  if (!shuffledProducts || shuffledProducts.length === 0) {
     return (
       <section className="w-full py-12">
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4">{title}</h2>
           <p className="text-gray-600 mb-8">{subtitle}</p>
-          <p className="text-gray-500">Aucune catégorie disponible pour cette section</p>
+          <p className="text-gray-500">Aucun produit disponible pour cette section</p>
         </div>
       </section>
     );
   }
 
-  // Prendre seulement le nombre de catégories nécessaires pour le layout
-  const categoriesToShow = shuffledCategories.slice(0, selectedLayout.structure.length);
+  // Prendre seulement le nombre de produits nécessaires pour le layout
+  const productsToShow = shuffledProducts.slice(0, selectedLayout.structure.length);
 
-  const CategoryBlock = ({ 
-    category, 
-    span, 
+  const ProductBlock = ({
+    product,
+    span,
     height,
-    index 
-  }: { 
-    category: Category; 
+    index
+  }: {
+    product: Product;
     span: string;
     height: string;
     index: number;
@@ -129,56 +150,120 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
       { textSize: 'text-xl sm:text-2xl md:text-3xl', textColor: 'text-white' },
       { textSize: 'text-lg sm:text-xl md:text-2xl', textColor: 'text-white' }
     ];
-    
+   
     const variation = variations[index % variations.length];
 
     // Image par défaut si pas d'image
     const defaultImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMDAgMTAwTDI2MCAxNjBIMjIwVjIwMEgxODBWMTYwSDE0MEwyMDAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K";
-    
-    const categoryImage = category.image && category.image.trim() !== ""
-      ? category.image
+   
+    // Prendre la première image du produit ou l'image par défaut
+    const productImage = product.images && product.images.length > 0 && product.images[0].trim() !== ""
+      ? product.images[0]
       : defaultImage;
+
+    // Formatage du prix
+    const formatPrice = (price: number) => {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR'
+      }).format(price);
+    };
 
     return (
       <div className={`${span} ${height} relative overflow-hidden group cursor-pointer`}>
-        <Link href={`/collections/${category.name.toLowerCase().replace(/\s+/g, '-')}`} className="block h-full">
+        <Link href={`/products/${product.slug}`} className="block h-full">
           <img
-            src={categoryImage}
-            alt={category.name}
+            src={productImage}
+            alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             onError={(e) => {
               e.currentTarget.src = defaultImage;
             }}
           />
-          
+         
           {/* Overlay avec gradient aléatoire */}
           <div className={`absolute inset-0 ${
-            index % 3 === 0 
-              ? 'bg-gradient-to-br from-black/40 via-black/10 to-transparent group-hover:from-black/30' 
-              : index % 3 === 1 
+            index % 3 === 0
+              ? 'bg-gradient-to-br from-black/40 via-black/10 to-transparent group-hover:from-black/30'
+              : index % 3 === 1
                 ? 'bg-gradient-to-t from-black/50 via-black/15 to-transparent group-hover:from-black/35'
                 : 'bg-gradient-to-tr from-black/45 via-transparent to-black/20 group-hover:from-black/30'
           } transition-all duration-300`}></div>
-          
+
+          {/* Badges */}
+          <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+            {product.isNewIn && (
+              <span className="bg-black text-white px-2 py-1 text-xs font-medium uppercase tracking-wide">
+                Nouveau
+              </span>
+            )}
+            {product.featured && (
+              <span className="bg-red-500 text-white px-2 py-1 text-xs font-medium uppercase tracking-wide">
+                Coup de coeur
+              </span>
+            )}
+            {product.comparePrice && product.comparePrice > product.price && (
+              <span className="bg-green-500 text-white px-2 py-1 text-xs font-medium uppercase tracking-wide">
+                Promo
+              </span>
+            )}
+          </div>
+         
           {/* Contenu avec positionnement variable */}
           <div className={`absolute ${
             index % 4 === 0 ? 'bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-8 md:left-8' :
             index % 4 === 1 ? 'bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 text-right' :
             index % 4 === 2 ? 'top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8' :
             'top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 text-right'
-          } ${variation.textColor} z-10`}>
-            <h3 className={`${variation.textSize} font-bold mb-2 sm:mb-3 md:mb-4 tracking-wide uppercase`}>
-              {category.name}
+          } ${variation.textColor} z-10 max-w-xs sm:max-w-sm md:max-w-md`}>
+            <h3 className={`${variation.textSize} font-bold mb-2 sm:mb-3 md:mb-4 tracking-wide uppercase line-clamp-2`}>
+              {product.name}
             </h3>
-            <p className="text-sm sm:text-base md:text-lg mb-4 sm:mb-5 md:mb-6 opacity-90 max-w-xs sm:max-w-sm md:max-w-md leading-relaxed">
-              Découvrez notre collection {category.name.toLowerCase()}
+            
+            {product.brand && (
+              <p className="text-xs sm:text-sm opacity-80 mb-2 uppercase tracking-wide">
+                {product.brand.name}
+              </p>
+            )}
+            
+            <p className="text-sm sm:text-base md:text-lg mb-3 sm:mb-4 md:mb-5 opacity-90 leading-relaxed line-clamp-2">
+              {product.shortDescription || product.description}
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
-              <span className="text-xs sm:text-sm opacity-80">
-                {category.count} produit{parseInt(category.count) > 1 ? 's' : ''}
-              </span>
+            
+            <div className="flex flex-col gap-3 items-start">
+              {/* Prix */}
+              <div className="flex items-center gap-2">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold">
+                  {formatPrice(product.price)}
+                </span>
+                {product.comparePrice && product.comparePrice > product.price && (
+                  <span className="text-sm opacity-70 line-through">
+                    {formatPrice(product.comparePrice)}
+                  </span>
+                )}
+              </div>
+
+              {/* Rating si disponible */}
+              {product.averageRating > 0 && (
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className={`w-4 h-4 ${i < Math.floor(product.averageRating) ? 'text-yellow-400' : 'text-gray-400'}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                  <span className="text-xs opacity-80 ml-1">
+                    ({product.reviewCount})
+                  </span>
+                </div>
+              )}
+
               <span className="inline-block text-white border-b-2 border-white pb-1 hover:border-gray-300 hover:text-gray-300 transition-colors duration-200 font-medium text-sm sm:text-base cursor-pointer">
-                Explorer
+                Voir le produit
               </span>
             </div>
           </div>
@@ -201,10 +286,10 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
 
       {/* Section dynamique */}
       <div className={selectedLayout.containerClass}>
-        {categoriesToShow.map((category, index) => (
-          <CategoryBlock
-            key={`${category.name}-${selectedLayout.name}-${index}`}
-            category={category}
+        {productsToShow.map((product, index) => (
+          <ProductBlock
+            key={`${product.id}-${selectedLayout.name}-${index}`}
+            product={product}
             span={selectedLayout.structure[index].span}
             height={selectedLayout.structure[index].height}
             index={index}
@@ -215,4 +300,4 @@ const SplitSection: React.FC<CategorySplitSectionProps> = ({
   );
 };
 
-export default SplitSection;
+export default ProductSplitSection;

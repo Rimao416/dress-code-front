@@ -9,7 +9,7 @@ import Button from '@/components/ui/button';
 import ProductCard, { Product } from '@/components/common/ProductCard';
 import Categories from '@/components/common/Category';
 import Nouveaute from '@/components/common/Nouveaute';
-import SplitSection from '@/components/common/SplitSection';
+import ProductSplitSection from '@/components/common/SplitSection';
 export interface Category {
   name: string;
   count: string;
@@ -17,53 +17,13 @@ export interface Category {
   image: string | null;
 }
 
-// Données de catégories d'exemple - à remplacer par vos vraies données
-const categoriesData: Category[] = [
-  {
-    name: "Mode Femme",
-    count: "156",
-    color: "#FF6B6B",
-    image: "/images/categories/mode-femme.jpg"
-  },
-  {
-    name: "Mode Homme",
-    count: "89",
-    color: "#4ECDC4",
-    image: "/images/categories/mode-homme.jpg"
-  },
-  {
-    name: "Accessoires",
-    count: "67",
-    color: "#45B7D1",
-    image: "/images/categories/accessoires.jpg"
-  },
-  {
-    name: "Chaussures",
-    count: "134",
-    color: "#F7D794",
-    image: "/images/categories/chaussures.jpg"
-  },
-  {
-    name: "Sacs",
-    count: "45",
-    color: "#DDA0DD",
-    image: "/images/categories/sacs.jpg"
-  },
-  {
-    name: "Bijoux",
-    count: "78",
-    color: "#98D8C8",
-    image: "/images/categories/bijoux.jpg"
-  }
-];
-
 const splitSectionTitles = [
   {
     title: "Collections Exclusives",
     subtitle: "Découvrez nos sélections uniques et tendances du moment"
   },
   {
-    title: "Style & Élégance", 
+    title: "Style & Élégance",
     subtitle: "Des pièces soigneusement choisies pour votre garde-robe"
   },
   {
@@ -134,7 +94,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Section Produits avec SplitSections intercalées */}
+      {/* Section Produits avec ProductSplitSections intercalées */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -155,12 +115,12 @@ const HomePage = () => {
                   />
                 ))}
               </div>
-              
-              {/* SplitSection après chaque groupe de 4, sauf le dernier */}
+             
+              {/* ProductSplitSection après chaque groupe de 4, sauf le dernier */}
               {chunkIndex < productChunks.length - 1 && (
                 <div className="mb-16">
-                  <SplitSection
-                    categories={categoriesData}
+                  <ProductSplitSection
+                    products={allProducts} // Passer tous les produits
                     title={splitSectionTitles[chunkIndex % splitSectionTitles.length].title}
                     subtitle={splitSectionTitles[chunkIndex % splitSectionTitles.length].subtitle}
                   />
@@ -205,6 +165,13 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Section avec ProductSplitSection pour les nouveautés */}
+      <ProductSplitSection
+        products={newProducts}
+        title="Focus Nouveautés"
+        subtitle="Nos dernières créations mises en avant"
+      />
 
       {/* Section Engagement/Valeurs */}
       <Nouveaute />
