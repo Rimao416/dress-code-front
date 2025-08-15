@@ -152,8 +152,6 @@ const HomePage = () => {
                     key={product.id}
                     product={product}
                     onClick={handleProductClick}
-                    showBrand={true}
-                    showPrice={true}
                   />
                 ))}
               </div>
@@ -200,8 +198,6 @@ const HomePage = () => {
                     key={product.id}
                     product={product}
                     onClick={handleProductClick}
-                    showBrand={true}
-                    showPrice={true}
                   />
                 ))}
               </div>

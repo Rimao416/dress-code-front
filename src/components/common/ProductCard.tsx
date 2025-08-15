@@ -27,8 +27,6 @@ export interface Product {
 interface ProductCardProps {
   product: Product;
   featured?: boolean;
-  showBrand?: boolean;
-  showPrice?: boolean;
   onClick?: (product: Product) => void;
   className?: string;
   imageClassName?: string;
@@ -38,8 +36,6 @@ interface ProductCardProps {
 const ProductCard = ({
   product,
   featured = false,
-  showBrand = true,
-  showPrice = true,
   onClick,
   className = "",
   imageClassName = "",
@@ -109,28 +105,6 @@ const ProductCard = ({
       
       {/* Informations produit */}
       <div className={`pt-2 sm:pt-3 space-y-1 ${contentClassName}`}>
-        {showBrand && product.brand && (
-          <h3 className="text-[10px] sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
-            {product.brand.name}
-          </h3>
-        )}
-        <p className="text-xs sm:text-sm text-black font-medium line-clamp-2 leading-tight">
-          {product.name}
-        </p>
-        {showPrice && (
-          <div className="flex items-center space-x-2">
-            <p className="text-xs sm:text-sm font-semibold text-black">
-              €{product.price.toFixed(2)}
-            </p>
-            {product.comparePrice &&
-              product.comparePrice > product.price && (
-                <p className="text-xs sm:text-sm text-gray-500 line-through">
-                  €{product.comparePrice.toFixed(2)}
-                </p>
-              )}
-          </div>
-        )}
-        
         {/* Stock faible */}
         {typeof product.stock === "number" && product.stock > 0 && product.stock <= 5 && (
           <p className="text-[10px] sm:text-xs text-red-600 font-medium">
