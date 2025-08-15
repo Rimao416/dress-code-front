@@ -5,9 +5,9 @@ function Nouveaute() {
     <section className="py-16 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-light text-gray-900 mb-4">
-              Notre engagement
-            </h2>
+           <h2 className="text-4xl lg:text-5xl font-serif text-black mb-4">
+            Notre engagement
+          </h2>
             <p className="text-gray-600 text-lg max-w-3xl mx-auto">
               Chez DressCode, nous croyons en une mode responsable et durable. 
               Chaque produit est sélectionné avec soin pour allier style, qualité et respect de l'environnement.

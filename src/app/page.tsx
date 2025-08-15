@@ -9,7 +9,7 @@ import Button from '@/components/ui/button';
 import ProductCard, { Product } from '@/components/common/ProductCard';
 import Categories from '@/components/common/Category';
 import Nouveaute from '@/components/common/Nouveaute';
-
+import SplitSection from '@/components/common/SplitSection';
 export interface Category {
   name: string;
   count: string;
@@ -17,23 +17,95 @@ export interface Category {
   image: string | null;
 }
 
+// Données de catégories d'exemple - à remplacer par vos vraies données
+const categoriesData: Category[] = [
+  {
+    name: "Mode Femme",
+    count: "156",
+    color: "#FF6B6B",
+    image: "/images/categories/mode-femme.jpg"
+  },
+  {
+    name: "Mode Homme",
+    count: "89",
+    color: "#4ECDC4",
+    image: "/images/categories/mode-homme.jpg"
+  },
+  {
+    name: "Accessoires",
+    count: "67",
+    color: "#45B7D1",
+    image: "/images/categories/accessoires.jpg"
+  },
+  {
+    name: "Chaussures",
+    count: "134",
+    color: "#F7D794",
+    image: "/images/categories/chaussures.jpg"
+  },
+  {
+    name: "Sacs",
+    count: "45",
+    color: "#DDA0DD",
+    image: "/images/categories/sacs.jpg"
+  },
+  {
+    name: "Bijoux",
+    count: "78",
+    color: "#98D8C8",
+    image: "/images/categories/bijoux.jpg"
+  }
+];
+
+const splitSectionTitles = [
+  {
+    title: "Collections Exclusives",
+    subtitle: "Découvrez nos sélections uniques et tendances du moment"
+  },
+  {
+    title: "Style & Élégance", 
+    subtitle: "Des pièces soigneusement choisies pour votre garde-robe"
+  },
+  {
+    title: "Nouveautés & Tendances",
+    subtitle: "Les dernières créations qui définissent le style de demain"
+  },
+  {
+    title: "Incontournables",
+    subtitle: "Les essentiels qui ne se démodent jamais"
+  }
+];
+
 const HomePage = () => {
   const featuredProducts = productsData.filter(product => product.featured);
   const newProducts = productsData.filter(product => product.isNewIn);
-  
+ 
   const handleProductClick = (product: Product) => {
-  console.log("Product clicked:", product.name);
-};
+    console.log("Product clicked:", product.name);
+  };
+
+  // Fonction pour diviser les produits en groupes de 4
+  const chunkProducts = (products: Product[], chunkSize: number) => {
+    const chunks = [];
+    for (let i = 0; i < products.length; i += chunkSize) {
+      chunks.push(products.slice(i, i + chunkSize));
+    }
+    return chunks;
+  };
+
+  // Diviser tous les produits (pas seulement les featured) en groupes de 4
+  const allProducts = productsData;
+  const productChunks = chunkProducts(allProducts, 4);
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+     
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItaDJWMzRoLTJ6TTM0IDM0djItMlYzNGgyem0wIDJoMnYtMmgtMnYyek0zMCAzNHYySDI4VjM0aDJ6bTAgMmgydi0yaC0ydjJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-10"></div>
-        
+       
         <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-6">
           <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight">
             Style moderne,<br />
@@ -42,18 +114,18 @@ const HomePage = () => {
           <p className="text-xl md:text-2xl font-light mb-8 text-neutral-300 max-w-2xl mx-auto">
             Découvrez notre collection soigneusement sélectionnée pour un style contemporain et intemporel
           </p>
-          
+         
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              variant="white" 
-              size="lg" 
+            <Button
+              variant="white"
+              size="lg"
               className="text-lg font-medium transform hover:scale-105"
             >
               Découvrir la collection
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="text-lg font-medium border-white text-white hover:bg-white hover:text-black"
             >
               Nouveautés
@@ -62,36 +134,48 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Section Produits mis en avant */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
+      {/* Section Produits avec SplitSections intercalées */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <div className="text-xs sm:text-sm font-medium text-black tracking-[0.15em] sm:tracking-[0.2em] uppercase mb-4">
-              Les marques qui retiennent notre attention
+              Notre Sélection Complète
             </div>
-
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                featured={index === 0}
-                onClick={handleProductClick}
-                showBrand={true}
-                showPrice={true}
-              />
-            ))}
-          </div>
+         
+          {productChunks.map((chunk, chunkIndex) => (
+            <React.Fragment key={chunkIndex}>
+              {/* Grille de 4 produits */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                {chunk.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onClick={handleProductClick}
+                    showBrand={true}
+                    showPrice={true}
+                  />
+                ))}
+              </div>
+              
+              {/* SplitSection après chaque groupe de 4, sauf le dernier */}
+              {chunkIndex < productChunks.length - 1 && (
+                <div className="mb-16">
+                  <SplitSection
+                    categories={categoriesData}
+                    title={splitSectionTitles[chunkIndex % splitSectionTitles.length].title}
+                    subtitle={splitSectionTitles[chunkIndex % splitSectionTitles.length].subtitle}
+                  />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </section>
 
       {/* Categories Section */}
       <Categories />
 
-      {/* Section Nouveautés */}
-      
       {/* Section Nouveautés */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
@@ -104,12 +188,11 @@ const HomePage = () => {
                 Nouveautés
               </h2>
               <p className="text-gray-700 mb-8 leading-relaxed">
-                Nouveautés disponibles dès maintenant - découvrez les dernières sorties 
+                Nouveautés disponibles dès maintenant - découvrez les dernières sorties
                 et les pièces tendances qui viennent enrichir notre collection
               </p>
-             
             </div>
-            
+           
             <div className="lg:w-2/3">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {newProducts.map((product) => (
@@ -128,7 +211,7 @@ const HomePage = () => {
       </section>
 
       {/* Section Engagement/Valeurs */}
-     <Nouveaute />
+      <Nouveaute />
 
       {/* Support Section */}
       <SupportSection />
@@ -144,14 +227,14 @@ const HomePage = () => {
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-        
+       
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-        
+       
         @keyframes fade-in {
           from {
             opacity: 0;
@@ -162,11 +245,11 @@ const HomePage = () => {
             transform: translateY(0);
           }
         }
-        
+       
         .animate-fade-in {
           animation: fade-in 0.6s ease-out;
         }
-        
+       
         @keyframes slide-up {
           from {
             opacity: 0;
@@ -177,11 +260,11 @@ const HomePage = () => {
             transform: translateY(0);
           }
         }
-        
+       
         .animate-slide-up {
           animation: slide-up 0.3s ease-out;
         }
-        
+       
         /* Focus states pour l'accessibilité */
         button:focus-visible,
         input:focus-visible,
@@ -189,21 +272,21 @@ const HomePage = () => {
           outline: 2px solid #000;
           outline-offset: 2px;
         }
-        
+       
         /* Smooth scrolling */
         html {
           scroll-behavior: smooth;
         }
-        
+       
         /* Améliorations pour les animations de hover */
         .group:hover .group-hover\:scale-105 {
           transform: scale(1.05);
         }
-        
+       
         .group:hover .group-hover\:scale-110 {
           transform: scale(1.1);
         }
-        
+       
         .group:hover .group-hover\:translate-x-0\.5 {
           transform: translateX(0.125rem);
         }
@@ -212,4 +295,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage
+export default HomePage;
