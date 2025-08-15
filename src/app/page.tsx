@@ -83,12 +83,7 @@ const HomePage = () => {
             <div className="text-xs sm:text-sm font-medium text-black tracking-[0.15em] sm:tracking-[0.2em] uppercase mb-4">
               Les marques qui retiennent notre attention
             </div>
-            <h2 className="text-4xl font-light text-gray-900 mb-4">
-              Nos favoris
-            </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Une sélection de produits qui définissent notre style et notre vision de la mode contemporaine
-            </p>
+
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -111,6 +106,40 @@ const HomePage = () => {
 
       {/* Section Nouveautés */}
       
+      {/* Section Nouveautés */}
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-12 items-center">
+            <div className="lg:w-1/3 text-center lg:text-left">
+              <div className="text-sm text-gray-600 mb-2 tracking-wider uppercase">
+                {newProducts.length} NOUVEAUTÉS
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-serif text-black mb-6">
+                Nouveautés
+              </h2>
+              <p className="text-gray-700 mb-8 leading-relaxed">
+                Nouveautés disponibles dès maintenant - découvrez les dernières sorties 
+                et les pièces tendances qui viennent enrichir notre collection
+              </p>
+             
+            </div>
+            
+            <div className="lg:w-2/3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {newProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onClick={handleProductClick}
+                    showBrand={true}
+                    showPrice={true}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Section Engagement/Valeurs */}
       <section className="py-16 px-4 bg-white">
