@@ -1,6 +1,5 @@
-import { Check, Heart, Plus } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useState, MouseEvent } from "react";
-import Button from "../ui/button";
 
 // Type pour un produit (déduit de productsData)
 export interface Product {
@@ -31,6 +30,9 @@ interface ProductCardProps {
   showBrand?: boolean;
   showPrice?: boolean;
   onClick?: (product: Product) => void;
+  className?: string;
+  imageClassName?: string;
+  contentClassName?: string;
 }
 
 const ProductCard = ({
@@ -39,134 +41,109 @@ const ProductCard = ({
   showBrand = true,
   showPrice = true,
   onClick,
+  className = "",
+  imageClassName = "",
+  contentClassName = "",
 }: ProductCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [showAddedFeedback, setShowAddedFeedback] = useState(false);
-
-  const handleAddToBag = (e: MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    setShowAddedFeedback(true);
-    setTimeout(() => setShowAddedFeedback(false), 2000);
-  };
 
   const handleProductClick = () => {
     onClick?.(product);
   };
 
+  const handleFavoriteClick = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setIsFavorited(!isFavorited);
+  };
+
+  // Image par défaut SVG en base64
+  const defaultImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwTDE5MCAxNDBIMTcwVjE4MEgxMzBWMTQwSDExMEwxNTAgMTAwWiIgZmlsbD0iIzk0OTRBNCIvPgo8L3N2Zz4K";
+
+  // Utiliser la première image du produit ou l'image par défaut
+  const productImage = product.images?.[0] && product.images[0].trim() !== ""
+    ? product.images[0]
+    : defaultImage;
+
   return (
     <div
-      className={`group relative overflow-hidden cursor-pointer ${
+      className={`group cursor-pointer ${
         featured ? "col-span-2 row-span-2" : ""
-      }`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      } ${className}`}
       onClick={handleProductClick}
     >
       <div
-        className={`relative overflow-hidden bg-gray-50 ${
-          featured ? "h-96" : "h-80"
-        }`}
+        className={`aspect-square overflow-hidden bg-gray-100 relative rounded-sm ${imageClassName}`}
       >
-        {/* Badge Nouveau */}
-        {product.isNewIn && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="bg-black text-white text-xs font-medium px-2 py-1 rounded">
-              Nouveau
-            </span>
-          </div>
-        )}
-        {/* Bouton Favoris */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsFavorited(!isFavorited);
+        <img
+          src={productImage}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            // Fallback SVG en cas d'erreur
+            e.currentTarget.src = defaultImage;
           }}
-          className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 hover:bg-white hover:scale-110"
+        />
+        
+        {/* Bouton favori */}
+        <button
+          onClick={handleFavoriteClick}
+          className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 group/heart"
+          aria-label={isFavorited ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
           <Heart
-            className={`w-4 h-4 ${
+            className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${
               isFavorited
                 ? "fill-red-500 text-red-500"
-                : "text-gray-600"
+                : "text-gray-600 hover:text-red-500"
             }`}
           />
         </button>
-        {/* Image du produit */}
-        <div className="absolute inset-0 flex items-center justify-center p-8">
-          <div
-            className={`w-full h-full bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 transition-transform duration-500 ${
-              isHovered ? "scale-105" : ""
-            }`}
-          >
-            <span className="text-6xl font-light">
-              {product.name.charAt(0)}
-            </span>
-          </div>
-        </div>
-        {/* Overlay hover */}
-        <div
-          className={`absolute inset-0 bg-black/10 transition-opacity duration-300 ${
-            isHovered ? "opacity-100" : "opacity-0"
-          }`}
-        ></div>
-        {/* Bouton d'action */}
-        <div
-          className={`absolute bottom-3 left-3 right-3 transition-all duration-300 transform ${
-            isHovered
-              ? "translate-y-0 opacity-100"
-              : "translate-y-2 opacity-0"
-          }`}
-        >
-          <Button
-            variant="white"
-            size="sm"
-            className="w-full shadow-lg"
-            onClick={handleAddToBag}
-          >
-            {showAddedFeedback ? (
-              <>
-                <Check className="h-4 w-4 mr-2 text-green-600" />
-                Ajouté
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter au panier
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-      {/* Informations produit */}
-      <div className="p-4 space-y-2">
-        {showBrand && product.brand && (
-          <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-            {product.brand.name}
+        
+        {/* Badge nouveau */}
+        {product.isNewIn && (
+          <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
+            NOUVEAU
           </div>
         )}
-
-        <h3 className="font-medium text-gray-900 line-clamp-2 text-sm leading-tight">
+      </div>
+      
+      {/* Informations produit */}
+      <div className={`pt-2 sm:pt-3 space-y-1 ${contentClassName}`}>
+        {showBrand && product.brand && (
+          <h3 className="text-[10px] sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
+            {product.brand.name}
+          </h3>
+        )}
+        <p className="text-xs sm:text-sm text-black font-medium line-clamp-2 leading-tight">
           {product.name}
-        </h3>
-
-        <p className="text-xs text-gray-500 line-clamp-1">
-          {product.shortDescription}
         </p>
-        <div className="flex items-center justify-between">
-          {showPrice && (
-            <div className="flex items-center space-x-2">
-              <span className="font-semibold text-gray-900 text-sm">
-                €{product.price.toFixed(2)}
-              </span>
-              {product.comparePrice && (
-                <span className="text-xs text-gray-400 line-through">
+        {showPrice && (
+          <div className="flex items-center space-x-2">
+            <p className="text-xs sm:text-sm font-semibold text-black">
+              €{product.price.toFixed(2)}
+            </p>
+            {product.comparePrice &&
+              product.comparePrice > product.price && (
+                <p className="text-xs sm:text-sm text-gray-500 line-through">
                   €{product.comparePrice.toFixed(2)}
-                </span>
+                </p>
               )}
-            </div>
-          )}
-        </div>
+          </div>
+        )}
+        
+        {/* Stock faible */}
+        {typeof product.stock === "number" && product.stock > 0 && product.stock <= 5 && (
+          <p className="text-[10px] sm:text-xs text-red-600 font-medium">
+            Plus que {product.stock} en stock
+          </p>
+        )}
+        
+        {/* Rupture de stock */}
+        {product.stock === 0 && (
+          <p className="text-[10px] sm:text-xs text-red-600 font-medium">
+            Rupture de stock
+          </p>
+        )}
       </div>
     </div>
   );
