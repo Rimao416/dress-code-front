@@ -113,11 +113,7 @@ const ProductCard = ({
         )}
         
         {/* Rupture de stock */}
-        {product.stock === 0 && (
-          <p className="text-[10px] sm:text-xs text-red-600 font-medium">
-            Rupture de stock
-          </p>
-        )}
+     
       </div>
     </div>
   );
