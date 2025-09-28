@@ -1,81 +1,161 @@
 // stores/useFavoritesStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { FavoritesStore, FavoriteItem } from '@/types/favorites';
-import { ProductWithFullData } from '@/types/product';
+
+interface FavoritesStore {
+  favoriteIds: string[];
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions
+  addToFavorites: (productId: string) => Promise<void>;
+  removeFromFavorites: (productId: string) => Promise<void>;
+  toggleFavorite: (productId: string) => Promise<void>;
+  isFavorite: (productId: string) => boolean;
+  loadFavorites: () => Promise<void>;
+  clearFavorites: () => void;
+  getFavoritesCount: () => number; // Ajout de la fonction manquante
+}
+
+// Service pour les appels API
+class FavoritesService {
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+
+  async addFavorite(productId: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/favorites`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ productId }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to add to favorites');
+    }
+  }
+
+  async removeFavorite(productId: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/favorites/${productId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to remove from favorites');
+    }
+  }
+
+  async getFavorites(): Promise<string[]> {
+    const response = await fetch(`${this.baseUrl}/api/favorites`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch favorites');
+    }
+    
+    const data = await response.json();
+    return data.productIds || [];
+  }
+}
+
+const favoritesService = new FavoritesService();
 
 export const useFavoritesStore = create<FavoritesStore>()(
   persist(
     (set, get) => ({
-      items: [],
-      totalItems: 0,
+      favoriteIds: [],
+      isLoading: false,
+      error: null,
 
-      addItem: (product: ProductWithFullData) => {
-        const existingItem = get().items.find(item => item.productId === product.id);
-        
-        if (!existingItem) {
-          const newItem: FavoriteItem = {
-            id: `${product.id}-${Date.now()}`,
-            productId: product.id,
-            product,
-            addedAt: new Date()
-          };
+      addToFavorites: async (productId: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          // Optimistic update
+          const currentFavorites = [...get().favoriteIds];
+          if (!currentFavorites.includes(productId)) {
+            currentFavorites.push(productId);
+            set({ favoriteIds: currentFavorites });
+          }
 
-          set(state => ({
-            items: [...state.items, newItem],
-            totalItems: state.totalItems + 1
-          }));
+          // API call
+          await favoritesService.addFavorite(productId);
+          
+          set({ isLoading: false });
+        } catch (error) {
+          // Rollback optimistic update
+          const currentFavorites = get().favoriteIds.filter(id => id !== productId);
+          set({ 
+            favoriteIds: currentFavorites, 
+            isLoading: false, 
+            error: error instanceof Error ? error.message : 'Failed to add to favorites' 
+          });
         }
       },
 
-      removeItem: (productId: string) => {
-        const existingItem = get().items.find(item => item.productId === productId);
-        
-        if (existingItem) {
-          set(state => ({
-            items: state.items.filter(item => item.productId !== productId),
-            totalItems: state.totalItems - 1
-          }));
+      removeFromFavorites: async (productId: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          // Optimistic update
+          const currentFavorites = get().favoriteIds.filter(id => id !== productId);
+          set({ favoriteIds: currentFavorites });
+
+          // API call
+          await favoritesService.removeFavorite(productId);
+          
+          set({ isLoading: false });
+        } catch (error) {
+          // Rollback optimistic update
+          const currentFavorites = [...get().favoriteIds];
+          if (!currentFavorites.includes(productId)) {
+            currentFavorites.push(productId);
+          }
+          set({ 
+            favoriteIds: currentFavorites, 
+            isLoading: false, 
+            error: error instanceof Error ? error.message : 'Failed to remove from favorites' 
+          });
         }
       },
 
-      toggleItem: (product: ProductWithFullData): boolean => {
-        const existingItem = get().items.find(item => item.productId === product.id);
-        
-        if (existingItem) {
-          get().removeItem(product.id);
-          return false; // Item was removed
+      toggleFavorite: async (productId: string) => {
+        const isFav = get().isFavorite(productId);
+        if (isFav) {
+          await get().removeFromFavorites(productId);
         } else {
-          get().addItem(product);
-          return true; // Item was added
+          await get().addToFavorites(productId);
+        }
+      },
+
+      isFavorite: (productId: string) => {
+        return get().favoriteIds.includes(productId);
+      },
+
+      loadFavorites: async () => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          const favoriteIds = await favoritesService.getFavorites();
+          set({ favoriteIds, isLoading: false });
+        } catch (error) {
+          set({ 
+            isLoading: false, 
+            error: error instanceof Error ? error.message : 'Failed to load favorites' 
+          });
         }
       },
 
       clearFavorites: () => {
-        set({
-          items: [],
-          totalItems: 0
-        });
+        set({ favoriteIds: [], error: null });
       },
 
-      isFavorite: (productId: string): boolean => {
-        return get().items.some(item => item.productId === productId);
+      // Ajout de la fonction manquante
+      getFavoritesCount: () => {
+        return get().favoriteIds.length;
       },
-
-      getFavoritesCount: (): number => {
-        return get().totalItems;
-      },
-
-      getFavoriteItem: (productId: string): FavoriteItem | undefined => {
-        return get().items.find(item => item.productId === productId);
-      }
     }),
     {
       name: 'favorites-storage',
-      partialize: (state) => ({
-        items: state.items,
-        totalItems: state.totalItems
-      }),
     }
   )
 );

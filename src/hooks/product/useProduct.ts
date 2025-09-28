@@ -1,265 +1,222 @@
 // hooks/useProduct.ts
-import { useEffect, useCallback, useMemo, useRef } from 'react';
-import { useProductStore } from '@/store/useProductStore';
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
+import { ProductWithFullData, ProductCardData } from '@/types/product';
 import { productService } from '@/services/product.service';
 
-// Hook principal pour un produit - simplifié
-export const useProduct = (slug: string) => {
-  const {
-    currentProduct,
-    isLoading,
-    error,
-    setCurrentProduct,
-    setLoading,
-    setError,
-  } = useProductStore();
+interface UseProductState {
+  product: ProductWithFullData | null;
+  similarProducts: ProductCardData[];
+  recommendedProducts: ProductCardData[];
+  breadcrumbs: Array<{ name: string; href: string }>;
+  isLoading: boolean;
+  isLoadingSimilar: boolean;
+  isLoadingRecommended: boolean;
+  error: string | null;
+}
 
-  const fetchedSlugRef = useRef<string | null>(null);
+interface UseProductActions {
+  refetch: () => Promise<void>;
+  refetchSimilar: () => Promise<void>;
+  refetchRecommended: () => Promise<void>;
+}
 
-  const fetchProduct = useCallback(async (productSlug: string) => {
-    if (!productSlug || fetchedSlugRef.current === productSlug) return;
-    
-    // Marquer comme en cours de fetch
-    fetchedSlugRef.current = productSlug;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const productData = await productService.getProductBySlug(productSlug);
-      setCurrentProduct(productData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch product';
-      setError(errorMessage);
-      setCurrentProduct(null);
-      fetchedSlugRef.current = null; // Reset on error to allow retry
-    } finally {
-      setLoading(false);
+type UseProductReturn = UseProductState & UseProductActions;
+
+export function useProduct(slug: string): UseProductReturn {
+  const [product, setProduct] = useState<ProductWithFullData | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<ProductCardData[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<ProductCardData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSimilar, setIsLoadingSimilar] = useState(false);
+  const [isLoadingRecommended, setIsLoadingRecommended] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Génération des breadcrumbs
+  const breadcrumbs = useMemo(() => {
+    if (!product) {
+      return [
+        { name: 'Accueil', href: '/' },
+        { name: 'Produits', href: '/products' }
+      ];
     }
-  }, [setCurrentProduct, setLoading, setError]);
+    return productService.generateBreadcrumbs(product);
+  }, [product]);
 
-  useEffect(() => {
+  // Fonction pour charger le produit principal
+  const fetchProduct = async () => {
     if (!slug) return;
     
-    // Reset si on change de produit
-    if (currentProduct?.slug !== slug) {
-      fetchedSlugRef.current = null;
-    }
-    
-    fetchProduct(slug);
-  }, [slug, fetchProduct, currentProduct?.slug]);
+    setIsLoading(true);
+    setError(null);
 
-  return {
-    product: currentProduct,
-    isLoading,
-    error,
-    refetch: () => {
-      fetchedSlugRef.current = null;
-      fetchProduct(slug);
-    },
-  };
-};
-
-// Hook pour les produits similaires - version simple
-export const useSimilarProducts = (slug: string, limit: number = 5) => {
-  const {
-    similarProducts,
-    isLoadingSimilar,
-    setSimilarProducts,
-    setLoadingSimilar,
-  } = useProductStore();
-
-  const fetchedDataRef = useRef<{ slug: string; limit: number } | null>(null);
-
-  const fetchSimilarProducts = useCallback(async (productSlug: string, productLimit: number) => {
-    if (!productSlug) return;
-
-    // Éviter les requêtes dupliquées
-    const currentFetch = { slug: productSlug, limit: productLimit };
-    if (fetchedDataRef.current && 
-        fetchedDataRef.current.slug === productSlug && 
-        fetchedDataRef.current.limit === productLimit) {
-      return;
-    }
-
-    fetchedDataRef.current = currentFetch;
-    setLoadingSimilar(true);
-    
     try {
-      const products = await productService.getSimilarProducts(productSlug, productLimit);
-      setSimilarProducts(products);
-    } catch (error) {
-      console.error('Error fetching similar products:', error);
-      setSimilarProducts([]);
-      fetchedDataRef.current = null; // Reset on error
-    } finally {
-      setLoadingSimilar(false);
-    }
-  }, [setSimilarProducts, setLoadingSimilar]);
-
-  useEffect(() => {
-    if (!slug) {
-      setSimilarProducts([]);
-      return;
-    }
-
-    // Débounce pour éviter les appels trop rapides
-    const timer = setTimeout(() => {
-      fetchSimilarProducts(slug, limit);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [slug, limit, fetchSimilarProducts, setSimilarProducts]);
-
-  return {
-    similarProducts,
-    isLoading: isLoadingSimilar,
-    refetch: () => {
-      fetchedDataRef.current = null;
-      fetchSimilarProducts(slug, limit);
-    },
-  };
-};
-
-// Hook pour les produits recommandés - version simple
-export const useRecommendedProducts = (slug: string, limit: number = 5) => {
-  const {
-    recommendedProducts,
-    isLoadingRecommended,
-    setRecommendedProducts,
-    setLoadingRecommended,
-  } = useProductStore();
-
-  const fetchedDataRef = useRef<{ slug: string; limit: number } | null>(null);
-
-  const fetchRecommendedProducts = useCallback(async (productSlug: string, productLimit: number) => {
-    if (!productSlug) return;
-
-    // Éviter les requêtes dupliquées
-    const currentFetch = { slug: productSlug, limit: productLimit };
-    if (fetchedDataRef.current && 
-        fetchedDataRef.current.slug === productSlug && 
-        fetchedDataRef.current.limit === productLimit) {
-      return;
-    }
-
-    fetchedDataRef.current = currentFetch;
-    setLoadingRecommended(true);
-    
-    try {
-      const products = await productService.getRecommendedProducts(productSlug, productLimit);
-      setRecommendedProducts(products);
-    } catch (error) {
-      console.error('Error fetching recommended products:', error);
-      setRecommendedProducts([]);
-      fetchedDataRef.current = null; // Reset on error
-    } finally {
-      setLoadingRecommended(false);
-    }
-  }, [setRecommendedProducts, setLoadingRecommended]);
-
-  useEffect(() => {
-    if (!slug) {
-      setRecommendedProducts([]);
-      return;
-    }
-
-    // Débounce pour éviter les appels trop rapides
-    const timer = setTimeout(() => {
-      fetchRecommendedProducts(slug, limit);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [slug, limit, fetchRecommendedProducts, setRecommendedProducts]);
-
-  return {
-    recommendedProducts,
-    isLoading: isLoadingRecommended,
-    refetch: () => {
-      fetchedDataRef.current = null;
-      fetchRecommendedProducts(slug, limit);
-    },
-  };
-};
-
-// Hook pour la navigation produit - optimisé
-export const useProductNavigation = () => {
-  const { currentProduct } = useProductStore();
-  
-  const breadcrumbs = useMemo(() => {
-    if (!currentProduct) return [];
-    
-    const crumbs = [
-      { name: 'Home', href: '/' }
-    ];
-
-    // Vérifier si les données de catégorie existent avant de les utiliser
-    if (currentProduct.category) {
-      // Ajouter la catégorie parent s'il y en a une
-      if (currentProduct.category.parent) {
-        crumbs.push({
-          name: currentProduct.category.parent.name,
-          href: `/categories/${currentProduct.category.parent.slug}`
-        });
+      const response = await productService.getProductBySlug(slug);
+      
+      if (response.success && response.data) {
+        setProduct(response.data);
+      } else {
+        setError(response.error || 'Produit non trouvé');
+        setProduct(null);
       }
-
-      // Ajouter la catégorie actuelle
-      crumbs.push({
-        name: currentProduct.category.name,
-        href: `/categories/${currentProduct.category.slug}`
-      });
+    } catch (err) {
+      console.error('Error fetching product:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors du chargement du produit');
+      setProduct(null);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Ajouter le produit actuel
-    crumbs.push({
-      name: currentProduct.name,
-      href: `/products/${currentProduct.slug}`
+  // Fonction pour charger les produits similaires
+  const fetchSimilarProducts = async () => {
+    if (!slug) return;
+    
+    setIsLoadingSimilar(true);
+
+    try {
+      const response = await productService.getSimilarProducts(slug, 4);
+      
+      if (response.success) {
+        setSimilarProducts(response.data);
+      } else {
+        console.error('Error fetching similar products:', response.error);
+        setSimilarProducts([]);
+      }
+    } catch (err) {
+      console.error('Error fetching similar products:', err);
+      setSimilarProducts([]);
+    } finally {
+      setIsLoadingSimilar(false);
+    }
+  };
+
+  // Fonction pour charger les produits recommandés
+  const fetchRecommendedProducts = async () => {
+    setIsLoadingRecommended(true);
+
+    try {
+      const response = await productService.getRecommendedProducts(6, product?.id);
+      
+      if (response.success) {
+        setRecommendedProducts(response.data);
+      } else {
+        console.error('Error fetching recommended products:', response.error);
+        setRecommendedProducts([]);
+      }
+    } catch (err) {
+      console.error('Error fetching recommended products:', err);
+      setRecommendedProducts([]);
+    } finally {
+      setIsLoadingRecommended(false);
+    }
+  };
+
+  // Effet pour charger le produit principal
+  useEffect(() => {
+    fetchProduct();
+  }, [slug]);
+
+  // Effet pour charger les produits similaires
+  useEffect(() => {
+    if (product) {
+      fetchSimilarProducts();
+    }
+  }, [product?.id]);
+
+  // Effet pour charger les produits recommandés
+  useEffect(() => {
+    fetchRecommendedProducts();
+  }, [product?.id]);
+
+  // Fonctions de rechargement
+  const refetch = async () => {
+    await fetchProduct();
+  };
+
+  const refetchSimilar = async () => {
+    await fetchSimilarProducts();
+  };
+
+  const refetchRecommended = async () => {
+    await fetchRecommendedProducts();
+  };
+
+  return {
+    product,
+    similarProducts,
+    recommendedProducts,
+    breadcrumbs,
+    isLoading,
+    isLoadingSimilar,
+    isLoadingRecommended,
+    error,
+    refetch,
+    refetchSimilar,
+    refetchRecommended,
+  };
+}
+
+// Hook pour les utilitaires produit
+export function useProductUtils(product: ProductWithFullData | null) {
+  const defaultVariant = useMemo(() => {
+    if (!product) return null;
+    return productService.getDefaultVariant(product);
+  }, [product]);
+
+  const isVariantAvailable = (variant: any) => {
+    return productService.isVariantAvailable(variant);
+  };
+
+  const getEffectivePrice = (variant?: any) => {
+    if (!product) return 0;
+    return productService.getEffectivePrice(product, variant);
+  };
+
+  const getAvailableVariants = () => {
+    if (!product) return [];
+    return product.variants.filter(variant => isVariantAvailable(variant));
+  };
+
+  const getVariantsBySizes = () => {
+    if (!product) return new Map();
+    
+    const sizeMap = new Map();
+    product.variants.forEach(variant => {
+      if (variant.size && isVariantAvailable(variant)) {
+        if (!sizeMap.has(variant.size)) {
+          sizeMap.set(variant.size, []);
+        }
+        sizeMap.get(variant.size).push(variant);
+      }
     });
+    
+    return sizeMap;
+  };
 
-    return crumbs;
-  }, [currentProduct]);
-
-  return { breadcrumbs };
-};
-
-// Hook pour les favoris - simple et efficace
-export const useFavorites = () => {
-  const { favorites, toggleFavorite, isFavorite } = useProductStore();
+  const getVariantsByColors = () => {
+    if (!product) return new Map();
+    
+    const colorMap = new Map();
+    product.variants.forEach(variant => {
+      if (variant.color && isVariantAvailable(variant)) {
+        if (!colorMap.has(variant.color)) {
+          colorMap.set(variant.color, []);
+        }
+        colorMap.get(variant.color).push(variant);
+      }
+    });
+    
+    return colorMap;
+  };
 
   return {
-    favorites: Array.from(favorites),
-    toggleFavorite: useCallback((productId: string) => {
-      toggleFavorite(productId);
-    }, [toggleFavorite]),
-    isFavorite: useCallback((productId: string) => {
-      return isFavorite(productId);
-    }, [isFavorite]),
-    favoriteCount: favorites.size,
+    defaultVariant,
+    isVariantAvailable,
+    getEffectivePrice,
+    getAvailableVariants,
+    getVariantsBySizes,
+    getVariantsByColors,
   };
-};
-
-// Hook pour les avis produit - optimisé
-export const useProductReviews = () => {
-  const { currentProduct } = useProductStore();
-
-  const reviews = useMemo(() => {
-    return currentProduct?.reviews || [];
-  }, [currentProduct?.reviews]);
-
-  const averageRating = useMemo(() => {
-    return currentProduct?.averageRating || 0;
-  }, [currentProduct?.averageRating]);
-
-  const reviewCount = useMemo(() => {
-    return currentProduct?._count?.reviews || 0;
-  }, [currentProduct?._count?.reviews]);
-
-  const hasReviews = reviewCount > 0;
-
-  return {
-    reviews,
-    averageRating,
-    reviewCount,
-    hasReviews,
-  };
-};
+}

@@ -1,30 +1,43 @@
 // types/cart.ts
-import { ProductWithFullData, ProductVariant } from './product';
-
 export interface CartItem {
-  id: string; // Unique identifier for the cart item
+  id: string;
   productId: string;
-  product: ProductWithFullData;
-  variant: ProductVariant;
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    image: string; // Première image du produit
+    sku: string;
+    brand?: string;
+    price: number;
+    comparePrice?: number;
+  };
+  variant?: {
+    id: string;
+    size?: string;
+    color?: string;
+    colorHex?: string;
+    material?: string;
+    sku: string;
+    images: string[];
+    price?: number;
+  };
   quantity: number;
   selectedSize?: string;
   selectedColor?: string;
   addedAt: Date;
 }
 
-export interface CartState {
-  items: CartItem[];
-  totalItems: number;
+export interface CartSummary {
+  itemsCount: number;
+  uniqueItemsCount: number;
   totalPrice: number;
+  totalSavings: number;
+  isEmpty: boolean;
+  hasItems: boolean;
 }
 
-export interface CartActions {
-  addItem: (product: ProductWithFullData, variant: ProductVariant, quantity: number, selectedSize?: string, selectedColor?: string) => void;
-  removeItem: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
-  getCartItemsCount: () => number;
-  getCartTotal: () => number;
+export interface CartActionResult {
+  success: boolean;
+  error?: string;
 }
-
-export type CartStore = CartState & CartActions;

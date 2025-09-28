@@ -1,40 +1,62 @@
-// app/api/products/[slug]/similar/route.ts - Route similaires optimisée
-import prisma from '@/lib/prisma'
-import { NextRequest, NextResponse } from 'next/server'
+// app/api/products/[slug]/similar/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@/generated/prisma';
 
-interface RouteParams {
-  params: Promise<{ slug: string }>
-}
+const prisma = new PrismaClient();
 
-export const dynamic = 'force-dynamic'
-export const fetchCache = 'force-no-store'
-
-async function getSimilarProductsData(productSlug: string, limit = 5) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
   try {
-    // Récupérer seulement l'ID et categoryId du produit actuel
-    const currentProduct = await prisma.product.findUnique({
-      where: { 
-        slug: productSlug,
-        available: true 
-      },
-      select: { 
-        id: true, 
-        categoryId: true 
-      },
-    })
+    const { slug } = params;
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '4');
 
-    if (!currentProduct) {
-      return []
+    if (!slug) {
+      return NextResponse.json(
+        { success: false, error: 'Slug is required' },
+        { status: 400 }
+      );
     }
 
-    // Requête simplifiée pour les produits similaires
+    // Récupérer le produit actuel pour obtenir sa catégorie et sa marque
+    const currentProduct = await prisma.product.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        categoryId: true,
+        brandId: true,
+        tags: true,
+      },
+    });
+
+    if (!currentProduct) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+
+    // Trouver des produits similaires
     const similarProducts = await prisma.product.findMany({
       where: {
-        available: true,
-        categoryId: currentProduct.categoryId,
-        id: {
-          not: currentProduct.id,
-        },
+        AND: [
+          { id: { not: currentProduct.id } }, // Exclure le produit actuel
+          { available: true },
+          {
+            OR: [
+              { categoryId: currentProduct.categoryId }, // Même catégorie
+              { brandId: currentProduct.brandId }, // Même marque
+              // Même tags (au moins un en commun)
+              currentProduct.tags.length > 0 ? {
+                tags: {
+                  hasSome: currentProduct.tags,
+                },
+              } : {},
+            ],
+          },
+        ],
       },
       select: {
         id: true,
@@ -43,8 +65,6 @@ async function getSimilarProductsData(productSlug: string, limit = 5) {
         price: true,
         comparePrice: true,
         images: true,
-        featured: true,
-        isNewIn: true,
         brand: {
           select: {
             name: true,
@@ -65,58 +85,23 @@ async function getSimilarProductsData(productSlug: string, limit = 5) {
           },
         },
       },
+      take: limit,
       orderBy: [
-        { featured: 'desc' },
-        { createdAt: 'desc' },
+        { featured: 'desc' }, // Produits vedettes en premier
+        { createdAt: 'desc' }, // Puis par date de création
       ],
-      take: Math.min(limit, 10), // Limiter à 10 max
-    })
-
-    return similarProducts
-  } catch (error) {
-    console.error('Erreur lors de la récupération des produits similaires:', error)
-    return []
-  }
-}
-
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { slug } = await params
-    const { searchParams } = new URL(request.url)
-    const limit = Math.min(parseInt(searchParams.get('limit') || '5', 10), 10)
-
-    if (!slug || typeof slug !== 'string' || slug.trim() === '') {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Slug requis' 
-        },
-        { status: 400 }
-      )
-    }
-
-    const similarProducts = await getSimilarProductsData(slug.trim(), limit)
+    });
 
     return NextResponse.json({
       success: true,
-      data: similarProducts
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      }
-    })
+      data: similarProducts,
+    });
 
   } catch (error) {
-    console.error('Erreur API produits similaires:', error)
+    console.error('Error fetching similar products:', error);
     return NextResponse.json(
-      { 
-        success: false,
-        error: 'Erreur lors de la récupération des produits similaires',
-        data: [] 
-      },
-      { status: 200 } // Retourner 200 avec array vide plutôt qu'une erreur
-    )
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

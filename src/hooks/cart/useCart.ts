@@ -1,6 +1,6 @@
 // hooks/cart/useCart.ts
 import { ProductWithFullData, ProductVariant } from '@/types/product';
-import { CartItem } from '@/types/cart';
+import { CartActionResult, CartSummary } from '@/types/cart';
 import { useCartStore } from '@/store/useCartStore';
 
 export const useCart = () => {
@@ -8,24 +8,35 @@ export const useCart = () => {
     items,
     totalItems,
     totalPrice,
-    addItem,
-    removeItem,
-    updateQuantity,
+    addToCart: addItemToStore,
+    removeFromCart,
+    updateItemQuantity,
     clearCart,
-    getCartItemsCount,
-    getCartTotal
   } = useCartStore();
 
+  // Fonction pour calculer le nombre total d'articles
+  const getCartItemsCount = (): number => {
+    return items.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  // Fonction pour calculer le total du panier
+  const getCartTotal = (): number => {
+    return items.reduce((total, item) => {
+      const price = item.variant?.price || item.product.price || 0;
+      return total + (price * item.quantity);
+    }, 0);
+  };
+
   // Fonction pour ajouter un produit au panier avec validation
-  const addToCart = (
+  const addToCart = async (
     product: ProductWithFullData,
-    variant: ProductVariant,
+    variant?: ProductVariant,
     quantity: number = 1,
     selectedSize?: string,
     selectedColor?: string
-  ) => {
+  ): Promise<CartActionResult> => {
     try {
-      addItem(product, variant, quantity, selectedSize, selectedColor);
+      await addItemToStore(product, variant, quantity, selectedSize, selectedColor);
       return { success: true };
     } catch (error) {
       return { 
@@ -46,14 +57,14 @@ export const useCart = () => {
   const isProductInCart = (productId: string, variantId?: string): boolean => {
     if (variantId) {
       return items.some(item => 
-        item.productId === productId && item.variant.id === variantId
+        item.productId === productId && item.variant?.id === variantId
       );
     }
     return items.some(item => item.productId === productId);
   };
 
   // Fonction pour obtenir tous les variants d'un produit dans le panier
-  const getProductVariantsInCart = (productId: string): CartItem[] => {
+  const getProductVariantsInCart = (productId: string) => {
     return items.filter(item => item.productId === productId);
   };
 
@@ -61,7 +72,8 @@ export const useCart = () => {
   const getTotalSavings = (): number => {
     return items.reduce((savings, item) => {
       const comparePrice = item.product.comparePrice;
-      const currentPrice = item.variant.price || item.product.price;
+      const currentPrice = item.variant?.price || item.product.price || 0;
+      
       if (comparePrice && comparePrice > currentPrice) {
         return savings + (comparePrice - currentPrice) * item.quantity;
       }
@@ -75,22 +87,72 @@ export const useCart = () => {
   };
 
   // Fonction pour vider le panier avec confirmation
-  const clearCartWithConfirmation = (): boolean => {
+  const clearCartWithConfirmation = async (): Promise<boolean> => {
     if (items.length === 0) return true;
     
     const confirmed = window.confirm('Êtes-vous sûr de vouloir vider votre panier ?');
     if (confirmed) {
-      clearCart();
-      return true;
+      try {
+        await clearCart();
+        return true;
+      } catch (error) {
+        console.error('Erreur lors du vidage du panier:', error);
+        return false;
+      }
     }
     return false;
+  };
+
+  // Fonction pour supprimer un article
+  const removeItem = async (itemId: string): Promise<CartActionResult> => {
+    try {
+      await removeFromCart(itemId);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erreur lors de la suppression' 
+      };
+    }
+  };
+
+  // Fonction pour mettre à jour la quantité
+  const updateQuantity = async (itemId: string, quantity: number): Promise<CartActionResult> => {
+    try {
+      await updateItemQuantity(itemId, quantity);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erreur lors de la mise à jour' 
+      };
+    }
+  };
+
+  // Calculer le résumé du panier
+  const getCartSummary = (): CartSummary => {
+    const itemsCount = getCartItemsCount();
+    const uniqueItemsCount = getUniqueItemsCount();
+    const totalPrice = getCartTotal();
+    const totalSavings = getTotalSavings();
+    const isEmpty = items.length === 0;
+    const hasItems = items.length > 0;
+
+    return {
+      itemsCount,
+      uniqueItemsCount,
+      totalPrice,
+      totalSavings,
+      isEmpty,
+      hasItems,
+    };
   };
 
   return {
     // État du panier
     items,
-    totalItems,
-    totalPrice,
+    totalItems: totalItems || getCartItemsCount(),
+    totalPrice: totalPrice || getCartTotal(),
     
     // Actions de base
     addToCart,
@@ -107,6 +169,7 @@ export const useCart = () => {
     getProductVariantsInCart,
     getTotalSavings,
     getUniqueItemsCount,
+    getCartSummary,
     
     // États dérivés
     isEmpty: items.length === 0,

@@ -62,8 +62,9 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const { user, isAuthenticated, loading, logout, checkAuthStatus } = useAuth();
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const { favoritesCount } = useFavorites();
-  const cartItemsCount = useCartStore((state) => state.getCartItemsCount());
-
+const cartItemsCount = useCartStore((state) => 
+  state.items ? state.items.reduce((total, item) => total + item.quantity, 0) : 0
+);
   // Charger les catégories depuis l'API
   const { categories, isLoading } = useHomePage({
     autoFetch: true,
