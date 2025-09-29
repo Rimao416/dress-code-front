@@ -1,4 +1,4 @@
-// components/pages/SingleProduct.tsx (Version finale avec Cart + Favorites)
+// components/pages/SingleProduct.tsx (Version avec alignement Header corrigé)
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -79,11 +79,11 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
     const variantToUse = variant || selectedVariant;
     
     try {
-      await addToCart({
+      await addToCart(
         product,
-        variant: variantToUse || undefined,
+        variantToUse || undefined,
         quantity,
-      });
+      );
       
       // Réinitialiser la quantité après ajout
       setQuantity(1);
@@ -139,7 +139,7 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
 
   // Skeleton de chargement
   const LoadingSkeleton = () => (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-26">
       <div className="py-4 px-4 max-w-7xl mx-auto">
         <div className="animate-pulse space-y-4">
           {/* Breadcrumb skeleton */}
@@ -199,7 +199,7 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
   // État d'erreur
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center pt-26">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-gray-900">
             {error === 'Product not found' ? 'Produit non trouvé' : 'Erreur'}
@@ -222,9 +222,9 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-26">
       {/* Breadcrumbs */}
-      <div className="py-4 px-4 max-w-7xl mx-auto">
+      <div className="py-6 px-4 max-w-7xl mx-auto">
         <div className="text-sm text-gray-600">
           {breadcrumbs.map((crumb, index) => (
             <React.Fragment key={crumb.href}>
@@ -249,7 +249,7 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
       </div>
 
       {/* Contenu principal */}
-      <div className="py-4 px-4 max-w-7xl mx-auto">
+      <div className="pb-8 px-4 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Galerie d'images */}
           <div>
@@ -258,7 +258,6 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
               productName={product.name}
               isFavorite={isFavorite(product.id)}
               onToggleFavorite={() => handleToggleFavorite(product.id)}
-              isLoadingFavorite={favoritesLoading}
             />
           </div>
 
@@ -292,7 +291,6 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
           onProductClick={handleProductClick}
           onToggleFavorite={handleToggleFavorite}
           isFavorite={isFavorite}
-          isLoadingFavorite={favoritesLoading}
         />
 
         {/* Produits similaires */}
@@ -303,7 +301,6 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
           onProductClick={handleProductClick}
           onToggleFavorite={handleToggleFavorite}
           isFavorite={isFavorite}
-          isLoadingFavorite={favoritesLoading}
         />
       </div>
     </div>

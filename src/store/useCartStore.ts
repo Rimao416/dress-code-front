@@ -135,7 +135,7 @@ export const useCartStore = create<CartStore>()(
         try {
           set({ isLoading: true, error: null });
 
-          // Calculer le prix effectif
+          // Calculer le prix effectif (gérer null en le convertissant en undefined)
           const effectivePrice = variant?.price ?? product.price;
 
           // Créer l'item temporaire pour l'optimistic update
@@ -153,8 +153,8 @@ export const useCartStore = create<CartStore>()(
               image: variant?.images?.[0] || product.images?.[0] || '',
               sku: product.sku,
               brand: product.brand?.name,
-              price: product.price,
-              comparePrice: product.comparePrice,
+              price: product.price ?? undefined,
+              comparePrice: product.comparePrice ?? undefined,
             },
             variant: variant ? {
               id: variant.id,
@@ -164,7 +164,8 @@ export const useCartStore = create<CartStore>()(
               material: variant.material || undefined,
               sku: variant.sku,
               images: variant.images || [],
-              price: variant.price,
+              // Convertir null en undefined pour le prix
+              price: variant.price ?? undefined,
             } : undefined,
           };
 

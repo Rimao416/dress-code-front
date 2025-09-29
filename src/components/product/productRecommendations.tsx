@@ -164,13 +164,11 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
         >
           {products.map((product) => (
             <SwiperSlide key={product.id}>
-              <ProductCard
-                product={product}
-                isFavorite={isFavorite(product.id)}
-                onToggleFavorite={onToggleFavorite}
-                onClick={() => handleProductClick(product)}
-                className="h-full"
-              />
+          <ProductCard
+  product={product}
+  onClick={() => handleProductClick(product)}
+  className="h-full"
+/>
             </SwiperSlide>
           ))}
         </Swiper>

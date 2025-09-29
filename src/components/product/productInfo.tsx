@@ -1,6 +1,6 @@
 // components/product/ProductInfo.tsx
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, ChevronDown, ChevronUp, Minus, Plus, Check, X, ShoppingBag } from 'lucide-react';
 import { ProductWithFullData, ProductVariant } from '@/types/product';
 import Header from '../common/Header';
@@ -9,15 +9,41 @@ import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 
 interface ProductInfoProps {
   product: ProductWithFullData;
+  selectedVariant?: ProductVariant | null;
+  quantity?: number;
+  maxQuantity?: number;
+  effectivePrice?: number;
+  isInCart?: boolean;
+  cartQuantity?: number;
+  isAddingToCart?: boolean;
   onAddToBag?: (variant?: ProductVariant) => void;
+  onVariantChange?: (variant: ProductVariant) => void;
+  onQuantityChange?: (quantity: number) => void;
+  productUtils?: any;
 }
 
-const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
-    const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<string>('');
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
+const ProductInfo: React.FC<ProductInfoProps> = ({ 
+  product, 
+  selectedVariant: propSelectedVariant,
+  quantity: propQuantity = 1,
+  maxQuantity: propMaxQuantity,
+  effectivePrice: propEffectivePrice,
+  isInCart = false,
+  cartQuantity = 0,
+  isAddingToCart = false,
+  onAddToBag,
+  onVariantChange,
+  onQuantityChange,
+  productUtils
+}) => {
+  const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
+  
+  // États locaux - utilisés seulement si les props correspondantes ne sont pas fournies
+  const [localSelectedSize, setLocalSelectedSize] = useState<string>('');
+  const [localSelectedColor, setLocalSelectedColor] = useState<string>('');
+  const [localSelectedVariant, setLocalSelectedVariant] = useState<ProductVariant | null>(null);
+  const [localQuantity, setLocalQuantity] = useState<number>(1);
+  
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     details: false,
     fit: false,
@@ -28,8 +54,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
   const [addedItem, setAddedItem] = useState<any>(null);
 
   // Store actions
-  const addItem = useCartStore((state) => state.addItem);
+  const addToCart = useCartStore((state) => state.addToCart);
   const totalItems = useCartStore((state) => state.totalItems);
+
+  // Utiliser les props si disponibles, sinon les états locaux
+  const selectedVariant = propSelectedVariant !== undefined ? propSelectedVariant : localSelectedVariant;
+  const quantity = propQuantity !== undefined ? propQuantity : localQuantity;
+  const currentPrice = propEffectivePrice !== undefined ? propEffectivePrice : (selectedVariant?.price || product.price);
+  const maxQuantity = propMaxQuantity !== undefined ? propMaxQuantity : (selectedVariant?.stock || product.stock);
 
   // Obtenir les tailles disponibles
   const availableSizes = [...new Set(
@@ -53,47 +85,56 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
       return acc;
     }, [] as Array<{ color: string; hex?: string; id: string }>);
 
-  // Trouver la variante sélectionnée
-  React.useEffect(() => {
-    if (selectedSize || selectedColor) {
-      const variant = product.variants.find(v =>
-        v.isActive &&
-        (!selectedSize || v.size === selectedSize) &&
-        (!selectedColor || v.color === selectedColor)
-      );
-      setSelectedVariant(variant || null);
-    } else {
-      setSelectedVariant(null);
+  // Trouver la variante sélectionnée (seulement si on gère l'état localement)
+  useEffect(() => {
+    if (propSelectedVariant === undefined) {
+      if (localSelectedSize || localSelectedColor) {
+        const variant = product.variants.find(v =>
+          v.isActive &&
+          (!localSelectedSize || v.size === localSelectedSize) &&
+          (!localSelectedColor || v.color === localSelectedColor)
+        );
+        setLocalSelectedVariant(variant || null);
+      } else {
+        setLocalSelectedVariant(null);
+      }
     }
-  }, [selectedSize, selectedColor, product.variants]);
+  }, [localSelectedSize, localSelectedColor, product.variants, propSelectedVariant]);
+
+  // Synchroniser les couleurs/tailles avec la variante sélectionnée depuis les props
+  useEffect(() => {
+    if (propSelectedVariant) {
+      setLocalSelectedSize(propSelectedVariant.size || '');
+      setLocalSelectedColor(propSelectedVariant.color || '');
+    }
+  }, [propSelectedVariant]);
 
   const validateSelection = (): Record<string, string> => {
     const errors: Record<string, string> = {};
     
     // Si le produit a des tailles disponibles mais aucune n'est sélectionnée
-    if (availableSizes.length > 0 && !selectedSize) {
+    if (availableSizes.length > 0 && !localSelectedSize && !selectedVariant?.size) {
       errors.size = 'Veuillez sélectionner une taille';
     }
     
     // Si le produit a des couleurs disponibles mais aucune n'est sélectionnée
-    if (availableColors.length > 0 && !selectedColor) {
+    if (availableColors.length > 0 && !localSelectedColor && !selectedVariant?.color) {
       errors.color = 'Veuillez sélectionner une couleur';
     }
     
     // Si pas de variante trouvée avec la combinaison sélectionnée
-    if ((selectedSize || selectedColor) && !selectedVariant) {
+    if ((localSelectedSize || localSelectedColor || selectedVariant) && !selectedVariant) {
       errors.combination = 'Cette combinaison n\'est pas disponible';
     }
     
     return errors;
   };
 
-  const handleAddToBag = () => {
+  const handleAddToBag =async () => {
     const errors = validateSelection();
     
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      // Effacer les erreurs après 3 secondes
       setTimeout(() => setFieldErrors({}), 3000);
       return;
     }
@@ -102,8 +143,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
     const variantToAdd = selectedVariant || {
       id: `main-${product.id}`,
       productId: product.id,
-      size: selectedSize || null,
-      color: selectedColor || null,
+      size: localSelectedSize || null,
+      color: localSelectedColor || null,
       colorHex: null,
       material: null,
       sku: product.sku,
@@ -116,7 +157,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
     } as ProductVariant;
 
     try {
-      addItem(product, variantToAdd, quantity, selectedSize, selectedColor);
+      // Si on utilise le store local
+      if (!onAddToBag) {
+        await addToCart(product, variantToAdd, quantity);
+      }
+      
+      // Appeler la fonction parent si elle existe
       onAddToBag?.(variantToAdd);
       
       // Stocker les informations de l'article ajouté
@@ -124,17 +170,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
         product,
         variant: variantToAdd,
         quantity,
-        selectedSize,
-        selectedColor
+        selectedSize: localSelectedSize || selectedVariant?.size,
+        selectedColor: localSelectedColor || selectedVariant?.color
       });
       
       // Afficher le mini-panier
       setShowMiniCart(true);
-      
-      // Masquer le mini-panier après 5 secondes
       setTimeout(() => setShowMiniCart(false), 5000);
       
-      // Effacer les erreurs
       setFieldErrors({});
     } catch (error) {
       setFieldErrors({ general: 'Erreur lors de l\'ajout au panier' });
@@ -145,20 +188,48 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
   const handleQuantityChange = (newQuantity: number) => {
     const maxStock = selectedVariant?.stock || product.stock;
     if (newQuantity >= 1 && newQuantity <= maxStock) {
-      setQuantity(newQuantity);
+      if (onQuantityChange) {
+        onQuantityChange(newQuantity);
+      } else {
+        setLocalQuantity(newQuantity);
+      }
+    }
+  };
+
+  const handleVariantSelection = (type: 'size' | 'color', value: string) => {
+    if (type === 'size') {
+      setLocalSelectedSize(value);
+    } else {
+      setLocalSelectedColor(value);
+    }
+
+    // Si on a un callback parent pour les changements de variante
+    if (onVariantChange) {
+      const newVariant = product.variants.find(v =>
+        v.isActive &&
+        (type === 'size' ? v.size === value : v.size === localSelectedSize || !localSelectedSize) &&
+        (type === 'color' ? v.color === value : v.color === localSelectedColor || !localSelectedColor)
+      );
+      if (newVariant) {
+        onVariantChange(newVariant);
+      }
+    }
+
+    // Effacer les erreurs correspondantes
+    if (fieldErrors[type]) {
+      setFieldErrors(prev => ({ ...prev, [type]: '' }));
     }
   };
 
   const decrementQuantity = () => {
     if (quantity > 1) {
-      setQuantity(quantity - 1);
+      handleQuantityChange(quantity - 1);
     }
   };
 
   const incrementQuantity = () => {
-    const maxStock = selectedVariant?.stock || product.stock;
-    if (quantity < maxStock) {
-      setQuantity(quantity + 1);
+    if (quantity < maxQuantity) {
+      handleQuantityChange(quantity + 1);
     }
   };
 
@@ -182,7 +253,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
     ));
   };
 
-  const currentPrice = selectedVariant?.price || product.price;
   const currentStock = selectedVariant?.stock || product.stock;
   const isOutOfStock = currentStock === 0;
   const isLowStock = currentStock > 0 && currentStock <= 5;
@@ -292,6 +362,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
           )}
         </div>
 
+        {/* Indicateur de panier */}
+        {isInCart && cartQuantity > 0 && (
+          <div className="text-sm text-green-600 font-medium">
+            ✓ {cartQuantity} article(s) dans le panier
+          </div>
+        )}
+
         {/* Sélecteur de couleur */}
         {availableColors.length > 0 && (
           <div className="space-y-2">
@@ -299,23 +376,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
               <span className="text-sm font-medium">
                 Couleur: <span className="text-red-500">*</span>
               </span>
-              {selectedColor && (
-                <span className="text-sm text-gray-600">{selectedColor}</span>
+              {(localSelectedColor || selectedVariant?.color) && (
+                <span className="text-sm text-gray-600">
+                  {localSelectedColor || selectedVariant?.color}
+                </span>
               )}
             </div>
             <div className="flex items-center space-x-2">
               {availableColors.map(({ color, hex, id }) => (
                 <button
                   key={id}
-                  onClick={() => {
-                    setSelectedColor(color);
-                    // Effacer l'erreur couleur si elle existe
-                    if (fieldErrors.color) {
-                      setFieldErrors(prev => ({ ...prev, color: '' }));
-                    }
-                  }}
+                  onClick={() => handleVariantSelection('color', color)}
                   className={`w-8 h-8 rounded-full border-2 transition-all ${
-                    selectedColor === color
+                    (localSelectedColor || selectedVariant?.color) === color
                       ? 'border-black ring-2 ring-gray-300'
                       : 'border-gray-300 hover:border-gray-500'
                   }`}
@@ -338,13 +411,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
               <span className="text-sm font-medium">
                 Taille <span className="text-red-500">*</span>
               </span>
-            
             </div>
             <div className="grid grid-cols-6 gap-2">
               {availableSizes.map((size) => {
                 const sizeVariant = product.variants.find(v =>
                   v.size === size && v.isActive &&
-                  (!selectedColor || v.color === selectedColor)
+                  (!(localSelectedColor || selectedVariant?.color) || v.color === (localSelectedColor || selectedVariant?.color))
                 );
                 const isAvailable = sizeVariant && sizeVariant.stock > 0;
                
@@ -353,16 +425,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
                     key={size}
                     onClick={() => {
                       if (isAvailable) {
-                        setSelectedSize(size);
-                        // Effacer l'erreur taille si elle existe
-                        if (fieldErrors.size) {
-                          setFieldErrors(prev => ({ ...prev, size: '' }));
-                        }
+                        handleVariantSelection('size', size);
                       }
                     }}
                     disabled={!isAvailable}
                     className={`p-3 text-sm font-medium border transition-all ${
-                      selectedSize === size
+                      (localSelectedSize || selectedVariant?.size) === size
                         ? 'border-black bg-black text-white'
                         : isAvailable
                         ? 'border-gray-300 hover:border-black'
@@ -414,9 +482,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
              
               <button
                 onClick={incrementQuantity}
-                disabled={quantity >= currentStock}
+                disabled={quantity >= maxQuantity}
                 className={`w-12 h-12 flex items-center justify-center border border-l-0 ${
-                  quantity >= currentStock
+                  quantity >= maxQuantity
                     ? 'border-gray-200 text-gray-300 cursor-not-allowed'
                     : 'border-gray-300 text-gray-600 hover:border-black hover:text-black'
                 } transition-colors`}
@@ -438,14 +506,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToBag }) => {
         {/* Bouton Add to Bag */}
         <button
           onClick={handleAddToBag}
-          disabled={isOutOfStock}
+          disabled={isOutOfStock || isAddingToCart}
           className={`w-full py-4 px-6 text-sm font-semibold uppercase tracking-wide transition-all ${
-            isOutOfStock
+            isOutOfStock || isAddingToCart
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
               : 'bg-black text-white hover:bg-gray-800'
           }`}
         >
-          {isOutOfStock ? 'Rupture de stock' : 'Ajouter au panier'}
+          {isOutOfStock 
+            ? 'Rupture de stock' 
+            : isAddingToCart 
+            ? 'Ajout en cours...' 
+            : 'Ajouter au panier'
+          }
         </button>
 
         {/* Final Sale */}

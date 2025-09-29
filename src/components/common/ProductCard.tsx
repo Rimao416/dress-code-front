@@ -41,11 +41,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
  
+  // ✅ CORRECTION: Rendre la fonction async et await la Promise
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // CORRECTION: Passer le produit original au lieu du normalisé
-    const result = toggleFavorite(product); // ✅ Utiliser product au lieu de normalizedProduct
+    // Attendre le résultat de toggleFavorite
+    const result = await toggleFavorite(product);
     
     // Optionnel : afficher un feedback à l'utilisateur
     if (result.success) {
