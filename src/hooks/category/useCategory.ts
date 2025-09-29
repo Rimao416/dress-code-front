@@ -1,77 +1,173 @@
 // hooks/useCategory.ts
-import { useEffect, useCallback, useMemo } from 'react';
+'use client';
+
+import { useEffect } from 'react';
 import { useCategoryStore } from '@/store/useCategoryStore';
 import { categoryService } from '@/services/category.service';
 
-export const useCategory = (slug: string) => {
+/**
+ * Hook principal pour gérer les catégories
+ */
+export function useCategories() {
   const {
-    currentCategory,
+    categories,
     isLoading,
     error,
-    setCurrentCategory,
+    setCategories,
     setLoading,
     setError,
-    reset
+    updateLastFetch,
+    shouldRefetch,
+    getMainCategories,
   } = useCategoryStore();
 
-  // Mémoiser la fonction pour éviter les re-créations inutiles
-  const fetchCategory = useCallback(async (categorySlug: string) => {
-    if (!categorySlug) return;
+  const fetchCategories = async (force = false) => {
+    // Ne pas refetch si les données sont récentes (sauf si force = true)
+    if (!force && categories.length > 0 && !shouldRefetch()) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
+      const response = await categoryService.getCategoriesWithProducts();
       
-      const categoryData = await categoryService.getCategoryBySlug(categorySlug);
-      setCurrentCategory(categoryData);
+      if (response.success) {
+        setCategories(response.data);
+        updateLastFetch();
+      } else {
+        setError(response.error || 'Failed to fetch categories');
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch category';
-      setError(errorMessage);
-      setCurrentCategory(null);
+      console.error('Error fetching categories:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch categories');
     } finally {
       setLoading(false);
     }
-  }, [setCurrentCategory, setLoading, setError]); // Dépendances stables
+  };
+
+  // Charger les catégories au montage si nécessaire
+  useEffect(() => {
+    if (categories.length === 0 || shouldRefetch()) {
+      fetchCategories();
+    }
+  }, []);
+
+  return {
+    categories,
+    mainCategories: getMainCategories(),
+    isLoading,
+    error,
+    refetch: () => fetchCategories(true),
+  };
+}
+
+/**
+ * Hook pour récupérer une catégorie spécifique par slug
+ */
+export function useCategory(slug: string) {
+  const {
+    currentCategory,
+    isLoadingCurrent,
+    error,
+    setCurrentCategory,
+    setLoadingCurrent,
+    setError,
+    getCategoryBySlug,
+  } = useCategoryStore();
+
+  const fetchCategory = async () => {
+    if (!slug) return;
+
+    // Vérifier d'abord dans le store
+    const cachedCategory = getCategoryBySlug(slug);
+    if (cachedCategory) {
+      // On a la catégorie en cache, mais elle n'a peut-être pas tous les produits
+      // On charge quand même la version complète
+    }
+
+    setLoadingCurrent(true);
+    setError(null);
+
+    try {
+      const response = await categoryService.getCategoryBySlug(slug);
+      
+      if (response.success && response.data) {
+        setCurrentCategory(response.data);
+      } else {
+        setError(response.error || 'Category not found');
+        setCurrentCategory(null);
+      }
+    } catch (err) {
+      console.error('Error fetching category:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch category');
+      setCurrentCategory(null);
+    } finally {
+      setLoadingCurrent(false);
+    }
+  };
 
   useEffect(() => {
-    // Ne pas faire l'appel si on a déjà la bonne catégorie
-    if (currentCategory?.slug === slug) return;
-    
-    fetchCategory(slug);
-    
-    // Pas besoin de cleanup function ici car elle cause des problèmes
-  }, [slug, fetchCategory]); // Simplifier les dépendances
+    fetchCategory();
+  }, [slug]);
 
   return {
     category: currentCategory,
-    isLoading,
+    isLoading: isLoadingCurrent,
     error,
+    refetch: fetchCategory,
   };
-};
+}
 
-// hooks/useCategoryNavigation.ts
-export const useCategoryNavigation = () => {
-  const { currentCategory } = useCategoryStore();
-  
-  // Utiliser useMemo pour éviter les recalculs inutiles
-  const breadcrumbs = useMemo(() => {
-    if (!currentCategory) return [];
-    
-    return [
-      { name: 'Home', href: '/' },
-      { name: currentCategory.name, href: `/categories/${currentCategory.slug}` }
-    ];
-  }, [currentCategory]);
-
-  const subcategories = useMemo(() => 
-    currentCategory?.children.filter(child => child.isActive) || []
-  , [currentCategory]);
-
-  const hasSubcategories = subcategories.length > 0;
+/**
+ * Hook pour les utilitaires de catégories
+ */
+export function useCategoryUtils() {
+  const { getCategoryBySlug, getCategoryById } = useCategoryStore();
 
   return {
-    breadcrumbs,
-    subcategories,
-    hasSubcategories
+    getCategoryBySlug,
+    getCategoryById,
+    generateBreadcrumbs: categoryService.generateCategoryBreadcrumbs,
+    countTotalProducts: categoryService.countTotalProducts,
+    flattenCategories: categoryService.flattenCategories,
+    sortCategories: categoryService.sortCategories,
   };
-};
+}
+
+/**
+ * Hook pour chercher des catégories
+ */
+export function useCategorySearch(query: string) {
+  const { categories } = useCategoryStore();
+
+  const searchCategories = () => {
+    if (!query.trim()) return [];
+
+    const lowerQuery = query.toLowerCase();
+    const results: any[] = [];
+
+    const search = (cats: any[]) => {
+      cats.forEach(cat => {
+        if (
+          cat.name.toLowerCase().includes(lowerQuery) ||
+          cat.description?.toLowerCase().includes(lowerQuery)
+        ) {
+          results.push(cat);
+        }
+        if (cat.children && cat.children.length > 0) {
+          search(cat.children);
+        }
+      });
+    };
+
+    search(categories);
+    return results;
+  };
+
+  return {
+    results: searchCategories(),
+    hasResults: searchCategories().length > 0,
+  };
+}

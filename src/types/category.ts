@@ -1,33 +1,48 @@
-import { Product } from "./product";
-
-// types/category.ts - Version compatible avec Prisma
-
-
+// types/category.ts
 export interface Category {
   id: string;
   name: string;
-  description?: string | null; // Changé de undefined à null
+  description: string | null;
   slug: string;
-  image?: string | null;
-  parentId?: string | null;
+  image: string | null;
+  parentId: string | null;
   isActive: boolean;
   sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
   children: Category[];
-  products: Product[];
+  products: any[]; // Ou Product[] si vous avez le type
+  productCount?: number;
+}
+
+export interface CategoryWithProducts extends Category {
+  productCount: number;
+  children: CategoryWithProducts[];
 }
 
 export interface CategoryWithFullData extends Category {
-  // Ajoute tous les produits des catégories enfants
-  allProducts: Product[];
-  // Nombre total de produits (direct + enfants)
+  allProducts: any[]; // Ou Product[]
   totalProductsCount: number;
 }
 
-// Type pour la réponse de l'API
+// Réponses API
 export interface CategoryResponse {
   success: boolean;
   data?: CategoryWithFullData;
   error?: string;
+}
+
+export interface CategoriesResponse {
+  success: boolean;
+  data: CategoryWithProducts[];
+  error?: string;
+}
+
+export interface CategoryCardData {
+  id: string;
+  name: string;
+  slug: string;
+  image: string | null;
+  description: string | null;
+  productCount: number;
 }

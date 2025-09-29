@@ -1,4 +1,4 @@
-// components/Header/Header.tsx - Version avec navigation entièrement dynamique
+// components/Header/Header.tsx - Version avec hooks et store
 "use client"
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -10,8 +10,8 @@ import SignUpModal from '../modal/SignUpModal';
 import LoginModal from '../modal/LoginModal';
 import CartSidebar from '../cart/CartSidebar';
 import { useAuth } from '@/context/AuthContext';
-import { useHomePage } from '@/hooks/useHomepage';
-import { CategoryWithProducts } from '@/types/homepage';
+import { CategoryWithProducts } from '@/types/category';
+import { useCategories } from '@/hooks/category/useCategory';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;
@@ -59,19 +59,16 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
  
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
-  const { user, isAuthenticated, loading, logout, checkAuthStatus } = useAuth();
+  
+  // Hooks
+  const { user, isAuthenticated, loading, checkAuthStatus } = useAuth();
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const { favoritesCount } = useFavorites();
-const cartItemsCount = useCartStore((state) => 
-  state.items ? state.items.reduce((total, item) => total + item.quantity, 0) : 0
-);
-  // Charger les catégories depuis l'API
-  const { categories, isLoading } = useHomePage({
-    autoFetch: true,
-    filters: {
-      categoriesLimit: 20 // Charger plus de catégories pour la navigation
-    }
-  });
+  const { categories, mainCategories, isLoading, error } = useCategories();
+  
+  const cartItemsCount = useCartStore((state) => 
+    state.items ? state.items.reduce((total, item) => total + item.quantity, 0) : 0
+  );
 
   // Messages promotionnels rotatifs
   const promoMessages = [
@@ -87,7 +84,6 @@ const cartItemsCount = useCartStore((state) =>
 
   useEffect(() => {
     if (isClient && !loading && !user) {
-      console.log('🔄 Header: Re-checking auth status');
       checkAuthStatus();
     }
   }, [isClient]);
@@ -129,21 +125,17 @@ const cartItemsCount = useCartStore((state) =>
   const createDropdownContent = (category: CategoryWithProducts): DropdownContent => {
     const sections: NavSection[] = [];
     
-    // Si la catégorie a des enfants, les organiser en sections
     if (category.children && category.children.length > 0) {
-      // Limiter à 4 sections pour un bon affichage
       const childrenToShow = category.children.slice(0, 4);
       
       childrenToShow.forEach((child) => {
         const items = [];
         
-        // Ajouter le lien vers la sous-catégorie elle-même
         items.push({
           title: `Tous les ${child.name}`,
           link: `/collections/${child.slug}`
         });
         
-        // Ajouter les petits-enfants s'il y en a
         if (child.children && child.children.length > 0) {
           child.children.slice(0, 5).forEach((grandChild) => {
             items.push({
@@ -166,7 +158,6 @@ const cartItemsCount = useCartStore((state) =>
           title: `Tous les ${category.name}`,
           link: `/collections/${category.slug}`
         },
-        // Ajouter quelques liens rapides si nécessaire
         ...(category.productCount > 0 ? [{
           title: `Nouveautés ${category.name}`,
           link: `/collections/${category.slug}?filter=new`
@@ -181,26 +172,23 @@ const cartItemsCount = useCartStore((state) =>
     };
   };
 
-  // Créer la navigation dynamique basée uniquement sur les catégories de l'API
+  // Créer la navigation dynamique basée sur les catégories
   const createDynamicNavigation = (): NavigationData => {
-    if (!categories || categories.length === 0) {
+    if (!mainCategories || mainCategories.length === 0) {
       return {};
     }
 
     const navigationData: NavigationData = {};
 
-    // Prendre les catégories principales (sans parentId) 
-    const mainCategories = categories.filter(cat => !cat.parentId);
-    
-    // Trier par sortOrder puis par nom
-    const sortedCategories = mainCategories.sort((a, b) => {
+    // Trier les catégories principales
+    const sortedCategories = [...mainCategories].sort((a, b) => {
       if (a.sortOrder !== b.sortOrder) {
         return a.sortOrder - b.sortOrder;
       }
       return a.name.localeCompare(b.name);
     });
 
-    // Limiter à 6 catégories principales max pour la navigation
+    // Limiter à 6 catégories principales max
     const categoriesToShow = sortedCategories.slice(0, 6);
     
     categoriesToShow.forEach(category => {
@@ -213,12 +201,11 @@ const cartItemsCount = useCartStore((state) =>
       };
     });
 
-    // Si il y a plus de 6 catégories, créer un menu "Plus"
+    // Si plus de 6 catégories, créer un menu "Plus"
     const remainingCategories = sortedCategories.slice(6);
     if (remainingCategories.length > 0) {
       const moreSections: NavSection[] = [];
       
-      // Organiser les catégories restantes en sections de 4
       for (let i = 0; i < remainingCategories.length; i += 4) {
         const sectionCategories = remainingCategories.slice(i, i + 4);
         
@@ -240,7 +227,7 @@ const cartItemsCount = useCartStore((state) =>
             { title: "Nouveautés", link: "/collections?filter=new" },
             { title: "Meilleures ventes", link: "/collections?filter=bestsellers" }
           ],
-          right: moreSections.slice(0, 3), // Limiter à 3 sections
+          right: moreSections.slice(0, 3),
           featured: remainingCategories[0]?.image ? {
             image: remainingCategories[0].image,
             title: "Découvrez plus",
@@ -298,7 +285,6 @@ const cartItemsCount = useCartStore((state) =>
       <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-12 gap-8">
-            {/* Colonne gauche - Liens principaux */}
             {content.left && content.left.length > 0 && (
               <div className="col-span-2">
                 <div className="space-y-2">
