@@ -6,10 +6,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    // Await params avant d'accéder à ses propriétés
+    const { slug } = await params;
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '4');
 
@@ -98,7 +99,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error('Error fetching similar products:', error);
+    console.error('Error fetching product:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

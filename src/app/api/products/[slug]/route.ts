@@ -6,10 +6,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    // Await params avant d'accéder à ses propriétés
+    const { slug } = await params;
 
     if (!slug) {
       return NextResponse.json(
