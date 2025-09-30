@@ -53,20 +53,11 @@ const HeroSection = () => {
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </button>
               
-              <button className="group bg-white/95 backdrop-blur-sm text-neutral-900 px-6 py-3 rounded-md text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2.5 border border-stone-200">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-900 to-red-800 flex items-center justify-center shadow-sm">
-                  <Play className="h-3.5 w-3.5 text-white fill-white ml-0.5" />
-                </div>
-                <span>Regarder la vidéo</span>
-              </button>
             </div>
 
             {/* Statistiques */}
             <div className="flex gap-8 lg:gap-10 pt-6 border-t border-stone-300/60">
-              <div>
-                <div className="text-3xl font-bold text-neutral-900 mb-0.5">12</div>
-                <div className="text-xs text-neutral-500 tracking-wide">Partout dans le monde</div>
-              </div>
+              
               <div>
                 <div className="text-3xl font-bold text-neutral-900 mb-0.5">130+</div>
                 <div className="text-xs text-neutral-500 tracking-wide">Produits disponibles</div>

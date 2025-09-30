@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useFavorites } from '@/hooks/product/useFavorites';
@@ -51,7 +51,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
- 
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
@@ -168,7 +167,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       return {};
     }
 
-    const navigationData: NavigationData = {};
+    const navigationDataLocal: NavigationData = {};
     const sortedCategories = [...mainCategories].sort((a, b) => {
       if (a.sortOrder !== b.sortOrder) {
         return a.sortOrder - b.sortOrder;
@@ -181,7 +180,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     categoriesToShow.forEach(category => {
       const hasChildren = category.children && category.children.length > 0;
       
-      navigationData[category.name] = {
+      navigationDataLocal[category.name] = {
         hasDropdown: hasChildren,
         link: `/collections/${category.slug}`,
         content: hasChildren ? createDropdownContent(category) : undefined
@@ -204,7 +203,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
         });
       }
 
-      navigationData['Plus'] = {
+      navigationDataLocal['Plus'] = {
         hasDropdown: true,
         link: '/collections',
         content: {
@@ -223,10 +222,16 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       };
     }
 
-    return navigationData;
+    return navigationDataLocal;
   };
 
-  const navigationData = createDynamicNavigation();
+  // Utiliser useMemo pour éviter les recalculs inutiles et les boucles infinies
+  const navigationData = useMemo(() => {
+    if (!isClient || !mainCategories || mainCategories.length === 0) {
+      return {};
+    }
+    return createDynamicNavigation();
+  }, [isClient, mainCategories]);
 
   const handleUserClick = () => {
     if (user && isAuthenticated) {
@@ -423,7 +428,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || !isClient) {
     return (
       <>
         <div className="fixed top-0 left-0 right-0 z-40 bg-stone-50 border-b border-stone-200">
