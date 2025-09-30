@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '@/components/common/Header';
 import HeroSection from '@/components/common/HeroSection';
+import TrendyCollectionSection from '@/components/common/TrendyCollection';
 
 function HomePage() {
   return (
@@ -13,7 +14,7 @@ function HomePage() {
       
       {/* Le reste de votre contenu home ici */}
       <div className="relative z-10">
-        {/* Vos autres sections : FeaturedProducts, Categories, etc. */}
+        <TrendyCollectionSection />
       </div>
     </div>
   );

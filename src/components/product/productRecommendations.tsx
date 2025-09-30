@@ -7,9 +7,6 @@ import { Navigation, Pagination } from 'swiper/modules';
 import { ProductCardData } from '@/types/product';
 import ProductCard from '../common/ProductCard';
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 
 interface ProductRecommendationsProps {
   title: string;
