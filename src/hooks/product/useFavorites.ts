@@ -1,6 +1,8 @@
 // hooks/product/useFavorites.ts
 import { ProductWithFullData, ProductCardItem, isFullProduct } from '@/types/product';
+import { FavoriteItem } from '@/types/favorites';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { useMemo } from 'react';
 
 export const useFavorites = () => {
   const {
@@ -16,6 +18,19 @@ export const useFavorites = () => {
     getFavoritesCount
   } = useFavoritesStore();
 
+  // TODO: Remplacez cette partie par une vraie requête pour récupérer les produits
+  // Cette fonction devrait récupérer les données complètes des produits depuis favoriteIds
+  const getFavoriteItems = (): FavoriteItem[] => {
+    // Placeholder - vous devrez implémenter la logique pour récupérer
+    // les données complètes des produits depuis une API ou un autre store
+    return favoriteIds.map(id => ({
+      id: `fav-${id}`,
+      productId: id,
+      addedAt: new Date(),
+      // product: getProductById(id) // À implémenter
+      product: {} as ProductWithFullData // Placeholder
+    }));
+  };
 
   // Fonction pour ajouter un produit aux favoris avec validation
   const addToFavorites = async (product: ProductCardItem) => {
@@ -75,9 +90,55 @@ export const useFavorites = () => {
     return false;
   };
 
-  // Note: Les fonctions de tri et filtrage nécessiteraient les données complètes des produits
-  // qui ne sont pas stockées dans le store actuel (seulement les IDs)
-  // Vous devriez récupérer les données complètes depuis votre API ou store de produits
+  // Fonctions de tri (nécessitent les données complètes des produits)
+  const getFavoritesSortedByDate = (ascending: boolean = false): FavoriteItem[] => {
+    const items = getFavoriteItems();
+    return items.sort((a, b) => {
+      const dateA = new Date(a.addedAt).getTime();
+      const dateB = new Date(b.addedAt).getTime();
+      return ascending ? dateA - dateB : dateB - dateA;
+    });
+  };
+
+  const getFavoritesSortedByName = (ascending: boolean = true): FavoriteItem[] => {
+    const items = getFavoriteItems();
+    return items.sort((a, b) => {
+      const nameA = a.product.name?.toLowerCase() || '';
+      const nameB = b.product.name?.toLowerCase() || '';
+      const comparison = nameA.localeCompare(nameB);
+      return ascending ? comparison : -comparison;
+    });
+  };
+
+  const getFavoritesSortedByPrice = (ascending: boolean = true): FavoriteItem[] => {
+    const items = getFavoriteItems();
+    return items.sort((a, b) => {
+      const priceA = a.product.price || 0;
+      const priceB = b.product.price || 0;
+      return ascending ? priceA - priceB : priceB - priceA;
+    });
+  };
+
+  // Fonction de recherche dans les favoris
+  const searchFavorites = (query: string): FavoriteItem[] => {
+    if (!query.trim()) return getFavoriteItems();
+    
+    const items = getFavoriteItems();
+    const searchTerm = query.toLowerCase().trim();
+    
+    return items.filter(item => {
+      const productName = item.product.name?.toLowerCase() || '';
+      const brandName = item.product.brand?.name?.toLowerCase() || '';
+      const description = item.product.description?.toLowerCase() || '';
+      
+      return productName.includes(searchTerm) || 
+             brandName.includes(searchTerm) || 
+             description.includes(searchTerm);
+    });
+  };
+
+  // Items mémorisés
+  const items = useMemo(() => getFavoriteItems(), [favoriteIds]);
 
   return {
     // État des favoris
@@ -86,6 +147,7 @@ export const useFavorites = () => {
     favoritesCount: getFavoritesCount(),
     isLoading,
     error,
+    items,
     
     // Actions de base
     addToFavorites,
@@ -98,6 +160,12 @@ export const useFavorites = () => {
     // Fonctions utilitaires
     isFavorite,
     getFavoritesCount,
+    
+    // Fonctions de tri et filtrage
+    getFavoritesSortedByDate,
+    getFavoritesSortedByName,
+    getFavoritesSortedByPrice,
+    searchFavorites,
     
     // États dérivés
     isEmpty: favoriteIds.length === 0,

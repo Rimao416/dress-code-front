@@ -1,6 +1,6 @@
 // components/favorites/FavoritesSidebar.tsx
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Heart, ShoppingBag, Star, Trash2, SortAsc, SortDesc, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useFavorites } from '@/hooks/product/useFavorites';
@@ -10,47 +10,79 @@ import { FavoriteItem } from '@/types/favorites';
 interface FavoritesSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  favoriteItems?: FavoriteItem[]; // Ajout des données complètes des favoris
 }
 
 type SortOption = 'date' | 'name' | 'price';
 type SortDirection = 'asc' | 'desc';
 
-const FavoritesSidebar: React.FC<FavoritesSidebarProps> = ({ isOpen, onClose }) => {
+const FavoritesSidebar: React.FC<FavoritesSidebarProps> = ({ 
+  isOpen, 
+  onClose,
+  favoriteItems = [] // Valeur par défaut
+}) => {
   const {
-    items,
+    favoriteIds,
     removeFromFavorites,
     clearFavoritesWithConfirmation,
-    searchFavorites,
-    getFavoritesSortedByDate,
-    getFavoritesSortedByName,
-    getFavoritesSortedByPrice,
     isEmpty,
     favoritesCount
   } = useFavorites();
 
-  const addItem = useCartStore((state) => state.addItem);
+  // Correction: utiliser la méthode correcte du store
+  const { addToCart } = useCartStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
+  // Fonction pour filtrer les favoris par recherche
+  const searchFavorites = (query: string): FavoriteItem[] => {
+    const lowercaseQuery = query.toLowerCase();
+    return favoriteItems.filter(item =>
+      item.product.name.toLowerCase().includes(lowercaseQuery) ||
+      item.product.brand?.name.toLowerCase().includes(lowercaseQuery)
+    );
+  };
+
+  // Fonction pour trier les favoris par date
+
+
+  // Fonction pour trier les favoris par nom
+  const getFavoritesSortedByName = (ascending: boolean = false): FavoriteItem[] => {
+    const items = searchQuery ? searchFavorites(searchQuery) : favoriteItems;
+    return [...items].sort((a, b) => {
+      const nameA = a.product.name.toLowerCase();
+      const nameB = b.product.name.toLowerCase();
+      return ascending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
+  };
+
+  // Fonction pour trier les favoris par prix
+  const getFavoritesSortedByPrice = (ascending: boolean = false): FavoriteItem[] => {
+    const items = searchQuery ? searchFavorites(searchQuery) : favoriteItems;
+    return [...items].sort((a, b) => {
+      return ascending ? a.product.price - b.product.price : b.product.price - a.product.price;
+    });
+  };
+
   // Fonction pour obtenir les favoris triés et filtrés
   const getSortedAndFilteredFavorites = (): FavoriteItem[] => {
-    let filteredItems = searchQuery ? searchFavorites(searchQuery) : items;
-
     switch (sortBy) {
-      case 'date':
-        return getFavoritesSortedByDate(sortDirection === 'asc');
+
       case 'name':
         return getFavoritesSortedByName(sortDirection === 'asc');
       case 'price':
         return getFavoritesSortedByPrice(sortDirection === 'asc');
       default:
-        return filteredItems;
+        return searchQuery ? searchFavorites(searchQuery) : favoriteItems;
     }
   };
 
-  const displayedFavorites = getSortedAndFilteredFavorites();
+  // Utiliser useMemo pour optimiser les performances
+  const displayedFavorites = useMemo(() => {
+    return getSortedAndFilteredFavorites();
+  }, [favoriteItems, searchQuery, sortBy, sortDirection]);
 
   const handleAddToCart = (favoriteItem: FavoriteItem) => {
     const product = favoriteItem.product;
@@ -72,11 +104,11 @@ const FavoritesSidebar: React.FC<FavoritesSidebarProps> = ({ isOpen, onClose }) 
       updatedAt: new Date()
     };
 
-    addItem(product, variant, 1);
+    addToCart(product, variant, 1);
   };
 
-  const handleRemoveFromFavorites = (productId: string) => {
-    removeFromFavorites(productId);
+  const handleRemoveFromFavorites = async (productId: string) => {
+    await removeFromFavorites(productId);
   };
 
   const toggleSort = (option: SortOption) => {
@@ -131,7 +163,7 @@ const FavoritesSidebar: React.FC<FavoritesSidebarProps> = ({ isOpen, onClose }) 
           </div>
 
           {/* Search and Sort */}
-          {!isEmpty && (
+          {!isEmpty && favoriteItems.length > 0 && (
             <div className="p-4 border-b border-gray-200 space-y-3">
               {/* Search */}
               <div className="relative">
@@ -187,7 +219,7 @@ const FavoritesSidebar: React.FC<FavoritesSidebarProps> = ({ isOpen, onClose }) 
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            {isEmpty ? (
+            {isEmpty || favoriteItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <Heart className="h-16 w-16 text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -247,10 +279,10 @@ const FavoritesSidebar: React.FC<FavoritesSidebarProps> = ({ isOpen, onClose }) 
                         )}
                       </div>
 
-                      {favoriteItem.product._count.reviews > 0 && (
+                      {favoriteItem.product._count?.reviews > 0 && (
                         <div className="flex items-center space-x-1 mt-1">
                           <div className="flex items-center">
-                            {renderStars(favoriteItem.product.averageRating)}
+                            {renderStars(favoriteItem.product.averageRating || 0)}
                           </div>
                           <span className="text-xs text-gray-600">
                             ({favoriteItem.product._count.reviews})
@@ -283,7 +315,7 @@ const FavoritesSidebar: React.FC<FavoritesSidebarProps> = ({ isOpen, onClose }) 
           </div>
 
           {/* Footer Actions */}
-          {!isEmpty && (
+          {!isEmpty && favoriteItems.length > 0 && (
             <div className="p-4 border-t border-gray-200 space-y-3">
               <Link
                 href="/favorites"

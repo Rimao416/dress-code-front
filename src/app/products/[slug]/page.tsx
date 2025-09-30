@@ -33,13 +33,11 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
     isLoading: favoritesLoading,
   } = useFavoritesStore();
 
-  const {
-    addToCart,
-    isInCart,
-    getCartItem,
-    loadCart,
-    isLoading: cartLoading,
-  } = useCartStore();
+const {
+  addToCart,
+  isInCart,
+  getCartItem,
+} = useCartStore();
 
   // Utilisation du hook useProduct
   const {
@@ -59,8 +57,8 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
   // Charger les données au montage
   useEffect(() => {
     loadFavorites();
-    loadCart();
-  }, [loadFavorites, loadCart]);
+
+  }, [loadFavorites]);
 
   // Sélectionner la variante par défaut quand le produit est chargé
   useEffect(() => {
@@ -271,7 +269,6 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
               effectivePrice={effectivePrice}
               isInCart={isProductInCart}
               cartQuantity={cartItem?.quantity || 0}
-              isAddingToCart={cartLoading}
               onAddToBag={handleAddToBag}
               onVariantChange={handleVariantChange}
               onQuantityChange={handleQuantityChange}

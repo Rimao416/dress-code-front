@@ -55,8 +55,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
   // Store actions
   const addToCart = useCartStore((state) => state.addToCart);
-  const totalItems = useCartStore((state) => state.totalItems);
-
+const totalItems = useCartStore((state) => {
+  return state.items.reduce((total, item) => total + item.quantity, 0);
+});
   // Utiliser les props si disponibles, sinon les états locaux
   const selectedVariant = propSelectedVariant !== undefined ? propSelectedVariant : localSelectedVariant;
   const quantity = propQuantity !== undefined ? propQuantity : localQuantity;
