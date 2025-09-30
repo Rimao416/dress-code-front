@@ -7,6 +7,7 @@ import BottomSheet from '@/components/common/BottomSheet';
 import { useCategory, useCategoryNavigation } from '@/hooks/category/useCategory';
 import { Category } from '@/types/category';
 import { Product, ProductVariant } from '@/types/product';
+import Footer from '@/components/common/Footer';
 
 interface CollectionPageProps {
   params: Promise<{ slug: string }>;
@@ -717,6 +718,7 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ params }) => {
           />
         )}
       </div>
+      <Footer/>
     </>
   );
 };
