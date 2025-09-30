@@ -110,7 +110,7 @@ const TrendyCollectionSection: React.FC<TrendyCollectionSectionProps> = ({
   };
 
   return (
-    <section className="py-16 lg:py-20 bg-white">
+    <section className="py-8 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* Colonne gauche - Titre et CTA */}
