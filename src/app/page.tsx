@@ -1,4 +1,5 @@
 import CategoriesMasonry from "@/components/common/CategoriesMasonry";
+import FAQSection from "@/components/common/FAQSection";
 import FeaturedProductsSection from "@/components/common/FeaturedProductsSection";
 import Header from "@/components/common/Header";
 import HeroSection from "@/components/common/HeroSection";
@@ -14,6 +15,7 @@ function HomePage() {
       <FeaturedProductsSection /> {/* 👈 Ajoutez ici */}
       <CategoriesMasonry/>
       <TestimonialsSection/>
+      <FAQSection/>
     </div>
   );
 }
