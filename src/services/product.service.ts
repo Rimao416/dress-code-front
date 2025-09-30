@@ -162,6 +162,40 @@ async getNewInProducts(limit: number = 12): Promise<RecommendedProductsResponse>
   }
 
   /**
+ * Récupère les produits vedettes (featured)
+ */
+async getFeaturedProducts(limit: number = 24): Promise<RecommendedProductsResponse> {
+  try {
+    const response = await fetch(
+      `${this.baseUrl}/api/products/featured?limit=${limit}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        next: { 
+          revalidate: 120, // Cache pendant 2 minutes (comme ton API)
+          tags: ['featured-products'],
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    return {
+      success: false,
+      data: [],
+      error: error instanceof Error ? error.message : 'Failed to fetch featured products',
+    };
+  }
+}
+
+  /**
    * Génère les breadcrumbs pour un produit
    */
   generateBreadcrumbs(product: ProductWithFullData) {

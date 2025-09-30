@@ -8,11 +8,13 @@ interface ProductStore {
   currentProduct: ProductWithFullData | null;
   similarProducts: ProductCardData[];
   recommendedProducts: ProductCardData[];
-  newInProducts: ProductCardData[]; // AJOUTÉ
+  featuredProducts: ProductCardData[];
+  newInProducts: ProductCardData[];
   isLoading: boolean;
   isLoadingSimilar: boolean;
   isLoadingRecommended: boolean;
-  isLoadingNewIn: boolean; // AJOUTÉ
+  isLoadingFeatured: boolean;
+  isLoadingNewIn: boolean;
   error: string | null;
   favorites: Set<string>;
   
@@ -20,11 +22,13 @@ interface ProductStore {
   setCurrentProduct: (product: ProductWithFullData | null) => void;
   setSimilarProducts: (products: ProductCardData[]) => void;
   setRecommendedProducts: (products: ProductCardData[]) => void;
-  setNewInProducts: (products: ProductCardData[]) => void; // AJOUTÉ
+  setFeaturedProducts: (products: ProductCardData[]) => void;
+  setNewInProducts: (products: ProductCardData[]) => void;
   setLoading: (loading: boolean) => void;
   setLoadingSimilar: (loading: boolean) => void;
   setLoadingRecommended: (loading: boolean) => void;
-  setLoadingNewIn: (loading: boolean) => void; // AJOUTÉ
+  setLoadingFeatured: (loading: boolean) => void;
+  setLoadingNewIn: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
   // Favorites actions
@@ -35,18 +39,21 @@ interface ProductStore {
   reset: () => void;
   resetSimilar: () => void;
   resetRecommended: () => void;
-  resetNewIn: () => void; // AJOUTÉ
+  resetFeatured: () => void;
+  resetNewIn: () => void;
 }
 
 const initialState = {
   currentProduct: null,
   similarProducts: [],
   recommendedProducts: [],
-  newInProducts: [], // AJOUTÉ
+  featuredProducts: [],
+  newInProducts: [],
   isLoading: false,
   isLoadingSimilar: false,
   isLoadingRecommended: false,
-  isLoadingNewIn: false, // AJOUTÉ
+  isLoadingFeatured: false,
+  isLoadingNewIn: false,
   error: null,
   favorites: new Set<string>(),
 };
@@ -68,7 +75,10 @@ export const useProductStore = create<ProductStore>()(
         set({ recommendedProducts: products });
       },
       
-      // AJOUTÉ
+      setFeaturedProducts: (products) => {
+        set({ featuredProducts: products });
+      },
+      
       setNewInProducts: (products) => {
         set({ newInProducts: products });
       },
@@ -79,7 +89,8 @@ export const useProductStore = create<ProductStore>()(
       
       setLoadingRecommended: (loading) => set({ isLoadingRecommended: loading }),
       
-      // AJOUTÉ
+      setLoadingFeatured: (loading) => set({ isLoadingFeatured: loading }),
+      
       setLoadingNewIn: (loading) => set({ isLoadingNewIn: loading }),
       
       setError: (error) => set({ error }),
@@ -114,7 +125,11 @@ export const useProductStore = create<ProductStore>()(
         isLoadingRecommended: false 
       }),
       
-      // AJOUTÉ
+      resetFeatured: () => set({ 
+        featuredProducts: [], 
+        isLoadingFeatured: false 
+      }),
+      
       resetNewIn: () => set({ 
         newInProducts: [], 
         isLoadingNewIn: false 
