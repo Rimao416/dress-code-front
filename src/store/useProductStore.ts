@@ -8,9 +8,11 @@ interface ProductStore {
   currentProduct: ProductWithFullData | null;
   similarProducts: ProductCardData[];
   recommendedProducts: ProductCardData[];
+  newInProducts: ProductCardData[]; // AJOUTÉ
   isLoading: boolean;
   isLoadingSimilar: boolean;
   isLoadingRecommended: boolean;
+  isLoadingNewIn: boolean; // AJOUTÉ
   error: string | null;
   favorites: Set<string>;
   
@@ -18,9 +20,11 @@ interface ProductStore {
   setCurrentProduct: (product: ProductWithFullData | null) => void;
   setSimilarProducts: (products: ProductCardData[]) => void;
   setRecommendedProducts: (products: ProductCardData[]) => void;
+  setNewInProducts: (products: ProductCardData[]) => void; // AJOUTÉ
   setLoading: (loading: boolean) => void;
   setLoadingSimilar: (loading: boolean) => void;
   setLoadingRecommended: (loading: boolean) => void;
+  setLoadingNewIn: (loading: boolean) => void; // AJOUTÉ
   setError: (error: string | null) => void;
   
   // Favorites actions
@@ -31,15 +35,18 @@ interface ProductStore {
   reset: () => void;
   resetSimilar: () => void;
   resetRecommended: () => void;
+  resetNewIn: () => void; // AJOUTÉ
 }
 
 const initialState = {
   currentProduct: null,
   similarProducts: [],
   recommendedProducts: [],
+  newInProducts: [], // AJOUTÉ
   isLoading: false,
   isLoadingSimilar: false,
   isLoadingRecommended: false,
+  isLoadingNewIn: false, // AJOUTÉ
   error: null,
   favorites: new Set<string>(),
 };
@@ -61,11 +68,19 @@ export const useProductStore = create<ProductStore>()(
         set({ recommendedProducts: products });
       },
       
+      // AJOUTÉ
+      setNewInProducts: (products) => {
+        set({ newInProducts: products });
+      },
+      
       setLoading: (loading) => set({ isLoading: loading }),
       
       setLoadingSimilar: (loading) => set({ isLoadingSimilar: loading }),
       
       setLoadingRecommended: (loading) => set({ isLoadingRecommended: loading }),
+      
+      // AJOUTÉ
+      setLoadingNewIn: (loading) => set({ isLoadingNewIn: loading }),
       
       setError: (error) => set({ error }),
       
@@ -97,6 +112,12 @@ export const useProductStore = create<ProductStore>()(
       resetRecommended: () => set({ 
         recommendedProducts: [], 
         isLoadingRecommended: false 
+      }),
+      
+      // AJOUTÉ
+      resetNewIn: () => set({ 
+        newInProducts: [], 
+        isLoadingNewIn: false 
       }),
     }),
     {

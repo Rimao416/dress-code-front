@@ -88,6 +88,40 @@ class ProductService {
   }
 
   /**
+ * Récupère les produits New In
+ */
+async getNewInProducts(limit: number = 12): Promise<RecommendedProductsResponse> {
+  try {
+    const response = await fetch(
+      `${this.baseUrl}/api/products/new-in?limit=${limit}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        next: { 
+          revalidate: 120, // Cache pendant 2 minutes (comme dans ton API)
+          tags: ['new-in-products'],
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching new in products:', error);
+    return {
+      success: false,
+      data: [],
+      error: error instanceof Error ? error.message : 'Failed to fetch new in products',
+    };
+  }
+}
+
+  /**
    * Récupère les produits recommandés
    */
   async getRecommendedProducts(limit: number = 6, excludeId?: string): Promise<RecommendedProductsResponse> {
@@ -202,6 +236,7 @@ class ProductService {
     return product.price;
   }
 }
+
 
 // Instance singleton
 export const productService = new ProductService();
