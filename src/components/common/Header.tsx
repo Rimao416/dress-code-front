@@ -1,4 +1,3 @@
-// components/Header/Header.tsx - Version avec hooks et store
 "use client"
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Heart, ShoppingBag, User, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -53,14 +52,11 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
  
-  // États pour les modals
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
- 
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
   
-  // Hooks
   const { user, isAuthenticated, loading, checkAuthStatus } = useAuth();
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const { favoritesCount } = useFavorites();
@@ -70,14 +66,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     state.items ? state.items.reduce((total, item) => total + item.quantity, 0) : 0
   );
 
-  // Messages promotionnels rotatifs
   const promoMessages = [
     "Livraison gratuite pour les membres du programme DressCode Premium",
     "Nouvelle collection automne-hiver maintenant disponible",
     "Retours gratuits sous 30 jours sur tous les articles"
   ];
 
-  // Fix hydration
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -90,14 +84,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop > 50);
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Rotation automatique des messages promo
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentPromoIndex((prevIndex) =>
@@ -121,7 +113,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     );
   };
 
-  // Fonction pour créer le contenu dropdown d'une catégorie
   const createDropdownContent = (category: CategoryWithProducts): DropdownContent => {
     const sections: NavSection[] = [];
     
@@ -172,15 +163,12 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     };
   };
 
-  // Créer la navigation dynamique basée sur les catégories
   const createDynamicNavigation = (): NavigationData => {
     if (!mainCategories || mainCategories.length === 0) {
       return {};
     }
 
     const navigationData: NavigationData = {};
-
-    // Trier les catégories principales
     const sortedCategories = [...mainCategories].sort((a, b) => {
       if (a.sortOrder !== b.sortOrder) {
         return a.sortOrder - b.sortOrder;
@@ -188,7 +176,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       return a.name.localeCompare(b.name);
     });
 
-    // Limiter à 6 catégories principales max
     const categoriesToShow = sortedCategories.slice(0, 6);
     
     categoriesToShow.forEach(category => {
@@ -201,7 +188,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
       };
     });
 
-    // Si plus de 6 catégories, créer un menu "Plus"
     const remainingCategories = sortedCategories.slice(6);
     if (remainingCategories.length > 0) {
       const moreSections: NavSection[] = [];
@@ -242,7 +228,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   const navigationData = createDynamicNavigation();
 
-  // Gestion des modals
   const handleUserClick = () => {
     if (user && isAuthenticated) {
       console.log('User is authenticated:', user);
@@ -282,8 +267,8 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     if (!content) return null;
 
     return (
-      <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t z-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t border-stone-200 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="grid grid-cols-12 gap-8">
             {content.left && content.left.length > 0 && (
               <div className="col-span-2">
@@ -292,7 +277,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                     <Link
                       key={index}
                       href={item.link}
-                      className="block text-sm font-medium text-gray-900 hover:text-gray-600 py-1"
+                      className="block text-sm font-medium text-neutral-900 hover:text-red-900 py-1 transition-colors"
                     >
                       {item.title}
                     </Link>
@@ -301,12 +286,11 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               </div>
             )}
 
-            {/* Colonne centrale - Sections de catégories */}
             <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
               <div className="grid grid-cols-2 gap-8">
                 {content.right?.map((section, index) => (
                   <div key={index}>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+                    <h3 className="text-sm font-semibold text-neutral-900 mb-3 uppercase tracking-wide">
                       {section.title}
                     </h3>
                     <div className="space-y-1">
@@ -314,7 +298,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                         <Link
                           key={itemIndex}
                           href={item.link}
-                          className="block text-sm text-gray-700 hover:text-gray-900 py-1"
+                          className="block text-sm text-neutral-700 hover:text-red-900 py-1 transition-colors"
                         >
                           {item.title}
                         </Link>
@@ -325,19 +309,18 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
               </div>
             </div>
 
-            {/* Colonne droite - Image mise en avant */}
             <div className="col-span-4">
               {content.featured && (
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-stone-50 p-4 rounded-sm border border-stone-200">
                   <img
                     src={content.featured.image}
                     alt={content.featured.title}
-                    className="w-full h-32 object-cover rounded mb-3"
+                    className="w-full h-32 object-cover rounded-sm mb-3"
                   />
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  <h3 className="font-semibold text-neutral-900 mb-2">
                     {content.featured.title}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-neutral-600">
                     {content.featured.description}
                   </p>
                 </div>
@@ -360,32 +343,33 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     return (
       <div className="md:hidden">
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleMobileMenu}></div>
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={toggleMobileMenu}></div>
         )}
-        <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
+        <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 shadow-2xl ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
-          <div className="p-4">
-            <div className="flex justify-end mb-6">
-              <button onClick={toggleMobileMenu} className="p-2">
-                <X className="h-6 w-6" />
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-8">
+              <span className="text-xl font-serif text-neutral-900">Menu</span>
+              <button onClick={toggleMobileMenu} className="p-2 hover:bg-stone-50 rounded-full transition-colors">
+                <X className="h-5 w-5 text-neutral-700" />
               </button>
             </div>
             <div className="space-y-0">
               {mobileMenuItems.map((item) => (
-                <div key={item.key} className="border-b border-gray-200">
+                <div key={item.key} className="border-b border-stone-100">
                   {item.hasDropdown ? (
                     <div>
                       <div className="flex items-center">
                         <Link
                           href={item.link}
-                          className="flex-1 py-4 text-left text-gray-900 font-medium"
+                          className="flex-1 py-3 text-left text-neutral-700 hover:text-red-900 font-medium transition-colors"
                         >
                           {item.label}
                         </Link>
                         <button
                           onClick={() => toggleMobileSection(item.key)}
-                          className="p-4"
+                          className="p-3"
                         >
                           <ChevronDown className={`h-4 w-4 transform transition-transform ${
                             expandedMobileSection === item.key ? 'rotate-180' : ''
@@ -398,21 +382,21 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                             <Link
                               key={index}
                               href={linkItem.link}
-                              className="block py-2 pl-4 text-sm text-gray-700 hover:text-gray-900"
+                              className="block py-2 pl-4 text-sm text-neutral-600 hover:text-red-900 transition-colors"
                             >
                               {linkItem.title}
                             </Link>
                           ))}
                           {navigationData[item.key].content?.right?.map((section, sectionIndex) => (
                             <div key={sectionIndex} className="mt-4">
-                              <h4 className="text-sm font-semibold text-gray-900 pl-4 mb-2 uppercase tracking-wide">
+                              <h4 className="text-sm font-semibold text-neutral-900 pl-4 mb-2 uppercase tracking-wide">
                                 {section.title}
                               </h4>
                               {section.items?.map((linkItem, linkIndex) => (
                                 <Link
                                   key={linkIndex}
                                   href={linkItem.link}
-                                  className="block py-2 pl-6 text-sm text-gray-700 hover:text-gray-900"
+                                  className="block py-2 pl-6 text-sm text-neutral-600 hover:text-red-900 transition-colors"
                                 >
                                   {linkItem.title}
                                 </Link>
@@ -425,7 +409,7 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                   ) : (
                     <Link
                       href={item.link}
-                      className="block py-4 text-gray-900 font-medium"
+                      className="block py-3 text-neutral-700 hover:text-red-900 font-medium transition-colors"
                     >
                       {item.label}
                     </Link>
@@ -439,41 +423,38 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     );
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <>
-        {/* Sub-Header Skeleton */}
-        <div className="fixed top-0 left-0 right-0 z-40 bg-gray-50 border-b border-gray-200">
+        <div className="fixed top-0 left-0 right-0 z-40 bg-stone-50 border-b border-stone-200">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center justify-between h-10">
+            <div className="flex items-center justify-between h-9">
               <div className="flex items-center space-x-2 flex-1">
-                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-4 h-4 bg-stone-200 rounded animate-pulse"></div>
                 <div className="flex-1 text-center">
-                  <div className="w-80 h-3 bg-gray-200 rounded mx-auto animate-pulse"></div>
+                  <div className="w-80 h-3 bg-stone-200 rounded mx-auto animate-pulse"></div>
                 </div>
-                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-4 h-4 bg-stone-200 rounded animate-pulse"></div>
               </div>
-              <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-24 h-3 bg-stone-200 rounded animate-pulse"></div>
             </div>
           </div>
         </div>
 
-        {/* Header principal Skeleton */}
-        <header className="fixed top-10 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm shadow-sm">
+        <header className="fixed top-9 left-0 right-0 z-30 bg-white/95 backdrop-blur-md shadow-sm">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex items-center justify-between h-16">
-              <div className="w-32 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-32 h-6 bg-stone-200 rounded animate-pulse"></div>
               <nav className="hidden md:flex items-center space-x-4">
                 {[1, 2, 3, 4, 5].map((item) => (
-                  <div key={item} className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
+                  <div key={item} className="w-16 h-4 bg-stone-200 rounded animate-pulse"></div>
                 ))}
               </nav>
               <div className="flex items-center space-x-3">
-                <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-                <div className="md:hidden w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-5 h-5 bg-stone-200 rounded animate-pulse"></div>
+                <div className="w-5 h-5 bg-stone-200 rounded animate-pulse"></div>
+                <div className="w-5 h-5 bg-stone-200 rounded animate-pulse"></div>
+                <div className="md:hidden w-5 h-5 bg-stone-200 rounded animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -484,65 +465,65 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
   return (
     <>
-      {/* Sub-Header avec promotion et informations utilisateur */}
       <div className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        shouldApplyScrolledStyle ? 'bg-gray-50 border-b border-gray-200' : 'bg-white/10 backdrop-blur-sm'
+        shouldApplyScrolledStyle 
+          ? 'bg-stone-50 border-b border-stone-200' 
+          : 'bg-white/5 backdrop-blur-md border-b border-white/10'
       }`}>
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-10 text-sm">
-            {/* Message promotionnel avec navigation */}
+          <div className="flex items-center justify-between h-9">
             <div className="flex items-center space-x-2 flex-1">
               <button
                 onClick={prevPromo}
-                className={`p-1 rounded transition-colors ${
+                className={`p-1 rounded-full transition-all duration-200 ${
                   shouldApplyScrolledStyle
-                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-                    : 'text-white/80 hover:text-white hover:bg-white/20'
+                    ? 'text-neutral-600 hover:text-red-900 hover:bg-stone-100'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <ChevronLeft className="h-3 w-3" />
               </button>
               <div className="flex-1 text-center">
-                <span className={`transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-gray-800' : 'text-white'
+                <span className={`text-xs tracking-wide transition-colors duration-300 ${
+                  shouldApplyScrolledStyle ? 'text-neutral-700' : 'text-white/90'
                 }`}>
                   {promoMessages[currentPromoIndex]}
                 </span>
               </div>
               <button
                 onClick={nextPromo}
-                className={`p-1 rounded transition-colors ${
+                className={`p-1 rounded-full transition-all duration-200 ${
                   shouldApplyScrolledStyle
-                    ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-                    : 'text-white/80 hover:text-white hover:bg-white/20'
+                    ? 'text-neutral-600 hover:text-red-900 hover:bg-stone-100'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>
 
-            {/* Informations utilisateur */}
-            <div className="flex items-center space-x-6">
-              <button
-                onClick={handleUserClick}
-                className={`flex items-center space-x-1 hover:underline transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-gray-700 hover:text-gray-900' : 'text-white/90 hover:text-white'
-                }`}
-              >
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {user ? `Bonjour ${user.client?.firstName}` : 'Rejoignez-nous'}
-                </span>
-              </button>
-            </div>
+            <button
+              onClick={handleUserClick}
+              className={`flex items-center space-x-1.5 text-xs hover:underline transition-colors duration-300 ${
+                shouldApplyScrolledStyle 
+                  ? 'text-neutral-700 hover:text-red-900' 
+                  : 'text-white/90 hover:text-white'
+              }`}
+            >
+              <User className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">
+                {user ? `Bonjour ${user.client?.firstName}` : 'Rejoignez-nous'}
+              </span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Header principal */}
       <header
-        className={`fixed top-10 left-0 right-0 z-30 transition-all duration-300 ${
-          shouldApplyScrolledStyle ? 'bg-white/95 backdrop-blur-sm shadow-sm' : 'bg-transparent'
+        className={`fixed top-9 left-0 right-0 z-30 transition-all duration-300 ${
+          shouldApplyScrolledStyle 
+            ? 'bg-white/95 backdrop-blur-md shadow-sm' 
+            : 'bg-transparent'
         }`}
         onMouseEnter={() => setIsNavbarHovered(true)}
         onMouseLeave={() => setIsNavbarHovered(false)}
@@ -552,16 +533,15 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             <div className="flex-shrink-0">
               <Link
                 href="/"
-                className={`text-2xl font-bold tracking-tight transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-black' : 'text-white'
+                className={`text-2xl font-serif tracking-tight transition-colors duration-300 ${
+                  shouldApplyScrolledStyle ? 'text-neutral-900' : 'text-white'
                 }`}
               >
                 DressCode
               </Link>
             </div>
 
-            {/* Navigation dynamique basée sur les catégories */}
-            <nav className="hidden md:flex items-center space-x-4">
+            <nav className="hidden md:flex items-center space-x-1">
               {Object.entries(navigationData).map(([key, nav]) => (
                 <div
                   key={key}
@@ -571,36 +551,48 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
                 >
                   <Link
                     href={nav.link}
-                    className={`flex items-center text-sm font-medium px-2 py-2 rounded transition-colors duration-300 ${
-                      shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                    className={`flex items-center text-sm font-medium px-3 py-2 rounded-md transition-all duration-200 ${
+                      shouldApplyScrolledStyle 
+                        ? 'text-neutral-700 hover:text-red-900 hover:bg-stone-50' 
+                        : 'text-white/90 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {key}
-                    {nav.hasDropdown && <ChevronDown className="ml-1 h-3 w-3" />}
+                    {nav.hasDropdown && (
+                      <ChevronDown className={`ml-1 h-3 w-3 transition-transform duration-200 ${
+                        activeDropdown === key ? 'rotate-180' : ''
+                      }`} />
+                    )}
                   </Link>
                 </div>
               ))}
             </nav>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               <button
-                className={`p-2 transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                className={`p-2 rounded-full transition-all duration-200 ${
+                  shouldApplyScrolledStyle 
+                    ? 'text-neutral-700 hover:text-red-900 hover:bg-stone-50' 
+                    : 'text-white/90 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
               </button>
 
               <button
-                className={`p-2 relative transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                className={`p-2 rounded-full relative transition-all duration-200 ${
+                  shouldApplyScrolledStyle 
+                    ? 'text-neutral-700 hover:text-red-900 hover:bg-stone-50' 
+                    : 'text-white/90 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <Heart className="h-5 w-5" />
+                <Heart className="h-4 w-4" />
                 {isClient && favoritesCount > 0 && (
-                  <span className={`absolute -top-1 -right-1 text-xs font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 transform ${
-                    shouldApplyScrolledStyle ? 'bg-black text-white' : 'bg-white text-black'
-                  } ${favoritesCount > 99 ? 'scale-110' : ''}`}>
+                  <span className={`absolute -top-0.5 -right-0.5 text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 ${
+                    shouldApplyScrolledStyle 
+                      ? 'bg-red-900 text-white' 
+                      : 'bg-white text-neutral-900'
+                  }`}>
                     {favoritesCount > 99 ? '99+' : favoritesCount}
                   </span>
                 )}
@@ -608,33 +600,38 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
 
               <button
                 onClick={toggleCartSidebar}
-                className={`p-2 relative transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
+                className={`p-2 rounded-full relative transition-all duration-200 ${
+                  shouldApplyScrolledStyle 
+                    ? 'text-neutral-700 hover:text-red-900 hover:bg-stone-50' 
+                    : 'text-white/90 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <ShoppingBag className="h-5 w-5" />
+                <ShoppingBag className="h-4 w-4" />
                 {isClient && cartItemsCount > 0 && (
-                  <span className={`absolute -top-1 -right-1 text-xs font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 transform ${
-                    shouldApplyScrolledStyle ? 'bg-black text-white' : 'bg-white text-black'
-                  } ${cartItemsCount > 99 ? 'scale-110' : ''}`}>
+                  <span className={`absolute -top-0.5 -right-0.5 text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center transition-all duration-300 ${
+                    shouldApplyScrolledStyle 
+                      ? 'bg-red-900 text-white' 
+                      : 'bg-white text-neutral-900'
+                  }`}>
                     {cartItemsCount > 99 ? '99+' : cartItemsCount}
                   </span>
                 )}
               </button>
 
               <button
-                className={`md:hidden p-2 transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-black hover:text-gray-600' : 'text-white hover:text-gray-300'
-                }`}
                 onClick={toggleMobileMenu}
+                className={`md:hidden p-2 rounded-full transition-all duration-200 ${
+                  shouldApplyScrolledStyle 
+                    ? 'text-neutral-700 hover:text-red-900 hover:bg-stone-50' 
+                    : 'text-white/90 hover:text-white hover:bg-white/10'
+                }`}
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Dropdown content */}
         {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
           <div
             onMouseEnter={() => handleMouseEnter(activeDropdown)}
@@ -645,7 +642,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
         )}
       </header>
 
-      {/* Modals */}
       <SignUpModal
         isOpen={isSignUpModalOpen}
         onClose={() => setIsSignUpModalOpen(false)}
@@ -658,13 +654,11 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
         onSwitchToSignUp={handleOpenSignUp}
       />
 
-      {/* Sidebar Panier */}
       <CartSidebar
         isOpen={isCartSidebarOpen}
         onClose={closeCartSidebar}
       />
 
-      {/* Menu Mobile */}
       {renderMobileMenu()}
     </>
   );
