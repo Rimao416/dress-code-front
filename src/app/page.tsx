@@ -1,8 +1,10 @@
 import CategoriesMasonry from "@/components/common/CategoriesMasonry";
 import FAQSection from "@/components/common/FAQSection";
 import FeaturedProductsSection from "@/components/common/FeaturedProductsSection";
+import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import HeroSection from "@/components/common/HeroSection";
+import MemberProgramSection from "@/components/common/MemberProgramSection";
 import TestimonialsSection from "@/components/common/TestimonialsSection";
 import TrendyCollectionSection from "@/components/common/TrendyCollection";
 import WelcomeSection from "@/components/common/WelcomSection";
@@ -18,6 +20,8 @@ function HomePage() {
       <CategoriesMasonry/>
       <TestimonialsSection/>
       <FAQSection/>
+      <MemberProgramSection/>
+      <Footer/>
     </div>
   );
 }
