@@ -1,66 +1,5 @@
-export const sliderData = [
-  {
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970627/uploads/fashion-portrait-young-elegant-woman%20%281%29.jpg",
-    title: "Le Magasin de Soutiens-gorge",
-    subtitle: "Forme, soulèvement et soutien parfaits pour chaque buste",
-    buttonText: "Acheter Maintenant",
-    buttonLink: "/soutiens-gorge"
-  },
-  {
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753970634/uploads/woman-model-business-suit-wearing-hat.jpg",
-    title: "Collection Été",
-    subtitle: "Tissus légers et respirants pour le look parfait de l'été",
-    buttonText: "Découvrir Maintenant",
-    buttonLink: "/ete"
-  },
-  {
-    image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=1920&h=1080&fit=crop&crop=center",
-    title: "Lingerie de Luxe",
-    subtitle: "Designs exquis conçus pour la femme moderne",
-    buttonText: "Explorer la Collection",
-    buttonLink: "/luxe"
-  },
-  {
-    image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1920&h=1080&fit=crop&crop=center",
-    title: "Vêtements de Sport",
-    subtitle: "La performance rencontre le style dans notre collection de vêtements de sport",
-    buttonText: "Acheter des Vêtements de Sport",
-    buttonLink: "/vetements-sport"
-  }
-];
 
-export const newInData = [
-  {
-    id: 1,
-    brand: "GUCCI",
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753973984/uploads/IMG_9111_ihz1zo.png",
-    alt: "Sac à main en cuir Gucci"
-  },
-  {
-    id: 2,
-    brand: "GIULIVA HERITAGE",
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753973984/uploads/IMG_0013_rkvykw.png",
-    alt: "Veste en cuir noir Giuliva Heritage"
-  },
-  {
-    id: 3,
-    brand: "ISABEL MARANT",
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753973984/uploads/IMG_9112_nl6zlf.png",
-    alt: "Haut à motif floral Isabel Marant"
-  },
-  {
-    id: 4,
-    brand: "LE MONDE BERYL",
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753973980/uploads/IMG_0018_agg6rl.png",
-    alt: "Chaussures en cuir marron Le Monde Beryl"
-  },
-  {
-    id: 5,
-    brand: "BOTTEGA VENETA",
-    image: "https://res.cloudinary.com/le-chretien/image/upload/v1753973984/uploads/IMG_9109_zuearc.png",
-    alt: "Sac tissé Bottega Veneta"
-  }
-];
+
 
 export const productsData = [
   {
@@ -161,3 +100,140 @@ export const occasionReadySection = {
   }
 };
 
+export const testimonials = [
+  {
+    id: 1,
+    name: 'Rania',
+    role: 'Cliente sur Instagram',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
+    rating: 5,
+    text: 'Je suis impressionnée par ces produits, comment on peut avoir des produits aussi riches avec des huiles, des extraits et de la glycérine et obtenir un effet sec velouté. Je commence déjà à voir la différence.',
+    date: 'Il y a 2 semaines'
+  },
+  {
+    id: 2,
+    name: 'Lydia',
+    role: 'Cliente vérifiée',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80',
+    rating: 5,
+    text: 'Magnifiques produits ! Très efficaces, enfin d\'excellents produits sur le marché Algérien. Très fière, merci beaucoup.',
+    date: 'Il y a 1 mois'
+  },
+  {
+    id: 3,
+    name: 'Célia Assani',
+    role: 'Cliente sur Instagram',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
+    rating: 5,
+    text: 'Elle est incroyable ✨ le masque !!! Le résultat sur ma peau, j\'ai hâte de partager ça !',
+    date: 'Il y a 3 semaines'
+  },
+  {
+    id: 4,
+    name: 'Sarah',
+    role: 'Cliente vérifiée',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80',
+    rating: 5,
+    text: 'Je viens de tester les produits et je dois dire que je suis vraiment ravie 😊 les textures sont agréables, les parfums subtils, et surtout, ma peau a bien réagi; elle est plus douce, et plus lumineuse 🔥',
+    date: 'Il y a 1 semaine'
+  },
+  {
+    id: 5,
+    name: 'Amina',
+    role: 'Cliente sur Instagram',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
+    rating: 5,
+    text: 'La gamme est incroyable, ça fait deux semaines que je l\'utilise. J\'ai une peau tellement parfaite, hâte de voir le résultat final.',
+    date: 'Il y a 2 semaines'
+  },
+  {
+    id: 6,
+    name: 'Nadia',
+    role: 'Cliente vérifiée',
+    avatar: 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&q=80',
+    rating: 5,
+    text: 'Produits exceptionnels ! Ma peau n\'a jamais été aussi hydratée et radieuse. La crème de nuit est un véritable miracle.',
+    date: 'Il y a 3 jours'
+  },
+  {
+    id: 7,
+    name: 'Karima',
+    role: 'Cliente sur Facebook',
+    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&q=80',
+    rating: 5,
+    text: 'Après des années à chercher des produits adaptés à ma peau sensible, j\'ai enfin trouvé ! Aucune irritation, que du bonheur.',
+    date: 'Il y a 2 mois'
+  },
+  {
+    id: 8,
+    name: 'Sophie',
+    role: 'Cliente vérifiée',
+    avatar: 'https://images.unsplash.com/photo-1491349174775-aaafddd81942?w=100&q=80',
+    rating: 5,
+    text: 'Le sérum est incroyable ! Ma peau a retrouvé son éclat en seulement une semaine. Je recommande à 100%.',
+    date: 'Il y a 5 jours'
+  },
+  {
+    id: 9,
+    name: 'Leila',
+    role: 'Cliente sur Instagram',
+    avatar: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=100&q=80',
+    rating: 5,
+    text: 'Je suis complètement addict ! Les produits sentent divinement bon et les résultats sont visibles rapidement.',
+    date: 'Il y a 1 semaine'
+  },
+  {
+    id: 10,
+    name: 'Yasmina',
+    role: 'Cliente vérifiée',
+    avatar: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=100&q=80',
+    rating: 5,
+    text: 'Enfin des produits de qualité dans notre pays. Ma routine skincare est devenue un vrai moment de plaisir.',
+    date: 'Il y a 3 semaines'
+  },
+  {
+    id: 11,
+    name: 'Chloé',
+    role: 'Cliente sur Instagram',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
+    rating: 5,
+    text: 'Le masque purifiant a changé ma vie ! Ma peau est nette, sans brillance excessive. Un vrai bonheur.',
+    date: 'Il y a 4 jours'
+  },
+  {
+    id: 12,
+    name: 'Fatima',
+    role: 'Cliente vérifiée',
+    avatar: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100&q=80',
+    rating: 5,
+    text: 'Livraison rapide, produits impeccables. Ma peau n\'a jamais été aussi belle. Merci pour cette qualité !',
+    date: 'Il y a 2 semaines'
+  },
+  {
+    id: 13,
+    name: 'Inès',
+    role: 'Cliente sur Facebook',
+    avatar: 'https://images.unsplash.com/photo-1516726817505-f5ed825624d8?w=100&q=80',
+    rating: 5,
+    text: 'Texture légère, absorption rapide, résultat bluffant ! Je ne peux plus me passer de ces produits.',
+    date: 'Il y a 1 mois'
+  },
+  {
+    id: 14,
+    name: 'Myriam',
+    role: 'Cliente vérifiée',
+    avatar: 'https://images.unsplash.com/photo-1542596768-5d1d21f1cf98?w=100&q=80',
+    rating: 5,
+    text: 'Même ma dermatologue a remarqué l\'amélioration de ma peau. Des produits vraiment professionnels.',
+    date: 'Il y a 3 semaines'
+  },
+  {
+    id: 15,
+    name: 'Zahra',
+    role: 'Cliente sur Instagram',
+    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&q=80',
+    rating: 5,
+    text: 'Je suis conquise ! Les produits valent chaque centime. Ma peau est hydratée 24h/24 sans être grasse.',
+    date: 'Il y a 6 jours'
+  }
+];
