@@ -76,17 +76,16 @@ const CategoriesMasonry: React.FC<CategoriesMasonryProps> = ({
 
   const displayCategories = categories.length > 0 ? categories : defaultCategories;
 
-  // Pattern de hauteurs optimisé pour remplir l'espace
+  // Hauteur fixe pour toutes les images
   const getRowSpan = (index: number) => {
-    const patterns = [3, 4, 3, 5, 4, 3, 4, 5];
-    return patterns[index % patterns.length];
+    return 4; // Toutes les cartes ont la même hauteur
   };
 
   return (
-    <section className="py-12 lg:py-16 bg-gradient-to-b from-white to-stone-50">
+    <section className="bg-gradient-to-b from-white to-stone-50">
       <div className="w-full">
         {/* En-tête de section */}
-        <div className="text-center max-w-2xl mx-auto mb-8 lg:mb-12 px-6">
+        <div className="text-center max-w-2xl mx-auto pt-12 lg:pt-16 mb-8 lg:mb-12 px-6">
           <div className="inline-flex items-center gap-2 bg-red-900/5 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
             <Package className="h-4 w-4 text-red-900" />
             <span className="text-xs text-red-900 font-medium tracking-wide uppercase">
@@ -108,9 +107,9 @@ const CategoriesMasonry: React.FC<CategoriesMasonryProps> = ({
           </p>
         </div>
 
-        {/* Masonry Grid avec auto-rows */}
-        <div className="w-full">
-          <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[80px]">
+        {/* Masonry Grid avec auto-rows - Full Width */}
+        <div className="w-full overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[80px] gap-0">
             {displayCategories.map((category, index) => {
               const isHovered = hoveredId === category.id;
               const rowSpan = getRowSpan(index);
@@ -119,7 +118,7 @@ const CategoriesMasonry: React.FC<CategoriesMasonryProps> = ({
                 <div
                   key={category.id}
                   style={{ gridRow: `span ${rowSpan}` }}
-                  className={`group relative overflow-hidden cursor-pointer transition-all duration-500 border-r border-b border-stone-200/30 ${
+                  className={`group relative overflow-hidden cursor-pointer transition-all duration-500 ${
                     isHovered ? 'scale-[1.02] shadow-2xl z-10' : 'hover:shadow-xl'
                   }`}
                   onMouseEnter={() => setHoveredId(category.id)}
@@ -195,7 +194,7 @@ const CategoriesMasonry: React.FC<CategoriesMasonryProps> = ({
         </div>
 
         {/* CTA pour voir toutes les catégories */}
-        <div className="text-center mt-8 lg:mt-12 px-6">
+        <div className="text-center py-8 lg:py-12 px-6">
           <button className="group bg-neutral-900 text-white px-6 lg:px-8 py-3 lg:py-3.5 rounded-md text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2 mx-auto">
             Voir toutes les catégories
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
