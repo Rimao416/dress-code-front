@@ -211,7 +211,7 @@ const FeaturedProductsSection: React.FC<FeaturedProductsSectionProps> = ({
             </div>
 
             {/* Bouton voir plus */}
-            {products.length > 0 && (
+            {/* {products.length > 0 && (
               <div className="text-center mt-12">
                 <button 
                   className="group inline-flex items-center gap-2 bg-gradient-to-r from-red-900 to-red-800 text-white px-8 py-3.5 rounded-md text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
@@ -221,7 +221,7 @@ const FeaturedProductsSection: React.FC<FeaturedProductsSectionProps> = ({
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
-            )}
+            )} */}
           </>
         )}
 

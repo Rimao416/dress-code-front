@@ -1,10 +1,16 @@
 "use client";
 import React from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Package } from "lucide-react";
 import { useCategories } from "@/hooks/category/useCategory";
 
 const CategoriesMasonry: React.FC = () => {
+  const router = useRouter();
   const { mainCategories, isLoading, error } = useCategories();
+
+  const handleCategoryClick = (slug: string) => {
+    router.push(`/collections/${slug}`);
+  };
 
   if (isLoading) {
     return (
@@ -56,6 +62,7 @@ const CategoriesMasonry: React.FC = () => {
             {mainCategories.map((category) => (
               <div
                 key={category.id}
+                onClick={() => handleCategoryClick(category.slug)}
                 className="group relative rounded-lg overflow-hidden shadow hover:shadow-xl transition-all cursor-pointer"
               >
                 <img
@@ -74,14 +81,6 @@ const CategoriesMasonry: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
-
-        {/* CTA */}
-        <div className="text-center py-8 lg:py-12 px-6">
-          <button className="group bg-neutral-900 text-white px-6 lg:px-8 py-3 lg:py-3.5 rounded-md text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2 mx-auto">
-            Voir toutes les catégories
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </button>
         </div>
       </div>
     </section>

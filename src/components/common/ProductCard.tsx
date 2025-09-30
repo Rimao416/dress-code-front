@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { Heart } from "lucide-react";
 import Image from "next/image";
 import {
   normalizeProductForCard,
@@ -73,19 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           }}
         />
         {/* Bouton favori adapté au style */}
-        <button
-          onClick={handleFavoriteClick}
-          className="absolute top-2 sm:top-3 right-2 sm:right-3 p-1.5 sm:p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 shadow-sm group/heart"
-          aria-label={isProductFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-        >
-          <Heart
-            className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-200 ${
-              isProductFavorite
-                ? "fill-red-900 text-red-900"
-                : "text-neutral-600 hover:text-red-900"
-            }`}
-          />
-        </button>
+    
         {/* Badge nouveau - style adapté */}
         {normalizedProduct.isNewIn && (
           <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-neutral-900 text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-sm tracking-wide">

@@ -1,13 +1,56 @@
 // hooks/useCategory.ts
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useCategoryStore } from '@/store/useCategoryStore';
 import { categoryService } from '@/services/category.service';
 
 /**
  * Hook principal pour gérer les catégories
  */
+
+// À ajouter dans hooks/useCategory.ts
+
+export function useCategoryNavigation() {
+  const { currentCategory } = useCategoryStore();
+
+  const breadcrumbs = useMemo(() => {
+    if (!currentCategory) return [];
+    
+    const crumbs: Array<{ name: string; href: string }> = [
+      { name: 'Home', href: '/' }
+    ];
+    
+    // Construire le chemin des breadcrumbs
+    const buildPath = (cat: any, path: Array<{ name: string; href: string }> = []) => {
+      if (cat.parent) {
+        buildPath(cat.parent, path);
+      }
+      path.push({
+        name: cat.name,
+        href: `/collections/${cat.slug}`
+      });
+      return path;
+    };
+    
+    return [...crumbs, ...buildPath(currentCategory)];
+  }, [currentCategory]);
+
+  const subcategories = useMemo(() => {
+    return currentCategory?.children || [];
+  }, [currentCategory]);
+
+  const hasSubcategories = useMemo(() => {
+    return (currentCategory?.children?.length || 0) > 0;
+  }, [currentCategory]);
+
+  return {
+    breadcrumbs,
+    subcategories,
+    hasSubcategories
+  };
+}
+
 export function useCategories() {
   const {
     categories,

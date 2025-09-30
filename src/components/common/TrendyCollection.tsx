@@ -7,6 +7,7 @@ import type { Swiper as SwiperType } from 'swiper';
 import { ProductCardItem } from '@/types/product';
 import ProductCard from './ProductCard';
 import { useNewInProducts } from '@/hooks/product/useNewInProducts';
+import { useRouter } from 'next/navigation';
 
 interface TrendyCollectionSectionProps {
   products?: ProductCardItem[];
@@ -21,6 +22,8 @@ const TrendyCollectionSection: React.FC<TrendyCollectionSectionProps> = ({
   const swiperRef = useRef<SwiperType | null>(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
+
+  const router = useRouter();
 
   // Récupération des produits New In depuis l'API
   const { products: newInProducts, isLoading } = useNewInProducts(12);
@@ -41,6 +44,15 @@ const TrendyCollectionSection: React.FC<TrendyCollectionSectionProps> = ({
     setIsBeginning(swiper.isBeginning);
     setIsEnd(swiper.isEnd);
   };
+    const handleProductClick = (product: ProductCardItem) => {
+    // Si un handler personnalisé est fourni, l'utiliser
+    if (onProductClick) {
+      onProductClick(product);
+    } else {
+      // Sinon, naviguer vers la page produit
+      router.push(`/products/${product.slug}`);
+    }
+  };
 
   return (
     <section className="py-8 lg:py-20 bg-white">
@@ -58,10 +70,7 @@ const TrendyCollectionSection: React.FC<TrendyCollectionSectionProps> = ({
                 Les nouvelles arrivées pour vos amours. Découvrez les pièces qui feront sensation.
               </p>
             </div>
-            <button className="group bg-neutral-900 text-white px-6 py-2.5 rounded-md text-sm font-medium hover:bg-neutral-800 transition-all duration-200 flex items-center gap-2">
-              Voir tout
-              <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+
           </div>
 
           {/* Colonne droite - Produits avec Swiper */}
@@ -132,7 +141,7 @@ const TrendyCollectionSection: React.FC<TrendyCollectionSectionProps> = ({
                     <SwiperSlide key={product.id}>
                       <ProductCard
                         product={product}
-                        onClick={onProductClick}
+ onClick={handleProductClick}
                         showBrand={true}
                         showPrice={true}
                       />

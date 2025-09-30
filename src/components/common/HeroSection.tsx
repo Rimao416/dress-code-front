@@ -1,7 +1,16 @@
+'use client';
+
 import React from 'react';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const HeroSection = () => {
+  const router = useRouter();
+
+  const handleNavigateToCollections = () => {
+    router.push('/collections');
+  };
+
   return (
     <section className="relative h-screen bg-stone-100 overflow-hidden pt-[100px]">
       {/* Arrière-plan décoratif avec formes géométriques */}
@@ -48,16 +57,17 @@ const HeroSection = () => {
 
             {/* Boutons CTA */}
             <div className="flex flex-wrap gap-3 pt-4">
-              <button className="group bg-gradient-to-r from-red-900 to-red-800 text-white px-7 py-3 rounded-md text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2">
+              <button 
+                onClick={handleNavigateToCollections}
+                className="group bg-gradient-to-r from-red-900 to-red-800 text-white px-7 py-3 rounded-md text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2 cursor-pointer"
+              >
                 Voir tout
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </button>
-              
             </div>
 
             {/* Statistiques */}
             <div className="flex gap-8 lg:gap-10 pt-6 border-t border-stone-300/60">
-              
               <div>
                 <div className="text-3xl font-bold text-neutral-900 mb-0.5">130+</div>
                 <div className="text-xs text-neutral-500 tracking-wide">Produits disponibles</div>

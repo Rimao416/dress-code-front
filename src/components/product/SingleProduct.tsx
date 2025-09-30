@@ -10,6 +10,7 @@ import ProductRecommendations from '@/components/product/productRecommendations'
 import { useProduct, useProductUtils } from '@/hooks/product/useProduct';
 import { useCartStore } from '@/store/useCartStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
+import Footer from '../common/Footer';
 
 interface SingleProductProps {
   slug?: string;
@@ -298,6 +299,7 @@ const SingleProduct: React.FC<SingleProductProps> = ({ slug: propSlug }) => {
           isFavorite={isFavorite}
         />
       </div>
+      <Footer/>
     </div>
   );
 };
