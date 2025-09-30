@@ -23,7 +23,7 @@ const CheckoutSummary: React.FC = () => {
             <div key={item.id} className="flex items-center space-x-4 p-4 bg-white">
               <div className="relative">
                 <img
-                  src={item.product.images?.[0] || "/api/placeholder/60/60"}
+                  src={item.product.image || "/api/placeholder/60/60"}
                   alt={item.product.name}
                   className="w-15 h-15 object-cover"
                 />
@@ -54,7 +54,7 @@ const CheckoutSummary: React.FC = () => {
                     </button>
                   </div>
                   <p className="font-medium">
-                    {formatPrice((item.variant.price || item.product.price) * item.quantity)}
+                    {formatPrice((item.variant?.price || item.product.price) * item.quantity)}
                   </p>
                 </div>
               </div>

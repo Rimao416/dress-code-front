@@ -6,10 +6,10 @@ import { Product } from '@/types/product';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> } // Le type params est maintenant Promise
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params; // Ajout d'await pour accéder aux paramètres
+    const { slug } = await params;
     
     if (!slug) {
       return Response.json({
@@ -95,9 +95,9 @@ export async function GET(
       }, { status: 404 });
     }
 
-    // Collecter tous les produits avec typage strict (sans any)
+    // Collecter tous les produits avec typage strict
     const collectAllProducts = (cat: Category): Product[] => {
-      let allProducts: Product[] = [...cat.products];
+      const allProducts: Product[] = [...cat.products];
      
       if (cat.children && cat.children.length > 0) {
         cat.children.forEach((child: Category) => {

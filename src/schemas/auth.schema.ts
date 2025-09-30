@@ -53,32 +53,16 @@ export const addressSchema = z.object({
 });
 
 export const completeRegistrationSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, "Le prénom est obligatoire")
-    .min(2, "Le prénom doit contenir au moins 2 caractères")
-    .trim(),
-
-  lastName: z
-    .string()
-    .min(1, "Le nom est obligatoire")
-    .min(2, "Le nom doit contenir au moins 2 caractères")
-    .trim(),
-
-  email: z
-    .string()
-    .min(1, "L'adresse email est obligatoire")
-    .email("Veuillez saisir une adresse email valide")
-    .toLowerCase()
-    .trim(),
-
-  password: z
-    .string()
-    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
-    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
-   
+  firstName: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
+  lastName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
+  email: z.string().email('Email invalide'),
+  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"],
 });
+
 export const simpleRegistrationSchema = emailSchema
   .merge(passwordSchema)
   .merge(z.object({
