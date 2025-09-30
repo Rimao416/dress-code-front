@@ -1,85 +1,28 @@
-"use client"
-import React, { useState } from 'react';
-import { ArrowRight, Package } from 'lucide-react';
+"use client";
+import React from "react";
+import { ArrowRight, Package } from "lucide-react";
+import { useCategories } from "@/hooks/category/useCategory";
 
-interface Category {
-  id: string;
-  name: string;
-  description: string | null;
-  slug: string;
-  image: string | null;
-  productCount?: number;
-}
+const CategoriesMasonry: React.FC = () => {
+  const { mainCategories, isLoading, error } = useCategories();
 
-interface CategoriesMasonryProps {
-  categories?: Category[];
-  onCategoryClick?: (category: Category) => void;
-}
+  if (isLoading) {
+    return (
+      <section className="bg-gradient-to-b from-white to-stone-50 py-12">
+        <div className="text-center text-neutral-600">Chargement des catégories...</div>
+      </section>
+    );
+  }
 
-const CategoriesMasonry: React.FC<CategoriesMasonryProps> = ({ 
-  categories = [],
-  onCategoryClick 
-}) => {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-
-  // Données de démonstration
-  const defaultCategories: Category[] = [
-    {
-      id: '1',
-      name: 'Robes',
-      slug: 'robes',
-      description: 'Élégance et raffinement',
-      image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80',
-      productCount: 45
-    },
-    {
-      id: '2',
-      name: 'Bijoux',
-      slug: 'bijoux',
-      description: 'Brillez de mille feux',
-      image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80',
-      productCount: 128
-    },
-    {
-      id: '3',
-      name: 'Sacs',
-      slug: 'sacs',
-      description: 'Accessoires essentiels',
-      image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80',
-      productCount: 67
-    },
-    {
-      id: '4',
-      name: 'Chaussures',
-      slug: 'chaussures',
-      description: 'Le confort rencontre le style',
-      image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&q=80',
-      productCount: 89
-    },
-    {
-      id: '5',
-      name: 'Vêtements',
-      slug: 'vetements',
-      description: 'Mode contemporaine',
-      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=80',
-      productCount: 156
-    },
-    {
-      id: '6',
-      name: 'Accessoires',
-      slug: 'accessoires',
-      description: 'Les détails qui comptent',
-      image: 'https://images.unsplash.com/photo-1610652489447-48c57040e6d0?w=600&q=80',
-      productCount: 92
-    }
-  ];
-
-  const displayCategories = categories.length > 0 ? categories : defaultCategories;
-
-  // Hauteur fixe pour toutes les images
-  const getRowSpan = (index: number) => {
-    return 4; // Toutes les cartes ont la même hauteur
-  };
+  if (error) {
+    return (
+      <section className="bg-gradient-to-b from-white to-stone-50 py-12">
+        <div className="text-center text-red-600">
+          Erreur lors du chargement des catégories : {error}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-gradient-to-b from-white to-stone-50">
@@ -107,93 +50,33 @@ const CategoriesMasonry: React.FC<CategoriesMasonryProps> = ({
           </p>
         </div>
 
-        {/* Masonry Grid avec auto-rows - Full Width */}
+        {/* Grille catégories parentes */}
         <div className="w-full overflow-hidden">
-          <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[80px] gap-0">
-            {displayCategories.map((category, index) => {
-              const isHovered = hoveredId === category.id;
-              const rowSpan = getRowSpan(index);
-              
-              return (
-                <div
-                  key={category.id}
-                  style={{ gridRow: `span ${rowSpan}` }}
-                  className={`group relative overflow-hidden cursor-pointer transition-all duration-500 ${
-                    isHovered ? 'scale-[1.02] shadow-2xl z-10' : 'hover:shadow-xl'
-                  }`}
-                  onMouseEnter={() => setHoveredId(category.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  onClick={() => onCategoryClick?.(category)}
-                >
-                  {/* Image de fond */}
-                  <div className="absolute inset-0">
-                    <img
-                      src={category.image || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80'}
-                      alt={category.name}
-                      className={`w-full h-full object-cover transition-transform duration-700 ${
-                        isHovered ? 'scale-110' : 'scale-100'
-                      }`}
-                    />
-                    {/* Overlay gradient */}
-                    <div className={`absolute inset-0 bg-gradient-to-t from-neutral-900/90 via-neutral-900/40 to-transparent transition-opacity duration-300 ${
-                      isHovered ? 'opacity-100' : 'opacity-80'
-                    }`}></div>
-                  </div>
-
-                  {/* Contenu */}
-                  <div className="absolute inset-0 p-4 lg:p-6 flex flex-col justify-end">
-                    {/* Badge nombre de produits */}
-                    <div className={`absolute top-4 lg:top-6 right-4 lg:right-6 bg-white/95 backdrop-blur-md px-2.5 lg:px-3 py-1 lg:py-1.5 rounded-full shadow-lg border border-stone-200/50 transition-all duration-300 ${
-                      isHovered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-90'
-                    }`}>
-                      <span className="text-neutral-900 font-bold text-[10px] lg:text-xs">
-                        {category.productCount || 0} produits
-                      </span>
-                    </div>
-
-                    {/* Nom de la catégorie */}
-                    <h3 className={`text-xl lg:text-2xl xl:text-3xl font-serif text-white mb-1 lg:mb-2 transition-all duration-300 ${
-                      isHovered ? 'translate-y-0' : 'translate-y-1'
-                    }`}>
-                      {category.name}
-                    </h3>
-
-                    {/* Description */}
-                    {category.description && (
-                      <p className={`text-stone-200 text-xs lg:text-sm mb-3 lg:mb-4 transition-all duration-300 ${
-                        isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-                      }`}>
-                        {category.description}
-                      </p>
-                    )}
-
-                    {/* Bouton CTA */}
-                    <div className={`flex items-center gap-2 text-white transition-all duration-300 ${
-                      isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-                    }`}>
-                      <span className="text-xs lg:text-sm font-medium">Découvrir</span>
-                      <ArrowRight className={`h-3 lg:h-4 w-3 lg:w-4 transition-transform duration-300 ${
-                        isHovered ? 'translate-x-1' : 'translate-x-0'
-                      }`} />
-                    </div>
-
-                    {/* Barre décorative */}
-                    <div className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r from-red-900 to-red-700 transition-all duration-500 ${
-                      isHovered ? 'w-full' : 'w-0'
-                    }`}></div>
-                  </div>
-
-                  {/* Effet de brillance au survol */}
-                  <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transition-all duration-700 ${
-                    isHovered ? 'translate-x-full' : '-translate-x-full'
-                  }`}></div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 px-6">
+            {mainCategories.map((category) => (
+              <div
+                key={category.id}
+                className="group relative rounded-lg overflow-hidden shadow hover:shadow-xl transition-all cursor-pointer"
+              >
+                <img
+                  src={category.image || "https://via.placeholder.com/600"}
+                  alt={category.name}
+                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
+                  <h3 className="text-lg font-serif text-white">{category.name}</h3>
+                  {category.productCount !== undefined && (
+                    <span className="text-xs text-stone-200">
+                      {category.productCount} produits
+                    </span>
+                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* CTA pour voir toutes les catégories */}
+        {/* CTA */}
         <div className="text-center py-8 lg:py-12 px-6">
           <button className="group bg-neutral-900 text-white px-6 lg:px-8 py-3 lg:py-3.5 rounded-md text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2 mx-auto">
             Voir toutes les catégories
