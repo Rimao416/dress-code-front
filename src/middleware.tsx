@@ -1,22 +1,37 @@
+// middleware.ts
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*", // ou mets ton domaine exact
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
+  // On ne gère le CORS que pour les routes API
+  if (request.nextUrl.pathname.startsWith("/api")) {
+    const origin = request.headers.get("origin") ?? "*";
+
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Vary", "Origin"); // évite les problèmes de cache
+    response.headers.set(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+
+    // Répondre directement aux préflight OPTIONS
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+        status: 200,
+        headers: response.headers,
+      });
+    }
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: ["/api/:path*"],
 };
-
-export async function GET(req: Request) {
-  // ta logique
-  return new NextResponse(JSON.stringify({ data: "tes produits" }), {
-    status: 200,
-    headers: corsHeaders,
-  });
-}
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: corsHeaders,
-  });
-}
