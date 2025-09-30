@@ -1,18 +1,22 @@
-// middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-  // Log de la requête
-  console.log('Requête:', request.nextUrl.pathname)
-  
-  // Continuer vers la page suivante
-  return NextResponse.next()
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*", // ou mets ton domaine exact
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function GET(req: Request) {
+  // ta logique
+  return new NextResponse(JSON.stringify({ data: "tes produits" }), {
+    status: 200,
+    headers: corsHeaders,
+  });
 }
 
-// Optionnel: configurer sur quelles routes le middleware s'applique
-export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
 }
