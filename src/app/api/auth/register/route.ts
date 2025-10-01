@@ -5,6 +5,7 @@ import { completeRegistrationSchema } from "@/schemas/auth.schema";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { getSession, updateSessionWithUser } from "@/lib/auth/session";
+import { sendWelcomeEmailAsync } from "@/lib/email/service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +14,6 @@ export async function POST(request: NextRequest) {
     // Validation des données avec Zod
     const validationResult = completeRegistrationSchema.safeParse(body);
     if (!validationResult.success) {
-      // Messages d'erreur plus explicites pour le frontend
       const errors = validationResult.error.issues.map(issue => ({
         path: issue.path,
         message: getCustomErrorMessage(issue),
@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
       password,
       firstName,
       lastName,
-
     } = validationResult.data;
 
     // Vérifier si l'utilisateur existe déjà
@@ -62,18 +61,15 @@ export async function POST(request: NextRequest) {
       });
 
       // Créer le profil client
-    const client = await tx.client.create({
-  data: {
-    id: user.id,
-    firstName,
-    lastName,
- 
-    acceptedTerms: true,
-    acceptedMarketing: false,
-    // Si tu veux créer l'adresse en même temps
-  
-  },
-});
+      const client = await tx.client.create({
+        data: {
+          id: user.id,
+          firstName,
+          lastName,
+          acceptedTerms: true,
+          acceptedMarketing: false,
+        },
+      });
 
       return { user, client };
     });
@@ -98,21 +94,26 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // **NOUVELLE PARTIE : Créer automatiquement la session**
+    // Créer automatiquement la session
     const session = await getSession();
     const sessionUpdated = await updateSessionWithUser(session, result.user.id);
 
     if (!sessionUpdated) {
       console.error("Erreur lors de la création de la session après inscription");
-      // On continue quand même car l'utilisateur est créé
     }
 
+    // 🎉 ENVOYER L'EMAIL DE BIENVENUE DE MANIÈRE ASYNCHRONE
+    // Ne bloque pas la réponse, l'email sera envoyé en arrière-plan
+    sendWelcomeEmailAsync({
+      email: result.user.email,
+      firstName: result.client.firstName,
+    });
 
     return NextResponse.json(
       {
         message: "Votre compte a été créé avec succès ! Bienvenue parmi nous.",
         user: userWithClient,
-        sessionCreated: sessionUpdated, // Indique si la session a été créée
+        sessionCreated: sessionUpdated,
       },
       { status: 201 }
     );
@@ -159,17 +160,11 @@ function getCustomErrorMessage(issue: z.ZodIssue): string {
       return `Le champ ${path} est requis`;
      
     case 'invalid_format':
-      // Pour les erreurs de format comme email, regex, etc.
-      if (path === 'email') {
-        return 'Format d\'email invalide';
-      }
-      if (path === 'phone') {
-        return 'Format de téléphone invalide';
-      }
+      if (path === 'email') return 'Format d\'email invalide';
+      if (path === 'phone') return 'Format de téléphone invalide';
       return `Format invalide pour ${path}`;
      
     case 'custom':
-      // Pour les validations personnalisées
       return issue.message;
      
     case 'too_small':
