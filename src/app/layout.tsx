@@ -1,4 +1,4 @@
-// app/layout.tsx ou app/layout.ts selon ton projet
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -7,8 +7,9 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { AuthProvider } from "@/context/AuthContext";
 import { MessageProvider } from "@/context/NotificationContext";
+import { ModalProvider } from "@/context/ModalContext";
 import MessageDisplay from "@/components/MessageDisplay";
-
+import ModalManager from "@/components/modal/ModalManager";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,11 +30,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
-
+          <ModalProvider>
             <MessageProvider>
               <MessageDisplay />
+              <ModalManager />
               {children}
             </MessageProvider>
+          </ModalProvider>
         </AuthProvider>
       </body>
     </html>

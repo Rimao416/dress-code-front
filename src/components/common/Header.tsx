@@ -5,12 +5,11 @@ import Link from 'next/link';
 import { useFavorites } from '@/hooks/product/useFavorites';
 import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
-import LoginModal from '../modal/LoginModal';
 import CartSidebar from '../cart/CartSidebar';
 import { useAuth } from '@/context/AuthContext';
 import { CategoryWithProducts } from '@/types/category';
 import { useCategories } from '@/hooks/category/useCategory';
-import SignUpModal from '../modal/SignUpModal';
+import { useModal } from '@/context/ModalContext';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;
@@ -51,12 +50,11 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedMobileSection, setExpandedMobileSection] = useState<string | null>(null);
-  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
   
   const { user, isAuthenticated, loading, checkAuthStatus } = useAuth();
+  const { openSignUpModal } = useModal();
   const { isOpen: isCartSidebarOpen, toggleSidebar: toggleCartSidebar, closeSidebar: closeCartSidebar } = useCartSidebarStore();
   const { favoritesCount } = useFavorites();
   const { categories, mainCategories, isLoading, error } = useCategories();
@@ -225,7 +223,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     return navigationDataLocal;
   };
 
-  // Utiliser useMemo pour éviter les recalculs inutiles et les boucles infinies
   const navigationData = useMemo(() => {
     if (!isClient || !mainCategories || mainCategories.length === 0) {
       return {};
@@ -237,18 +234,8 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
     if (user && isAuthenticated) {
       console.log('User is authenticated:', user);
     } else {
-      setIsSignUpModalOpen(true);
+      openSignUpModal();
     }
-  };
-
-  const handleOpenLogin = () => {
-    setIsSignUpModalOpen(false);
-    setIsLoginModalOpen(true);
-  };
-
-  const handleOpenSignUp = () => {
-    setIsLoginModalOpen(false);
-    setIsSignUpModalOpen(true);
   };
 
   const handleMouseEnter = (menu: string) => {
@@ -646,18 +633,6 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
           </div>
         )}
       </header>
-
-      <SignUpModal
-        isOpen={isSignUpModalOpen}
-        onClose={() => setIsSignUpModalOpen(false)}
-        onSwitchToLogin={handleOpenLogin}
-      />
-     
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onSwitchToSignUp={handleOpenSignUp}
-      />
 
       <CartSidebar
         isOpen={isCartSidebarOpen}
