@@ -6,8 +6,6 @@ import { useCartStore } from '@/store/useCartStore';
 export const useCart = () => {
   const {
     items,
-    totalItems,
-    totalPrice,
     addToCart: addItemToStore,
     removeFromCart,
     updateItemQuantity,
@@ -36,7 +34,7 @@ export const useCart = () => {
     selectedColor?: string
   ): Promise<CartActionResult> => {
     try {
-      await addItemToStore(product, variant, quantity, selectedSize, selectedColor);
+      addItemToStore(product, variant, quantity, selectedSize, selectedColor);
       return { success: true };
     } catch (error) {
       return { 
@@ -93,7 +91,7 @@ export const useCart = () => {
     const confirmed = window.confirm('Êtes-vous sûr de vouloir vider votre panier ?');
     if (confirmed) {
       try {
-        await clearCart();
+        clearCart();
         return true;
       } catch (error) {
         console.error('Erreur lors du vidage du panier:', error);
@@ -106,7 +104,7 @@ export const useCart = () => {
   // Fonction pour supprimer un article
   const removeItem = async (itemId: string): Promise<CartActionResult> => {
     try {
-      await removeFromCart(itemId);
+      removeFromCart(itemId);
       return { success: true };
     } catch (error) {
       return { 
@@ -119,7 +117,7 @@ export const useCart = () => {
   // Fonction pour mettre à jour la quantité
   const updateQuantity = async (itemId: string, quantity: number): Promise<CartActionResult> => {
     try {
-      await updateItemQuantity(itemId, quantity);
+      updateItemQuantity(itemId, quantity);
       return { success: true };
     } catch (error) {
       return { 
@@ -151,8 +149,8 @@ export const useCart = () => {
   return {
     // État du panier
     items,
-    totalItems: totalItems || getCartItemsCount(),
-    totalPrice: totalPrice || getCartTotal(),
+    totalItems: getCartItemsCount(),
+    totalPrice: getCartTotal(),
     
     // Actions de base
     addToCart,

@@ -7,10 +7,6 @@ import { CartItem } from '@/types/cart';
 interface CartStore {
   items: CartItem[];
   
-  // Computed values
-  totalItems: number;
-  totalPrice: number;
-  
   // Actions
   addToCart: (
     product: ProductWithFullData,
@@ -36,18 +32,6 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
 
-      // Computed values
-      get totalItems() {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      get totalPrice() {
-        return get().items.reduce((total, item) => {
-          const price = item.variant?.price || item.product.price || 0;
-          return total + (price * item.quantity);
-        }, 0);
-      },
-
       addToCart: (
         product: ProductWithFullData,
         variant?: ProductVariant,
@@ -55,13 +39,15 @@ export const useCartStore = create<CartStore>()(
         selectedSize?: string,
         selectedColor?: string
       ) => {
+        const state = get();
+        
         // Vérifier si l'item existe déjà
-        const existingItem = get().getCartItem(product.id, variant?.id);
+        const existingItem = state.getCartItem(product.id, variant?.id);
         
         if (existingItem) {
           // Mettre à jour la quantité
           const newQuantity = existingItem.quantity + quantity;
-          get().updateItemQuantity(existingItem.id, newQuantity);
+          state.updateItemQuantity(existingItem.id, newQuantity);
         } else {
           // Créer un nouvel item
           const newItem: CartItem = {
@@ -125,7 +111,8 @@ export const useCartStore = create<CartStore>()(
 
       getCartItem: (productId: string, variantId?: string) => {
         return get().items.find(item => 
-          item.productId === productId && item.variant?.id === variantId
+          item.productId === productId && 
+          (variantId ? item.variant?.id === variantId : true)
         );
       },
 

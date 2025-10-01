@@ -81,18 +81,29 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price?: number) => {
+    if (!price) return '0,00 €';
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR'
     }).format(price);
   };
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeItem(itemId);
+      await removeItem(itemId);
     } else {
-      updateQuantity(itemId, newQuantity);
+      await updateQuantity(itemId, newQuantity);
+    }
+  };
+
+  const handleRemoveItem = async (itemId: string) => {
+    await removeItem(itemId);
+  };
+
+  const handleClearCart = async () => {
+    if (window.confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
+      await clearCart();
     }
   };
 
@@ -109,13 +120,14 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
             className="fixed inset-0 bg-black/60 z-40"
             onClick={onClose}
           />
+          
           {/* Sidebar */}
           <motion.div
             variants={sidebarVariants}
             initial="closed"
             animate="open"
             exit="closed"
-            className="fixed top-0 right-0 h-full w-96 bg-white z-50 shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -128,10 +140,12 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Fermer le panier"
               >
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
+
             {/* Content */}
             {isEmpty ? (
               <div className="flex-1 flex items-center justify-center p-6">
@@ -155,90 +169,114 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
               <>
                 {/* Items */}
                 <div className="flex-1 overflow-y-auto p-6">
-                  <AnimatePresence>
-                    {items.map((item) => (
-                      <motion.div
-                        key={item.id}
-                        variants={itemVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        layout
-                        className="flex items-start space-x-4 pb-6 mb-6 border-b border-gray-200 last:border-b-0"
-                      >
-                        {/* Product Image */}
-                        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                          <Image
-                            // Correction: utiliser 'image' au lieu de 'images[0]'
-                            src={item.product.image || '/placeholder-image.jpg'}
-                            alt={item.product.name}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {/* Product Details */}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 text-sm mb-1 truncate">
-                            {item.product.name}
-                          </h3>
-                         
-                          {/* Variant Info */}
-                          <div className="text-xs text-gray-500 space-y-1">
-                            {item.selectedSize && (
-                              <p>Taille: {item.selectedSize}</p>
-                            )}
-                            {item.selectedColor && (
-                              <p>Couleur: {item.selectedColor}</p>
-                            )}
+                  <AnimatePresence mode="popLayout">
+                    {items.map((item) => {
+                      const itemPrice = item.variant?.price || item.product.price || 0;
+                      const hasDiscount = item.product.comparePrice && 
+                        item.product.comparePrice > itemPrice;
+
+                      return (
+                        <motion.div
+                          key={item.id}
+                          variants={itemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          layout
+                          className="flex items-start space-x-4 pb-6 mb-6 border-b border-gray-200 last:border-b-0"
+                        >
+                          {/* Product Image */}
+                          <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                            <Image
+                              src={item.product.image || '/placeholder-image.jpg'}
+                              alt={item.product.name}
+                              width={80}
+                              height={80}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
-                          {/* Price */}
-                          <div className="mt-2 flex items-center space-x-2">
-                            <span className="font-semibold text-gray-900">
-                              {/* Correction: vérifier si variant existe et a un prix */}
-                              {formatPrice(item.variant?.price || item.product.price)}
-                            </span>
-                            {item.product.comparePrice && item.product.comparePrice > (item.variant?.price || item.product.price) && (
-                              <span className="text-sm text-gray-500 line-through">
-                                {formatPrice(item.product.comparePrice)}
-                              </span>
+
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-gray-900 text-sm mb-1 truncate">
+                              {item.product.name}
+                            </h3>
+                           
+                            {/* Brand */}
+                            {item.product.brand && (
+                              <p className="text-xs text-gray-500 mb-2">
+                                {item.product.brand}
+                              </p>
                             )}
-                          </div>
-                          {/* Quantity Controls */}
-                          <div className="mt-3 flex items-center justify-between">
-                            <div className="flex items-center border border-gray-300 rounded-lg">
-                              <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                className="p-1.5 hover:bg-gray-100 transition-colors"
-                                disabled={item.quantity <= 1}
-                              >
-                                <Minus className="h-3 w-3 text-gray-600" />
-                              </button>
-                              <span className="px-3 py-1.5 text-sm font-medium min-w-8 text-center">
-                                {item.quantity}
+
+                            {/* Variant Info */}
+                            {(item.selectedSize || item.selectedColor) && (
+                              <div className="text-xs text-gray-500 space-y-1 mb-2">
+                                {item.selectedSize && (
+                                  <p>Taille: {item.selectedSize}</p>
+                                )}
+                                {item.selectedColor && (
+                                  <div className="flex items-center space-x-2">
+                                    <span>Couleur: {item.selectedColor}</span>
+                                    {item.variant?.colorHex && (
+                                      <div 
+                                        className="w-4 h-4 rounded-full border border-gray-300"
+                                        style={{ backgroundColor: item.variant.colorHex }}
+                                      />
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Price */}
+                            <div className="flex items-center space-x-2 mb-3">
+                              <span className="font-semibold text-gray-900">
+                                {formatPrice(itemPrice)}
                               </span>
+                              {hasDiscount && (
+                                <span className="text-sm text-gray-500 line-through">
+                                  {formatPrice(item.product.comparePrice)}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Quantity Controls */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center border border-gray-300 rounded-lg">
+                                <button
+                                  onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                  className="p-1.5 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  aria-label="Diminuer la quantité"
+                                >
+                                  <Minus className="h-3 w-3 text-gray-600" />
+                                </button>
+                                <span className="px-3 py-1.5 text-sm font-medium min-w-[2rem] text-center">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                  className="p-1.5 hover:bg-gray-100 transition-colors"
+                                  aria-label="Augmenter la quantité"
+                                >
+                                  <Plus className="h-3 w-3 text-gray-600" />
+                                </button>
+                              </div>
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                className="p-1.5 hover:bg-gray-100 transition-colors"
-                                // Correction: gérer le cas où variant pourrait être undefined
-                                // et où stock n'existe pas dans le type variant
-                                disabled={false} // Temporaire - vous devrez ajuster selon votre logique métier
+                                onClick={() => handleRemoveItem(item.id)}
+                                className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                aria-label="Supprimer l'article"
                               >
-                                <Plus className="h-3 w-3 text-gray-600" />
+                                <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
-                            <button
-                              onClick={() => removeItem(item.id)}
-                              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      );
+                    })}
                   </AnimatePresence>
                 </div>
+
                 {/* Footer */}
                 <div className="border-t border-gray-200 p-6 bg-gray-50">
                   {/* Savings */}
@@ -250,14 +288,22 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                       </span>
                     </div>
                   )}
+
                   {/* Total */}
                   <div className="flex justify-between items-center mb-4 text-lg font-semibold">
                     <span>Total:</span>
                     <span>{formatPrice(totalPrice)}</span>
                   </div>
+
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <button className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                    <button 
+                      className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                      onClick={() => {
+                        // Navigation vers la page de checkout
+                        console.log('Redirection vers checkout');
+                      }}
+                    >
                       Finaliser la commande
                     </button>
                     <div className="flex space-x-3">
@@ -268,7 +314,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                         Continuer mes achats
                       </button>
                       <button
-                        onClick={clearCart}
+                        onClick={handleClearCart}
                         className="flex-1 text-red-600 border border-red-300 py-2 rounded-lg font-medium hover:bg-red-50 transition-colors"
                       >
                         Vider le panier
