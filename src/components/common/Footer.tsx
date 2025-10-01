@@ -85,10 +85,10 @@ const Footer = () => {
           </div>
 
           {/* Colonne 4 - Contact */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-semibold tracking-widest uppercase text-stone-200">
-              Contact
-            </h4>
+       <div className="space-y-6" id="contact-section">
+  <h4 className="text-sm font-semibold tracking-widest uppercase text-stone-200">
+    Contact
+  </h4>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-red-900 flex-shrink-0 mt-0.5" />

@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { useFavorites } from '@/hooks/product/useFavorites';
 import { useCartStore } from '@/store/useCartStore';
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
-import SignUpModal from '../modal/SignUpModal';
 import LoginModal from '../modal/LoginModal';
 import CartSidebar from '../cart/CartSidebar';
 import { useAuth } from '@/context/AuthContext';
 import { CategoryWithProducts } from '@/types/category';
 import { useCategories } from '@/hooks/category/useCategory';
+import SignUpModal from '../modal/SignUpModal';
 
 interface HeaderProps {
   forceScrolledStyle?: boolean;

@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Sparkles, TrendingUp, Star, ArrowRight } from 'lucide-react';
 import { ProductCardData } from '@/types/product';
 import { useFeaturedProducts } from '@/hooks/product/useFeaturedProducts';
@@ -11,6 +12,7 @@ interface FeaturedProductsSectionProps {
 const FeaturedProductsSection: React.FC<FeaturedProductsSectionProps> = ({
   onProductClick
 }) => {
+  const router = useRouter();
   const { products, isLoading, error } = useFeaturedProducts({ 
     limit: 4,
     enabled: true 
@@ -20,7 +22,7 @@ const FeaturedProductsSection: React.FC<FeaturedProductsSectionProps> = ({
     if (onProductClick) {
       onProductClick(product);
     } else {
-      window.location.href = `/products/${product.slug}`;
+      router.push(`/products/${product.slug}`);
     }
   };
 
@@ -215,7 +217,7 @@ const FeaturedProductsSection: React.FC<FeaturedProductsSectionProps> = ({
               <div className="text-center mt-12">
                 <button 
                   className="group inline-flex items-center gap-2 bg-gradient-to-r from-red-900 to-red-800 text-white px-8 py-3.5 rounded-md text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-                  onClick={() => window.location.href = '/products?featured=true'}
+                  onClick={() => router.push('/products?featured=true')}
                 >
                   Découvrir tous les produits vedettes
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />

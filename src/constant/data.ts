@@ -237,3 +237,27 @@ export const testimonials = [
     date: 'Il y a 6 jours'
   }
 ];
+
+
+export const faqs = [
+    {
+      question: "Quels sont les délais de livraison pour mes commandes ?",
+      answer: "Nous livrons partout dans le monde sous 3 à 7 jours ouvrables. Pour les commandes en France métropolitaine, la livraison standard prend 2-4 jours. Nous proposons également une option de livraison express en 24-48h pour les articles disponibles en stock."
+    },
+    {
+      question: "Puis-je retourner un article si la taille ne convient pas ?",
+      answer: "Absolument ! Vous disposez de 30 jours pour retourner tout article qui ne vous convient pas. Le retour est gratuit et simple : commandez votre étiquette de retour depuis votre compte, et nous vous remboursons intégralement dès réception. Assurez-vous que l'article soit dans son état d'origine avec ses étiquettes."
+    },
+    {
+      question: "Comment puis-je suivre l'évolution de ma commande ?",
+      answer: "Dès l'expédition de votre commande, vous recevrez un email avec un numéro de suivi. Vous pouvez également consulter l'état de votre commande directement depuis votre espace client. Nos 2000+ clients satisfaits apprécient notre transparence totale sur le suivi des colis."
+    },
+    {
+      question: "Proposez-vous des offres spéciales ou des promotions régulières ?",
+      answer: "Oui ! Consultez notre section 'Offres spéciales' mise à jour régulièrement avec des réductions jusqu'à -30% sur une sélection de produits. Inscrivez-vous à notre newsletter pour être informé en avant-première de nos ventes privées et de nos nouvelles collections comme notre Collection Automne 2025."
+    },
+    {
+      question: "Quelles sont vos marques disponibles et comment garantissez-vous leur qualité ?",
+      answer: "Nous travaillons avec des marques prestigieuses comme Maison Laurent, Bijoux Chic, Luxe Paris et Chaussures Royale. Chaque article de nos 130+ produits disponibles est soigneusement sélectionné pour son élégance intemporelle et sa qualité exceptionnelle. Nous garantissons l'authenticité de toutes nos pièces."
+    }
+  ];
