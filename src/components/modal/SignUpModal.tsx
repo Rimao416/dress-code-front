@@ -15,7 +15,6 @@ const CustomInput = ({
   placeholder,
   value,
   onChange,
-  error,
   disabled,
   required,
   showPasswordToggle = false
@@ -35,7 +34,7 @@ const CustomInput = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className={`w-full px-4 py-3 border rounded-md text-sm transition-all focus:outline-none focus:ring-2 focus:ring-red-900/20 focus:border-red-900 ${error ? 'border-red-600' : 'border-stone-300'} ${disabled ? 'opacity-50 cursor-not-allowed bg-stone-50' : 'bg-white'}`}
+          className={`w-full px-4 py-3 border rounded-md text-sm transition-all focus:outline-none focus:ring-2 focus:ring-red-900/20 focus:border-red-900 border-stone-300 ${disabled ? 'opacity-50 cursor-not-allowed bg-stone-50' : 'bg-white'}`}
         />
         {showPasswordToggle && type === 'password' && (
           <button
@@ -47,92 +46,21 @@ const CustomInput = ({
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
 };
 
-const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModalProps) => {
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
-  const [errors, setErrors] = useState<any>({});
-  const [status, setStatus] = useState({ loading: false, success: false, error: '' });
-  const [isMobile, setIsMobile] = useState(false);
+type FormContentProps = {
+  form: { firstName: string; lastName: string; email: string; password: string; confirmPassword: string };
+  update: (field: string, value: string) => void;
+  status: { loading: boolean; success: boolean; error: string };
+  submit: () => void;
+  onClose: () => void;
+  onSwitchToLogin?: () => void;
+};
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      setForm({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
-      setErrors({});
-      setStatus({ loading: false, success: false, error: '' });
-    }
-  }, [isOpen]);
-
-  const update = (field: string, value: string) => {
-    setForm({ ...form, [field]: value });
-    if (errors[field]) setErrors({ ...errors, [field]: '' });
-    if (status.error) setStatus({ ...status, error: '' });
-  };
-
-  const validate = () => {
-    const e: any = {};
-    if (!form.firstName.trim() || form.firstName.length < 2) e.firstName = 'Prénom requis (min 2 caractères)';
-    if (!form.lastName.trim() || form.lastName.length < 2) e.lastName = 'Nom requis (min 2 caractères)';
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = 'Email invalide';
-    if (form.password.length < 8 || !/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password)) {
-      e.password = 'Min 8 caractères avec majuscule et minuscule';
-    }
-    if (form.password !== form.confirmPassword) e.confirmPassword = 'Les mots de passe ne correspondent pas';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const submit = async () => {
-    if (!validate()) return;
-    setStatus({ loading: true, success: false, error: '' });
-
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim().toLowerCase(),
-          password: form.password,
-          confirmPassword: form.confirmPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 400 && data.details) {
-          const newErrors: any = {};
-          data.details.forEach((d: any) => newErrors[d.path[0]] = d.message);
-          setErrors(newErrors);
-        }
-        throw new Error(data.error || 'Erreur d\'inscription');
-      }
-
-      setStatus({ loading: false, success: true, error: '' });
-      setTimeout(() => {
-        onSuccess?.();
-        setTimeout(onClose, 500);
-      }, 1500);
-
-    } catch (err: any) {
-      setStatus({ loading: false, success: false, error: err.message || "Une erreur est survenue" });
-    }
-  };
-
-  const FormContent = () => (
+function FormContent({ form, update, status, submit, onClose, onSwitchToLogin }: FormContentProps) {
+  return (
     <div className="space-y-6">
       {status.success && (
         <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm">
@@ -149,13 +77,13 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <CustomInput label="Prénom" placeholder="Votre prénom" value={form.firstName} onChange={(v: string) => update('firstName', v)} error={errors.firstName} disabled={status.loading || status.success} required />
-        <CustomInput label="Nom" placeholder="Votre nom" value={form.lastName} onChange={(v: string) => update('lastName', v)} error={errors.lastName} disabled={status.loading || status.success} required />
+        <CustomInput label="Prénom" placeholder="Votre prénom" value={form.firstName} onChange={(v: string) => update('firstName', v)} disabled={status.loading || status.success} required />
+        <CustomInput label="Nom" placeholder="Votre nom" value={form.lastName} onChange={(v: string) => update('lastName', v)} disabled={status.loading || status.success} required />
       </div>
       
-      <CustomInput label="E-mail" type="email" placeholder="votre.email@exemple.com" value={form.email} onChange={(v: string) => update('email', v)} error={errors.email} disabled={status.loading || status.success} required />
-      <CustomInput label="Mot de passe" type="password" placeholder="Créez un mot de passe" value={form.password} onChange={(v: string) => update('password', v)} error={errors.password} disabled={status.loading || status.success} showPasswordToggle required />
-      <CustomInput label="Confirmer le mot de passe" type="password" placeholder="Confirmez votre mot de passe" value={form.confirmPassword} onChange={(v: string) => update('confirmPassword', v)} error={errors.confirmPassword} disabled={status.loading || status.success} showPasswordToggle required />
+      <CustomInput label="E-mail" type="email" placeholder="votre.email@exemple.com" value={form.email} onChange={(v: string) => update('email', v)} disabled={status.loading || status.success} required />
+      <CustomInput label="Mot de passe" type="password" placeholder="Créez un mot de passe" value={form.password} onChange={(v: string) => update('password', v)} disabled={status.loading || status.success} showPasswordToggle required />
+      <CustomInput label="Confirmer le mot de passe" type="password" placeholder="Confirmez votre mot de passe" value={form.confirmPassword} onChange={(v: string) => update('confirmPassword', v)} disabled={status.loading || status.success} showPasswordToggle required />
       
       <div className="space-y-3 pt-2">
         <p className="text-xs text-neutral-500">
@@ -186,6 +114,65 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
       </div>
     </div>
   );
+}
+
+const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModalProps) => {
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+  const [status, setStatus] = useState({ loading: false, success: false, error: '' });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+      setStatus({ loading: false, success: false, error: '' });
+    }
+  }, [isOpen]);
+
+  const update = (field: string, value: string) => {
+    setForm({ ...form, [field]: value });
+    if (status.error) setStatus({ ...status, error: '' });
+  };
+
+  const submit = async () => {
+    setStatus({ loading: true, success: false, error: '' });
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          email: form.email.trim().toLowerCase(),
+          password: form.password,
+          confirmPassword: form.confirmPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Erreur d\'inscription');
+      }
+
+      setStatus({ loading: false, success: true, error: '' });
+      setTimeout(() => {
+        onSuccess?.();
+        setTimeout(onClose, 500);
+      }, 1500);
+
+    } catch (err: any) {
+      setStatus({ loading: false, success: false, error: err.message || "Une erreur est survenue" });
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -207,7 +194,16 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
               </div>
               <p className="text-sm text-neutral-600 mt-4">Créez votre compte pour profiter d'avantages exclusifs.</p>
             </div>
-            <div className="p-6 pb-8"><FormContent /></div>
+            <div className="p-6 pb-8">
+              <FormContent
+                form={form}
+                update={update}
+                status={status}
+                submit={submit}
+                onClose={onClose}
+                onSwitchToLogin={onSwitchToLogin}
+              />
+            </div>
           </div>
         </motion.div>
       </div>
@@ -250,7 +246,16 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, onSwitchToLogin }: SignUpModa
 
             <div className="flex-1 bg-white p-8 lg:p-10 overflow-y-auto border-l border-stone-200/50">
               <div className="h-full flex flex-col justify-center">
-                <div className="max-w-md mx-auto w-full"><FormContent /></div>
+                <div className="max-w-md mx-auto w-full">
+                  <FormContent
+                    form={form}
+                    update={update}
+                    status={status}
+                    submit={submit}
+                    onClose={onClose}
+                    onSwitchToLogin={onSwitchToLogin}
+                  />
+                </div>
               </div>
             </div>
           </div>
