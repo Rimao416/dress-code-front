@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { X, Loader2, CheckCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -236,6 +237,7 @@ const SignUpModal = ({
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isMobile, setIsMobile] = useState(false);
+  const {checkAuthStatus}=useAuth()
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -296,48 +298,49 @@ const SignUpModal = ({
     return errors;
   };
 
-  const submit = async () => {
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
+const submit = async () => {
+  const errors = validateForm();
+  if (Object.keys(errors).length > 0) {
+    setFieldErrors(errors);
+    return;
+  }
+  setStatus({ loading: true, success: false, error: "" });
+
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erreur d'inscription");
     }
 
-    setStatus({ loading: true, success: false, error: "" });
+    // ✅ Mise à jour du contexte après inscription réussie
+    setStatus({ loading: false, success: true, error: "" });
+    onSuccess?.(); // Si tu as une fonction de callback
+    onClose(); // Ferme le modal
 
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim().toLowerCase(),
-          password: form.password,
-          confirmPassword: form.confirmPassword,
-        }),
-      });
+    // ✅ Rafraîchir le contexte d'authentification
+    await checkAuthStatus();
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Erreur d'inscription");
-      }
-
-      setStatus({ loading: false, success: true, error: "" });
-      setTimeout(() => {
-        onSuccess?.();
-        setTimeout(onClose, 500);
-      }, 1500);
-    } catch (err: any) {
-      setStatus({
-        loading: false,
-        success: false,
-        error: err.message || "Une erreur est survenue",
-      });
-    }
-  };
+  } catch (error) {
+    setStatus({
+      loading: false,
+      success: false,
+      error: error instanceof Error ? error.message : "Une erreur est survenue",
+    });
+  }
+};
 
   if (!isOpen) return null;
 
