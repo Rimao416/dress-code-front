@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { UserData, AuthenticatedUser, AuthCheckResponse } from '@/types/auth.type';
 import { Gender } from '@/generated/prisma';
+import { useOrderStore } from '@/store/useOrderStore';
 
 // Interface pour la validation des étapes
 export interface AuthContextType {
@@ -174,7 +175,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
      
       // ✅ Réinitialiser l'état local dans tous les cas
-      setUser(null);
+       setUser(null);
+      
+      // ✅ Reset le store des orders
+      useOrderStore.getState().reset();
+      
+      // router.push('/');
       setIsAuthenticated(false);
       resetUserData();
      
