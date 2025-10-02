@@ -1,64 +1,62 @@
 // types/payment.ts
-export interface StripePaymentIntent {
-  id: string;
-  client_secret: string;
-  amount: number;
-  currency: string;
-  status: string;
-}
-
-export interface PaymentFormData {
-  email: string;
-  country: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  phone: string;
-}
-
-export interface ShippingData {
-  method: string;
-  cost: number;
-}
-
-export interface OrderSummary {
-  subtotal: number;
-  shipping: number;
-  tax: number;
-  total: number;
-  items: OrderItem[];
-}
+import { PaymentMethod } from '@/generated/prisma';
 
 export interface OrderItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
-  productId: string; // Ajouté pour correspondre à votre CartItem
-  variantId: string; // Ajouté pour correspondre à votre CartItem
+  productId: string;
+  variantId?: string;
   variantInfo?: {
     size?: string;
     color?: string;
+    [key: string]: any;
   };
+}
+
+export interface OrderTotals {
+  subtotal: number;
+  shippingCost: number;
+  taxAmount: number;
+  discountAmount?: number;
+  totalAmount: number;
+}
+
+export interface FormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  phone: string;
+  country: string;
+  postalCode?: string;
+  city?: string;
 }
 
 export interface CreateOrderRequest {
   clientId: string;
-  formData: PaymentFormData;
+  formData: FormData;
   shippingMethod: string;
-  paymentMethod: string;
+  paymentMethod: PaymentMethod;
   items: OrderItem[];
-  totals: {
-    subtotal: number;
-    shippingCost: number;
-    taxAmount: number;
-    totalAmount: number;
-  };
+  totals: OrderTotals;
 }
 
-export interface PaymentResponse {
+export interface PaymentIntentResponse {
+  clientSecret: string;
+  orderId: string;
+  orderNumber: string;
+  paymentIntentId: string;
+}
+
+export interface PaymentConfirmRequest {
+  paymentIntentId: string;
+  orderId: string;
+}
+
+export interface PaymentConfirmResponse {
   success: boolean;
-  orderId?: string;
-  clientSecret?: string;
-  error?: string;
+  order: any;
+  message: string;
 }

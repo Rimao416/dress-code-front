@@ -12,7 +12,6 @@ import { useAuth } from "@/context/AuthContext";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-// ✅ Utilitaire inline pour les codes pays
 const getCountryCode = (countryName: string): string => {
   const countryMap: { [key: string]: string } = {
     'France': 'FR',
@@ -30,14 +29,14 @@ const getCountryCode = (countryName: string): string => {
     'Canada': 'CA',
   };
   
-  return countryMap[countryName] || 'FR'; // Défaut France
+  return countryMap[countryName] || 'FR';
 };
 
 interface Props {
   paymentMethod: string;
   setPaymentMethod: (method: string) => void;
   onBack: () => void;
-  onConfirm: () => void;
+  onConfirm: (orderId: string) => void; // ✅ Modifié pour passer l'orderId
   formData: any;
   shippingMethod: string;
   orderSummary: {
@@ -88,8 +87,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     setProcessing(true);
     
     try {
+      console.log('💳 Début du processus de paiement');
       console.log('User ID:', user?.id);
-      console.log('Order items:', orderSummary.items);
 
       // Validation et nettoyage des données
       const validatedItems = orderSummary.items.map((item: any) => {
@@ -112,7 +111,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         };
       });
 
-      // Validation des totaux
       const totals = {
         subtotal: Number(orderSummary.subtotal.toFixed(2)),
         shippingCost: Number(orderSummary.shipping.toFixed(2)),
@@ -120,23 +118,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         totalAmount: Number(orderSummary.total.toFixed(2)),
       };
 
-      // S'assurer que le clientId est valide
-      if (!user.id || typeof user.id !== 'string') {
-        onError("ID utilisateur invalide");
-        return;
-      }
-
-      // Obtenir le code pays correct
       const countryCode = orderSummary.countryCode || getCountryCode(formData.country);
 
-      console.log('Sending payment request:', {
-        clientId: user.id,
-        itemsCount: validatedItems.length,
-        totals,
-        countryCode
-      });
+      console.log('📦 Création de l\'intention de paiement...');
 
-      // Créer l'intention de paiement
+      // 1. Créer l'intention de paiement
       const response = await fetch('/api/payment/create-intent', {
         method: 'POST',
         headers: {
@@ -146,7 +132,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           clientId: user.id,
           formData: {
             ...formData,
-            country: countryCode // Utiliser le code pays pour l'API
+            country: countryCode
           },
           shippingMethod,
           paymentMethod: 'CARD',
@@ -158,33 +144,28 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       const responseData = await response.json();
       
       if (!response.ok) {
-        console.error('Erreur API:', responseData);
+        console.error('❌ Erreur API:', responseData);
         onError(responseData.error || `Erreur ${response.status}: ${response.statusText}`);
         return;
       }
 
       const { clientSecret, orderId, paymentIntentId } = responseData;
       
-      if (!clientSecret) {
-        onError("Client secret manquant dans la réponse");
+      if (!clientSecret || !orderId) {
+        onError("Réponse invalide du serveur");
         return;
       }
 
-      if (!orderId) {
-        onError("ID de commande manquant");
-        return;
-      }
+      console.log('✅ Intention créée - Order ID:', orderId);
 
-      console.log('Payment intent créé:', { orderId, paymentIntentId });
-
-      // Confirmer le paiement avec Stripe
+      // 2. Confirmer le paiement avec Stripe
       const cardElement = elements.getElement(CardElement);
       if (!cardElement) {
         onError("Élément de carte non trouvé");
         return;
       }
 
-      console.log('Confirmation du paiement avec Stripe...');
+      console.log('💳 Confirmation du paiement avec Stripe...');
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
@@ -205,20 +186,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       );
 
       if (error) {
-        console.error('Stripe error:', error);
+        console.error('❌ Stripe error:', error);
         onError(error.message || "Erreur de paiement Stripe");
         return;
       }
 
       if (paymentIntent.status !== 'succeeded') {
-        console.error('Payment status:', paymentIntent.status);
+        console.error('❌ Payment status:', paymentIntent.status);
         onError(`Paiement non confirmé: ${paymentIntent.status}`);
         return;
       }
 
-      console.log('Paiement confirmé, mise à jour de la commande...');
+      console.log('✅ Paiement confirmé par Stripe');
 
-      // Confirmer la commande côté serveur
+      // 3. Confirmer la commande côté serveur
+      console.log('📝 Confirmation de la commande...');
+
       const confirmResponse = await fetch('/api/payment/confirm', {
         method: 'POST',
         headers: {
@@ -233,16 +216,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       const confirmData = await confirmResponse.json();
 
       if (!confirmResponse.ok) {
-        console.error('Erreur confirmation:', confirmData);
+        console.error('❌ Erreur confirmation:', confirmData);
         onError(confirmData.error || "Erreur lors de la confirmation de la commande");
         return;
       }
 
-      console.log('Commande confirmée avec succès');
+      console.log('✅ Commande confirmée avec succès');
       onSuccess(orderId);
 
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('❌ Payment error:', error);
       onError(
         error instanceof Error 
           ? error.message 
@@ -327,44 +310,20 @@ const CheckoutPaiement: React.FC<Props> = ({
   orderSummary,
 }) => {
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
 
   const handlePaymentSuccess = (orderId: string) => {
-    setPaymentSuccess(orderId);
     setPaymentError(null);
-    onConfirm();
+    onConfirm(orderId); // ✅ Passe l'orderId au parent
   };
 
   const handlePaymentError = (error: string) => {
     setPaymentError(error);
-    setPaymentSuccess(null);
   };
 
   const handlePaymentMethodChange = (method: string) => {
     setPaymentMethod(method);
     setPaymentError(null);
   };
-
-  if (paymentSuccess) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-8"
-      >
-        <div className="text-6xl mb-4">✅</div>
-        <h2 className="text-2xl font-bold text-green-600 mb-2">
-          Paiement réussi !
-        </h2>
-        <p className="text-gray-600 mb-4">
-          Votre commande #{paymentSuccess} a été confirmée.
-        </p>
-        <p className="text-sm text-gray-500">
-          Vous recevrez un email de confirmation sous peu.
-        </p>
-      </motion.div>
-    );
-  }
 
   return (
     <>
