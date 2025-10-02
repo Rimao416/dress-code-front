@@ -13,6 +13,7 @@ import { PromoBanner } from '../Header/PromoBanner';
 import { DesktopNavigation } from '../Header/DesktopNavigation';
 import { HeaderIcons } from '../Header/HeaderIcons';
 import { MobileMenu } from '../Header/MobileMenu';
+import { DropdownContent } from '../Header/DropdownContent'; // IMPORTANT: Ajoutez cet import
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
 
 const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
@@ -195,6 +196,16 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
             />
           </div>
         </div>
+
+        {/* DROPDOWN RENDU ICI - EN DEHORS DU CONTAINER */}
+        {activeDropdown && navigationData[activeDropdown]?.hasDropdown && navigationData[activeDropdown].content && (
+          <div
+            onMouseEnter={() => handleMouseEnter(activeDropdown)}
+            onMouseLeave={handleMouseLeave}
+          >
+            <DropdownContent content={navigationData[activeDropdown].content!} />
+          </div>
+        )}
       </header>
       <CartSidebar isOpen={isCartSidebarOpen} onClose={closeCartSidebar} />
       <MobileMenu

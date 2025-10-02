@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Search, Heart, ShoppingBag, Menu, User } from 'lucide-react';
 
 interface HeaderIconsProps {
@@ -72,19 +73,33 @@ export const HeaderIcons: React.FC<HeaderIconsProps> = ({
           </span>
         )}
       </button>
-      <button
-        onClick={onUserClick}
-        className={`flex items-center space-x-1.5 text-xs hover:underline transition-colors duration-300 ${
-          shouldApplyScrolledStyle
-            ? 'text-neutral-700 hover:text-red-900'
-            : 'text-white/90 hover:text-white'
-        }`}
-      >
-        <User className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">
-          {userName ? `Bonjour ${userName}` : 'Rejoignez-nous'}
-        </span>
-      </button>
+      
+      {userName ? (
+        <Link
+          href="/profile"
+          className={`flex items-center space-x-1.5 text-xs hover:underline transition-colors duration-300 ${
+            shouldApplyScrolledStyle
+              ? 'text-neutral-700 hover:text-red-900'
+              : 'text-white/90 hover:text-white'
+          }`}
+        >
+          <User className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Bienvenue {userName}</span>
+        </Link>
+      ) : (
+        <button
+          onClick={onUserClick}
+          className={`flex items-center space-x-1.5 text-xs hover:underline transition-colors duration-300 ${
+            shouldApplyScrolledStyle
+              ? 'text-neutral-700 hover:text-red-900'
+              : 'text-white/90 hover:text-white'
+          }`}
+        >
+          <User className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Rejoignez-nous</span>
+        </button>
+      )}
+
       <button
         onClick={onMobileMenuClick}
         className={`md:hidden p-2 rounded-full transition-all duration-200 ${

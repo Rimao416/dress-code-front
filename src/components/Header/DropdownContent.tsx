@@ -1,9 +1,29 @@
 import React from 'react';
 import Link from 'next/link';
-import { DropdownContent as DropdownContentType } from '@/types/header';
+
+interface NavSection {
+  title: string;
+  items: Array<{
+    title: string;
+    link: string;
+  }>;
+}
+
+interface DropdownContentData {
+  left: Array<{
+    title: string;
+    link: string;
+  }>;
+  right: NavSection[];
+  featured?: {
+    image: string;
+    title: string;
+    description: string;
+  };
+}
 
 interface DropdownContentProps {
-  content: DropdownContentType;
+  content: DropdownContentData;
 }
 
 export const DropdownContent: React.FC<DropdownContentProps> = ({ content }) => {
@@ -28,11 +48,8 @@ export const DropdownContent: React.FC<DropdownContentProps> = ({ content }) => 
               </div>
             </div>
           )}
-          <div
-            className={`${
-              content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'
-            }`}
-          >
+
+          <div className={`${content.left && content.left.length > 0 ? 'col-span-6' : 'col-span-8'}`}>
             <div className="grid grid-cols-2 gap-8">
               {content.right?.map((section, index) => (
                 <div key={index}>
@@ -54,6 +71,7 @@ export const DropdownContent: React.FC<DropdownContentProps> = ({ content }) => 
               ))}
             </div>
           </div>
+
           <div className="col-span-4">
             {content.featured && (
               <div className="bg-stone-50 p-4 rounded-sm border border-stone-200">

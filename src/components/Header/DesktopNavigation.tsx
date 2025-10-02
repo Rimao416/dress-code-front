@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { NavigationData } from '@/types/header';
-import { DropdownContent } from './DropdownContent';
 
 interface DesktopNavigationProps {
   navigationData: NavigationData;
@@ -45,9 +44,7 @@ export const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
               />
             )}
           </Link>
-          {activeDropdown === key && nav.content && (
-            <DropdownContent content={nav.content} />
-          )}
+          {/* NE PAS RENDRE LE DROPDOWN ICI */}
         </div>
       ))}
     </nav>
