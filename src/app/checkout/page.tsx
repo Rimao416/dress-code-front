@@ -1,6 +1,6 @@
 // pages/checkout/CheckoutPage.tsx
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CheckoutLayout from "@/components/layouts/CheckoutLayout";
 import CheckoutPaiement from "@/components/checkout/CheckoutPaiement";
@@ -8,9 +8,11 @@ import CheckoutLivraison from "@/components/checkout/CheckoutLivraison";
 import CheckoutInformations from "@/components/checkout/CheckoutInformations";
 import { OrderItem } from "@/types/payment";
 import { useCart } from "@/hooks/cart/useCart";
+import { useAuth } from "@/context/AuthContext";
 
 const CheckoutPage = () => {
   const router = useRouter();
+  const { user, isAuthenticated, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     email: "",
@@ -27,6 +29,21 @@ const CheckoutPage = () => {
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
   
   const { items: cartItems, totalPrice, clearCart } = useCart();
+
+  // ✅ Prefill les données de l'utilisateur authentifié
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      setFormData({
+        email: user.email || "",
+        firstName: user.client?.firstName || "",
+        lastName: user.client?.lastName || "",
+        phone: user.client?.phone || "",
+        country: "France", // Valeur par défaut
+        address: "",
+        postalCode: "",
+      });
+    }
+  }, [user, isAuthenticated]);
   
   // Conversion des CartItem vers OrderItem
   const convertCartItemsToOrderItems = useMemo((): OrderItem[] => {
@@ -43,7 +60,6 @@ const CheckoutPage = () => {
         }
       };
 
-      // ✅ Ajouter variantId seulement s'il existe et est valide
       if (cartItem.variant?.id) {
         orderItem.variantId = cartItem.variant.id.toString();
       }
@@ -80,18 +96,26 @@ const CheckoutPage = () => {
   const handleConfirm = (orderId: string) => {
     console.log("✅ Commande confirmée:", orderId);
     
-    // Marquer la commande comme terminée
     setOrderCompleted(true);
     setCompletedOrderId(orderId);
-    
-    // Vider le panier localement
     clearCart();
     
-    // Rediriger vers la page de confirmation après 3 secondes
     setTimeout(() => {
       router.push(`/order/confirmation/${orderId}`);
     }, 3000);
   };
+
+  // ✅ Afficher un loader pendant le chargement de l'auth
+  if (loading) {
+    return (
+      <CheckoutLayout currentStep={currentStep}>
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </CheckoutLayout>
+    );
+  }
 
   // Vérifier si le panier est vide
   if (cartItems.length === 0 && !orderCompleted) {
@@ -148,6 +172,7 @@ const CheckoutPage = () => {
           formData={formData}
           setFormData={setFormData}
           onNext={() => setCurrentStep(2)}
+          isAuthenticated={isAuthenticated}
         />
       )}
       {currentStep === 2 && (
@@ -169,7 +194,7 @@ const CheckoutPage = () => {
           onConfirm={handleConfirm}
         />
       )}
-      </CheckoutLayout>
+    </CheckoutLayout>
   );
 };
 
