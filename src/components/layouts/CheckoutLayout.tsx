@@ -1,6 +1,9 @@
 "use client";
 import React from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import CheckoutSummary from "../checkout/CheckoutSummary";
+
 interface CheckoutLayoutProps {
   currentStep: number;
   children: React.ReactNode;
@@ -13,11 +16,25 @@ const CheckoutLayout: React.FC<CheckoutLayoutProps> = ({ currentStep, children }
     <div className="min-h-screen bg-white">
       {/* Navigation Header */}
       <div className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          {/* Lien retour */}
+          <Link
+            href="/"
+            className="flex items-center space-x-2 text-gray-600 hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Retour à l’accueil</span>
+          </Link>
+
+          {/* Étapes */}
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             {stepTitles.map((title, index) => (
               <React.Fragment key={title}>
-                <span className={currentStep === index + 1 ? "text-black font-medium" : ""}>
+                <span
+                  className={
+                    currentStep === index + 1 ? "text-black font-medium" : ""
+                  }
+                >
                   {title}
                 </span>
                 {index < stepTitles.length - 1 && (
