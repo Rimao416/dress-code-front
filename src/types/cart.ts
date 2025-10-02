@@ -1,4 +1,13 @@
 // types/cart.ts
+
+// Type pour la marque
+export interface Brand {
+  id: string;
+  name: string;
+  logo?: string;
+  website?: string;
+}
+
 export interface CartItem {
   id: string;
   productId: string;
@@ -8,7 +17,7 @@ export interface CartItem {
     slug: string;
     image: string; // Première image du produit
     sku: string;
-    brand?: string;
+    brand?: Brand | string; // Peut être un objet Brand ou une string
     price: number;
     comparePrice?: number;
   };
@@ -41,3 +50,14 @@ export interface CartActionResult {
   success: boolean;
   error?: string;
 }
+
+// Helper type guard pour vérifier si brand est un objet
+export const isBrandObject = (brand: Brand | string | undefined): brand is Brand => {
+  return typeof brand === 'object' && brand !== null && 'name' in brand;
+};
+
+// Helper pour obtenir le nom de la marque
+export const getBrandName = (brand: Brand | string | undefined): string | undefined => {
+  if (!brand) return undefined;
+  return typeof brand === 'string' ? brand : brand.name;
+};

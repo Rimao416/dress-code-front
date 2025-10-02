@@ -1,4 +1,4 @@
-// Correction dans CheckoutPage
+// pages/checkout/CheckoutPage.tsx (ou l'emplacement approprié)
 "use client";
 import React, { useState, useMemo } from "react";
 import CheckoutLayout from "@/components/layouts/CheckoutLayout";
@@ -6,7 +6,7 @@ import CheckoutPaiement from "@/components/checkout/CheckoutPaiement";
 import CheckoutLivraison from "@/components/checkout/CheckoutLivraison";
 import CheckoutInformations from "@/components/checkout/CheckoutInformations";
 import { OrderItem } from "@/types/payment";
-import { useCartStore } from "@/store/useCartStore";
+import { useCart } from "@/hooks/cart/useCart";
 
 const CheckoutPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -21,26 +21,24 @@ const CheckoutPage = () => {
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("card");
   
-  // Récupérer les données du panier depuis le store
-  const { items: cartItems, totalPrice, clearCart } = useCartStore();
+  // ✅ Utiliser le hook useCart au lieu d'accéder directement au store
+  const { items: cartItems, totalPrice, clearCart } = useCart();
   
   // Conversion des CartItem vers OrderItem pour l'API de paiement
-const convertCartItemsToOrderItems = useMemo((): OrderItem[] => {
-  return cartItems.map(cartItem => ({
-    // ❌ PROBLÈME: id: `temp-${Date.now()}-${Math.random()}`, // ID temporaire
-    // ✅ SOLUTION: Utiliser l'ID du produit réel
-    id: cartItem.productId.toString(), // ID du produit réel
-    name: cartItem.product.name,
-    price: cartItem.variant?.price || cartItem.product.price,
-    quantity: cartItem.quantity,
-    productId: cartItem.productId.toString(),
-    variantId: cartItem.variant?.id?.toString() || "", 
-    variantInfo: {
-      size: cartItem.selectedSize,
-      color: cartItem.selectedColor,
-    }
-  }));
-}, [cartItems]);
+  const convertCartItemsToOrderItems = useMemo((): OrderItem[] => {
+    return cartItems.map(cartItem => ({
+      id: cartItem.productId.toString(), // ID du produit réel
+      name: cartItem.product.name,
+      price: cartItem.variant?.price || cartItem.product.price || 0,
+      quantity: cartItem.quantity,
+      productId: cartItem.productId.toString(),
+      variantId: cartItem.variant?.id?.toString() || "", 
+      variantInfo: {
+        size: cartItem.selectedSize,
+        color: cartItem.selectedColor,
+      }
+    }));
+  }, [cartItems]);
 
   // Calcul automatique du résumé de commande
   const orderSummary = useMemo(() => {
@@ -66,7 +64,7 @@ const convertCartItemsToOrderItems = useMemo((): OrderItem[] => {
       total: Math.round(total * 100) / 100,
       items: convertCartItemsToOrderItems
     };
-  }, [cartItems, totalPrice, shippingMethod, formData.country, convertCartItemsToOrderItems]);
+  }, [totalPrice, shippingMethod, formData.country, convertCartItemsToOrderItems]);
 
   const handleConfirm = () => {
     console.log("Commande confirmée", {

@@ -5,6 +5,8 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/hooks/cart/useCart';
 import Image from 'next/image';
+import Link from 'next/link';
+import { getBrandName } from '@/types/cart';
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -202,12 +204,12 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                               {item.product.name}
                             </h3>
                            
-                            {/* Brand */}
-                            {item.product.brand && (
-                              <p className="text-xs text-gray-500 mb-2">
-                                {item.product.brand}
-                              </p>
-                            )}
+                            {/* Brand - ✅ CORRECTION ICI */}
+                          {item.product.brand && (
+  <p className="text-xs text-gray-500 mb-2">
+    {getBrandName(item.product.brand)}
+  </p>
+)}
 
                             {/* Variant Info */}
                             {(item.selectedSize || item.selectedColor) && (
@@ -297,15 +299,14 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <button 
-                      className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
-                      onClick={() => {
-                        // Navigation vers la page de checkout
-                        console.log('Redirection vers checkout');
-                      }}
-                    >
-                      Finaliser la commande
-                    </button>
+                    <Link href="/checkout">
+                      <button 
+                        className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                        onClick={onClose}
+                      >
+                        Finaliser la commande
+                      </button>
+                    </Link>
                     <div className="flex space-x-3">
                       <button
                         onClick={onClose}
