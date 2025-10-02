@@ -1,521 +1,409 @@
-// components/modal/LoginModal.tsx
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { X, Loader2, CheckCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
-import Button from "../ui/button";
-import BottomSheet from "../common/BottomSheet";
-import { authService } from "@/services/auth.service";
 import { useAuth } from "@/context/AuthContext";
-import { FormErrors, SubmissionState } from "@/types/auth.type";
 
-// Types pour les props du composant
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  onSwitchToSignUp?: () => void; // Changé de onSignUpClick à onSwitchToSignUp
-}
-// Type pour les données du formulaire de connexion
-interface LoginFormData {
-  email: string;
-  password: string;
+  onSwitchToSignUp?: () => void;
 }
 
-const LoginModal = ({ isOpen, onClose, onSuccess, onSwitchToSignUp }: LoginModalProps) => {
-  const { setLoading, setUser } = useAuth();
-  
-  // Utilisation de useRef pour éviter les re-renders excessifs
-  const formDataRef = useRef<LoginFormData>({
-    email: '',
-    password: ''
-  });
+const CustomInput = ({
+  label,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  disabled,
+  required,
+  showPasswordToggle = false,
+  error,
+}: any) => {
+  const [show, setShow] = useState(false);
+  const inputType = type === "password" && show ? "text" : type;
 
-  // État local pour forcer le re-render quand nécessaire
-  const [, forceUpdate] = useState({});
-  const triggerUpdate = () => forceUpdate({});
-
-  // État local pour les erreurs
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [submissionState, setSubmissionState] = useState<SubmissionState>({
-    isSubmitting: false,
-    isSuccess: false,
-    error: null
-  });
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Détecter si on est sur mobile
-  const checkIsMobile = useCallback(() => {
-    setIsMobile(window.innerWidth < 768);
-  }, []);
-
-  useEffect(() => {
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, [checkIsMobile]);
-
-  // Reset du state lors de l'ouverture/fermeture
-  useEffect(() => {
-    if (isOpen) {
-      formDataRef.current = {
-        email: '',
-        password: ''
-      };
-      setFormErrors({});
-      setSubmissionState({
-        isSubmitting: false,
-        isSuccess: false,
-        error: null
-      });
-      triggerUpdate();
-    }
-  }, [isOpen]);
-
-  // Fonction pour gérer les changements d'input
-  const handleInputChange = useCallback((field: keyof LoginFormData, value: string) => {
-    // Mettre à jour les données du formulaire dans la ref
-    formDataRef.current = {
-      ...formDataRef.current,
-      [field]: value
-    };
-
-    // Effacer l'erreur pour ce champ
-    setFormErrors(prev => {
-      if (prev[field]) {
-        return {
-          ...prev,
-          [field]: undefined
-        };
-      }
-      return prev;
-    });
-
-    // Effacer l'erreur de soumission
-    setSubmissionState(prev => {
-      if (prev.error) {
-        return {
-          ...prev,
-          error: null
-        };
-      }
-      return prev;
-    });
-  }, []);
-
-  // Fonction de validation
-  const validateForm = (): boolean => {
-    const errors: FormErrors = {};
-    let hasErrors = false;
-    const formData = formDataRef.current;
-
-    if (!formData.email.trim()) {
-      errors.email = 'L\'email est requis';
-      hasErrors = true;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Email invalide';
-      hasErrors = true;
-    }
-
-    if (!formData.password.trim()) {
-      errors.password = 'Le mot de passe est requis';
-      hasErrors = true;
-    }
-
-    setFormErrors(errors);
-    return !hasErrors;
-  };
-
-  // Fonction de soumission
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    setSubmissionState(prev => ({ ...prev, isSubmitting: true, error: null }));
-    setLoading(true);
-
-    try {
-      const formData = formDataRef.current;
-      
-      const response = await authService.login({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (response.success && response.data) {
-        if (response.data.user) {
-          setUser(response.data.user);
-        }
-
-        setSubmissionState({
-          isSubmitting: false,
-          isSuccess: true,
-          error: null
-        });
-
-        // Attendre un peu pour montrer le succès
-        setTimeout(() => {
-          onSuccess?.();
-          onClose();
-        }, 1500);
-      } else {
-        // Gestion des erreurs de validation du serveur
-        if (response.errors) {
-          const serverErrors: FormErrors = {};
-          Object.entries(response.errors).forEach(([field, message]) => {
-            if (field in formDataRef.current) {
-              serverErrors[field as keyof FormErrors] = message as string;
-            }
-          });
-          setFormErrors(serverErrors);
-        }
-
-        setSubmissionState({
-          isSubmitting: false,
-          isSuccess: false,
-          error: response.message || 'Email ou mot de passe incorrect'
-        });
-      }
-    } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
-      setSubmissionState({
-        isSubmitting: false,
-        isSuccess: false,
-        error: 'Une erreur inattendue est survenue. Veuillez réessayer.'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Gérer le clic sur "S'inscrire"
- // Gérer le clic sur "S'inscrire"
-const handleSignUpClick = () => {
-  onClose();
-  onSwitchToSignUp?.();
-};
-  // Composant pour afficher les messages de statut
-  const StatusMessage = () => {
-    if (submissionState.isSuccess) {
-      return (
-        <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-          <CheckCircle className="h-4 w-4" />
-          <span>Connexion réussie ! Bienvenue !</span>
-        </div>
-      );
-    }
-
-    if (submissionState.error) {
-      return (
-        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          <AlertCircle className="h-4 w-4" />
-          <span>{submissionState.error}</span>
-        </div>
-      );
-    }
-
-    return null;
-  };
-
-  // Composant Input personnalisé
-  const CustomInput = ({
-    label,
-    type = "text",
-    placeholder,
-    field,
-    error,
-    disabled,
-    required,
-    showPasswordToggle = false
-  }: {
-    label: string;
-    type?: string;
-    placeholder: string;
-    field: keyof LoginFormData;
-    error?: string;
-    disabled?: boolean;
-    required?: boolean;
-    showPasswordToggle?: boolean;
-  }) => {
-    const [localValue, setLocalValue] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-
-    // Sync avec la ref au montage et quand le modal s'ouvre
-    useEffect(() => {
-      setLocalValue(formDataRef.current[field]);
-    }, [field, isOpen]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setLocalValue(value);
-      formDataRef.current[field] = value;
-      handleInputChange(field, value);
-    };
-
-    const inputType = type === 'password' && showPassword ? 'text' : type;
-
-    return (
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        <div className="relative">
-          <input
-            type={inputType}
-            placeholder={placeholder}
-            value={localValue}
-            onChange={handleChange}
-            disabled={disabled}
-            className={`
-              w-full px-4 py-3 border rounded-md transition-all duration-200
-              text-neutral-900 placeholder-neutral-400 bg-neutral-50
-              hover:bg-white outline-none focus:outline-none
-              ${error
-                ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-transparent'
-                : 'border-neutral-300 focus:ring-2 focus:ring-neutral-800 focus:border-transparent'
-              }
-              ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-              ${(type === 'password' && showPasswordToggle) || error ? 'pr-12' : ''}
-            `}
-          />
-          {showPasswordToggle && type === 'password' && (
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          )}
-        </div>
-        {error && (
-          <p className="text-sm text-red-600">{error}</p>
+  return (
+    <div className="space-y-1">
+      <label className="block text-sm font-medium text-neutral-900">
+        {label} {required && <span className="text-red-900">*</span>}
+      </label>
+      <div className="relative">
+        <input
+          type={inputType}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          className={`w-full px-4 py-3 border rounded-md text-sm transition-all focus:outline-none focus:ring-2 focus:ring-red-900/20 focus:border-red-900 border-stone-300 ${
+            disabled
+              ? "opacity-50 cursor-not-allowed bg-stone-50"
+              : "bg-white"
+          } ${error ? "border-red-500" : ""}`}
+        />
+        {showPasswordToggle && type === "password" && (
+          <button
+            type="button"
+            onClick={() => setShow(!show)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-900"
+          >
+            {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
         )}
       </div>
-    );
-  };
+      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+    </div>
+  );
+};
 
-  // Contenu du formulaire pour mobile
-  const MobileFormContent = () => (
-    <>
-      {/* Header */}
-      <div className="relative bg-gradient-to-r from-neutral-900 to-neutral-800 text-white p-6 text-center rounded-t-3xl">
-        <div className="mb-4">
-          <div className="text-2xl font-bold tracking-tight">
-            Bienvenue sur DressCode
-          </div>
+type FormContentProps = {
+  form: {
+    email: string;
+    password: string;
+  };
+  update: (field: string, value: string) => void;
+  status: { loading: boolean; success: boolean; error: string };
+  fieldErrors: Record<string, string>;
+  submit: () => void;
+  onClose: () => void;
+  onSwitchToSignUp?: () => void;
+};
+
+function FormContent({
+  form,
+  update,
+  status,
+  fieldErrors,
+  submit,
+  onClose,
+  onSwitchToSignUp,
+}: FormContentProps) {
+  return (
+    <div className="space-y-6">
+      {status.success && (
+        <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm">
+          <CheckCircle className="h-4 w-4" />
+          <span>Connexion réussie ! Bienvenue chez DressCode !</span>
         </div>
-        
-        <p className="text-sm text-neutral-300 leading-relaxed">
-          Connectez-vous à votre compte pour accéder à vos favoris, 
-          suivre vos commandes et profiter d'une expérience personnalisée.
+      )}
+
+      {status.error && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <span>{status.error}</span>
+        </div>
+      )}
+
+      <CustomInput
+        label="E-mail"
+        type="email"
+        placeholder="votre.email@exemple.com"
+        value={form.email}
+        onChange={(v: string) => update("email", v)}
+        disabled={status.loading || status.success}
+        required
+        error={fieldErrors.email}
+      />
+
+      <CustomInput
+        label="Mot de passe"
+        type="password"
+        placeholder="Votre mot de passe"
+        value={form.password}
+        onChange={(v: string) => update("password", v)}
+        disabled={status.loading || status.success}
+        showPasswordToggle
+        required
+        error={fieldErrors.password}
+      />
+
+      <div className="space-y-3 pt-2">
+        <p className="text-xs text-neutral-500">
+          <a
+            href="#"
+            className="text-red-900 hover:underline font-medium"
+          >
+            Mot de passe oublié ?
+          </a>
         </p>
       </div>
 
-      {/* Form */}
-      <div className="p-6 pb-8">
-        <div className="space-y-4">
-          <StatusMessage />
-          
-          <CustomInput
-            label="E-mail"
-            type="email"
-            placeholder="votre@email.com"
-            field="email"
-            error={formErrors.email}
-            disabled={submissionState.isSubmitting || submissionState.isSuccess}
-            required
-          />
-          
-          <CustomInput
-            label="Mot de passe"
-            type="password"
-            placeholder="Votre mot de passe"
-            field="password"
-            error={formErrors.password}
-            disabled={submissionState.isSubmitting || submissionState.isSuccess}
-            showPasswordToggle
-            required
-          />
-          
-          <Button
-            variant="primary"
-            size="lg"
-            className="w-full mt-6"
-            onClick={handleSubmit}
-            disabled={submissionState.isSubmitting || submissionState.isSuccess}
-          >
-            {submissionState.isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Connexion en cours...
-              </>
-            ) : submissionState.isSuccess ? (
-              <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Connecté !
-              </>
-            ) : (
-              'Se connecter'
-            )}
-          </Button>
-
-          {/* Lien vers inscription */}
-          <div className="text-center pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-600">
-              Vous n'avez pas encore de compte ?{' '}
-              <button
-                onClick={handleSignUpClick}
-                className="text-neutral-900 font-medium hover:underline"
-                disabled={submissionState.isSubmitting}
-              >
-                Créer un compte
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-
-  // Contenu pour desktop
-  const DesktopFormContent = () => (
-    <div className="flex h-full">
-      {/* Bouton fermer */}
       <button
-        onClick={onClose}
-        className="absolute top-4 right-4 z-10 text-white/80 hover:text-white transition-colors"
-        disabled={submissionState.isSubmitting}
+        onClick={submit}
+        disabled={status.loading || status.success}
+        className="w-full bg-gradient-to-r from-red-900 to-red-800 text-white px-6 py-3.5 rounded-md text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
       >
-        <X className="h-6 w-6" />
+        {status.loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Connexion en cours...
+          </>
+        ) : status.success ? (
+          <>
+            <CheckCircle className="h-4 w-4" />
+            Connecté !
+          </>
+        ) : (
+          "Se connecter"
+        )}
       </button>
 
-      {/* Colonne gauche - Header */}
-      <div className="flex-1 bg-gradient-to-br from-neutral-900 to-neutral-800 text-white p-8 flex flex-col justify-center">
-        <div className="max-w-sm mx-auto text-center">
-          <div className="text-3xl font-bold tracking-tight mb-4">
-            Bienvenue sur DressCode
-          </div>
-          
-          <p className="text-neutral-300 leading-relaxed mb-8">
-            Connectez-vous à votre compte pour accéder à vos favoris, 
-            suivre vos commandes et profiter d'une expérience personnalisée.
-          </p>
-
-          {/* Illustration ou logo */}
-        
-        </div>
-      </div>
-
-      {/* Colonne droite - Formulaire */}
-      <div className="flex-1 bg-white p-8 flex flex-col justify-center">
-        <div className="max-w-sm mx-auto w-full">
-          <div className="space-y-6">
-            <StatusMessage />
-            
-            <CustomInput
-              label="E-mail"
-              type="email"
-              placeholder="votre@email.com"
-              field="email"
-              error={formErrors.email}
-              disabled={submissionState.isSubmitting || submissionState.isSuccess}
-              required
-            />
-            
-            <CustomInput
-              label="Mot de passe"
-              type="password"
-              placeholder="Votre mot de passe"
-              field="password"
-              error={formErrors.password}
-              disabled={submissionState.isSubmitting || submissionState.isSuccess}
-              showPasswordToggle
-              required
-            />
-            
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-              onClick={handleSubmit}
-              disabled={submissionState.isSubmitting || submissionState.isSuccess}
-            >
-              {submissionState.isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Connexion en cours...
-                </>
-              ) : submissionState.isSuccess ? (
-                <>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Connecté !
-                </>
-              ) : (
-                'Se connecter'
-              )}
-            </Button>
-
-            {/* Lien vers inscription */}
-            <div className="text-center pt-4 border-t border-gray-100">
-              <p className="text-sm text-gray-600">
-                Vous n'avez pas encore de compte ?{' '}
-                <button
-                  onClick={handleSignUpClick}
-                  className="text-neutral-900 font-medium hover:underline"
-                  disabled={submissionState.isSubmitting}
-                >
-                  Créer un compte
-                </button>
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="text-center pt-4 border-t border-stone-200/60">
+        <p className="text-sm text-neutral-600">
+          Vous n'avez pas de compte ?{" "}
+          <button
+            onClick={() => {
+              onClose();
+              onSwitchToSignUp?.();
+            }}
+            className="text-red-900 font-medium hover:underline"
+            disabled={status.loading}
+          >
+            Créez-en un
+          </button>
+        </p>
       </div>
     </div>
   );
+}
+
+const LoginModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  onSwitchToSignUp,
+}: LoginModalProps) => {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+  const [status, setStatus] = useState({
+    loading: false,
+    success: false,
+    error: "",
+  });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isMobile, setIsMobile] = useState(false);
+  const { checkAuthStatus } = useAuth();
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm({
+        email: "",
+        password: "",
+      });
+      setStatus({ loading: false, success: false, error: "" });
+      setFieldErrors({});
+    }
+  }, [isOpen]);
+
+  const update = (field: string, value: string) => {
+    setForm({ ...form, [field]: value });
+    if (fieldErrors[field]) {
+      setFieldErrors({ ...fieldErrors, [field]: "" });
+    }
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    if (!form.email.trim()) {
+      errors.email = "L'email est requis";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        errors.email = "Veuillez entrer une adresse email valide";
+      }
+    }
+    if (!form.password) {
+      errors.password = "Le mot de passe est requis";
+    }
+
+    return errors;
+  };
+
+  const submit = async () => {
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+    setStatus({ loading: true, success: false, error: "" });
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          email: form.email.trim().toLowerCase(),
+          password: form.password,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Erreur de connexion");
+      }
+
+      setStatus({ loading: false, success: true, error: "" });
+      onSuccess?.();
+      
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+
+      await checkAuthStatus();
+
+    } catch (error) {
+      setStatus({
+        loading: false,
+        success: false,
+        error: error instanceof Error ? error.message : "Une erreur est survenue",
+      });
+    }
+  };
 
   if (!isOpen) return null;
 
-  // Version mobile avec BottomSheet
   if (isMobile) {
     return (
-      <BottomSheet
-        isOpen={isOpen}
-        onClose={onClose}
-        snapLevels={[0, 0.25, 0.5, 1]}
-        initialLevel={0.7}
-        showHandle={true}
-        closeOnOverlayClick={!submissionState.isSubmitting}
-        maxHeight="90vh"
-      >
-        <MobileFormContent />
-      </BottomSheet>
-    );
-  }
-
-  // Version desktop avec modal
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Overlay */}
+      <div className="fixed inset-0 z-50 flex items-end">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={submissionState.isSubmitting ? undefined : onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={status.loading ? undefined : onClose}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         />
-        
-        {/* Modal */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ type: "spring", duration: 0.5 }}
-          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 h-[500px] overflow-hidden"
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 30, stiffness: 300 }}
+          className="relative w-full"
         >
-          <DesktopFormContent />
+          <div className="bg-white rounded-t-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-gradient-to-br from-stone-50 to-stone-100 p-6 text-center">
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-900"
+                disabled={status.loading}
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <h2 className="text-3xl font-serif text-neutral-900 pt-2">
+                DressCode
+              </h2>
+              <div className="flex items-center gap-2 justify-center mt-3">
+                <div className="w-8 h-px bg-red-900"></div>
+                <h3 className="text-sm font-medium tracking-widest text-red-900 uppercase">
+                  Connexion
+                </h3>
+                <div className="w-8 h-px bg-red-900"></div>
+              </div>
+              <p className="text-sm text-neutral-600 mt-4">
+                Accédez à votre compte pour une expérience personnalisée.
+              </p>
+            </div>
+            <div className="p-6 pb-8">
+              <FormContent
+                form={form}
+                update={update}
+                status={status}
+                fieldErrors={fieldErrors}
+                submit={submit}
+                onClose={onClose}
+                onSwitchToSignUp={onSwitchToSignUp}
+              />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={status.loading ? undefined : onClose}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[550px] overflow-hidden"
+        >
+          <div className="flex h-full relative">
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 z-10 text-neutral-400 hover:text-neutral-900"
+              disabled={status.loading}
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            <div className="flex-1 bg-gradient-to-br from-stone-50 to-stone-100 p-8 lg:p-12 flex flex-col justify-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-red-900/5 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-neutral-900/5 rounded-full blur-3xl"></div>
+
+              <div className="relative max-w-md mx-auto space-y-8">
+                <div className="space-y-3">
+                  <h2 className="text-4xl lg:text-5xl font-serif text-neutral-900">
+                    DressCode
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-px bg-red-900"></div>
+                    <h3 className="text-lg font-medium tracking-widest text-red-900 uppercase">
+                      Connexion
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-neutral-600 text-base">
+                  Bon retour parmi nous ! Connectez-vous pour accéder à vos commandes,
+                  vos favoris et profiter d'une expérience sur mesure.
+                </p>
+                <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-stone-200/50">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-900 to-red-700 flex items-center justify-center">
+                    <span className="text-white text-[10px] font-bold">✓</span>
+                  </div>
+                  <span className="text-xs text-neutral-700 font-medium">
+                    Accès sécurisé à votre compte
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 bg-white p-8 lg:p-10 overflow-y-auto border-l border-stone-200/50">
+              <div className="h-full flex flex-col justify-center">
+                <div className="max-w-md mx-auto w-full">
+                  <FormContent
+                    form={form}
+                    update={update}
+                    status={status}
+                    fieldErrors={fieldErrors}
+                    submit={submit}
+                    onClose={onClose}
+                    onSwitchToSignUp={onSwitchToSignUp}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
     </AnimatePresence>

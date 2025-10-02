@@ -7,7 +7,7 @@ export interface OrderItem {
   price: number;
   quantity: number;
   productId: string;
-  variantId?: string;
+  variantId?: string; // ✅ Optionnel
   variantInfo?: {
     size?: string;
     color?: string;

@@ -96,19 +96,34 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           ? item.productId.toString() 
           : item.productId;
         
-        const variantId = item.variantId 
-          ? (typeof item.variantId === 'number' ? item.variantId.toString() : item.variantId)
-          : "";
+        // ✅ Ne garder le variantId que s'il existe et n'est pas vide
+        let variantId = undefined;
+        if (item.variantId) {
+          const variantStr = typeof item.variantId === 'number' 
+            ? item.variantId.toString() 
+            : item.variantId;
+          
+          // Vérifier que ce n'est pas une chaîne vide
+          if (variantStr && variantStr.trim() !== '') {
+            variantId = variantStr;
+          }
+        }
 
-        return {
+        const orderItem: any = {
           id: productId,
           name: item.name,
           price: Number(item.price),
           quantity: Number(item.quantity),
           productId: productId,
-          variantId: variantId,
           variantInfo: item.variantInfo || {}
         };
+
+        // ✅ Ajouter variantId seulement s'il existe
+        if (variantId) {
+          orderItem.variantId = variantId;
+        }
+
+        return orderItem;
       });
 
       const totals = {

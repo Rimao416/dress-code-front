@@ -47,22 +47,29 @@ export class OrderService {
           paymentStatus: PaymentStatus.PENDING,
           paymentMethod: data.paymentMethod,
           items: {
-            create: data.items.map(item => ({
-              product: {
-                connect: { id: item.productId },
-              },
-              ...(item.variantId && {
-                variant: {
-                  connect: { id: item.variantId },
+            create: data.items.map(item => {
+              // Construction de l'objet OrderItem
+              const orderItem: any = {
+                product: {
+                  connect: { id: item.productId },
                 },
-              }),
-              quantity: item.quantity,
-              unitPrice: item.price,
-              totalPrice: item.price * item.quantity,
-              productName: item.name,
-              productSku: `SKU-${item.id}`,
-              variantInfo: item.variantInfo || undefined,
-            })),
+                quantity: item.quantity,
+                unitPrice: item.price,
+                totalPrice: item.price * item.quantity,
+                productName: item.name,
+                productSku: `SKU-${item.id}`,
+                variantInfo: item.variantInfo || undefined,
+              };
+
+              // ✅ Ajouter le variant seulement s'il existe et n'est pas vide
+              if (item.variantId && item.variantId.trim() !== '') {
+                orderItem.variant = {
+                  connect: { id: item.variantId },
+                };
+              }
+
+              return orderItem;
+            }),
           },
         },
         include: {

@@ -30,18 +30,26 @@ const CheckoutPage = () => {
   
   // Conversion des CartItem vers OrderItem
   const convertCartItemsToOrderItems = useMemo((): OrderItem[] => {
-    return cartItems.map(cartItem => ({
-      id: cartItem.productId.toString(),
-      name: cartItem.product.name,
-      price: cartItem.variant?.price || cartItem.product.price || 0,
-      quantity: cartItem.quantity,
-      productId: cartItem.productId.toString(),
-      variantId: cartItem.variant?.id?.toString() || "", 
-      variantInfo: {
-        size: cartItem.selectedSize,
-        color: cartItem.selectedColor,
+    return cartItems.map(cartItem => {
+      const orderItem: OrderItem = {
+        id: cartItem.productId.toString(),
+        name: cartItem.product.name,
+        price: cartItem.variant?.price || cartItem.product.price || 0,
+        quantity: cartItem.quantity,
+        productId: cartItem.productId.toString(),
+        variantInfo: {
+          size: cartItem.selectedSize,
+          color: cartItem.selectedColor,
+        }
+      };
+
+      // ✅ Ajouter variantId seulement s'il existe et est valide
+      if (cartItem.variant?.id) {
+        orderItem.variantId = cartItem.variant.id.toString();
       }
-    }));
+
+      return orderItem;
+    });
   }, [cartItems]);
 
   // Calcul du résumé de commande
@@ -161,7 +169,7 @@ const CheckoutPage = () => {
           onConfirm={handleConfirm}
         />
       )}
-    </CheckoutLayout>
+      </CheckoutLayout>
   );
 };
 

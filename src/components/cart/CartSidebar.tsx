@@ -2,8 +2,10 @@
 "use client"
 import React from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, LogIn } from 'lucide-react';
 import { useCart } from '@/hooks/cart/useCart';
+import { useAuth } from '@/context/AuthContext';
+import { useModal } from '@/context/ModalContext';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getBrandName } from '@/types/cart';
@@ -24,6 +26,9 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
     itemsCount,
     totalSavings
   } = useCart();
+
+  const { isAuthenticated } = useAuth();
+  const { openLoginModal } = useModal();
 
   const sidebarVariants: Variants = {
     closed: {
@@ -107,6 +112,11 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
     if (window.confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
       await clearCart();
     }
+  };
+
+  const handleLoginClick = () => {
+    openLoginModal();
+    onClose(); // Ferme le panier
   };
 
   return (
@@ -204,12 +214,12 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                               {item.product.name}
                             </h3>
                            
-                            {/* Brand - ✅ CORRECTION ICI */}
-                          {item.product.brand && (
-  <p className="text-xs text-gray-500 mb-2">
-    {getBrandName(item.product.brand)}
-  </p>
-)}
+                            {/* Brand */}
+                            {item.product.brand && (
+                              <p className="text-xs text-gray-500 mb-2">
+                                {getBrandName(item.product.brand)}
+                              </p>
+                            )}
 
                             {/* Variant Info */}
                             {(item.selectedSize || item.selectedColor) && (
@@ -297,16 +307,50 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                     <span>{formatPrice(totalPrice)}</span>
                   </div>
 
+                  {/* Auth Warning - Si non connecté */}
+                  {!isAuthenticated && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-start space-x-3">
+                        <LogIn className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-amber-900 mb-1">
+                            Connexion requise
+                          </h4>
+                          <p className="text-xs text-amber-800 mb-3">
+                            Vous devez être connecté pour finaliser votre commande
+                          </p>
+                          <button
+                            onClick={handleLoginClick}
+                            className="w-full bg-amber-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors flex items-center justify-center space-x-2"
+                          >
+                            <LogIn className="h-4 w-4" />
+                            <span>Se connecter</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <Link href="/checkout">
+                    {isAuthenticated ? (
+                      <Link href="/checkout">
+                        <button 
+                          className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                          onClick={onClose}
+                        >
+                          Finaliser la commande
+                        </button>
+                      </Link>
+                    ) : (
                       <button 
-                        className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
-                        onClick={onClose}
+                        disabled
+                        className="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed"
                       >
                         Finaliser la commande
                       </button>
-                    </Link>
+                    )}
+                    
                     <div className="flex space-x-3">
                       <button
                         onClick={onClose}
