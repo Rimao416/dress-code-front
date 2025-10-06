@@ -23,7 +23,7 @@ const CheckoutPage = () => {
     phone: "",
     postalCode: "",
   });
-  const [shippingMethod, setShippingMethod] = useState("standard");
+  const [shippingMethod, setShippingMethod] = useState("colissimo_domicile"); // ✅ Valeur par défaut mise à jour
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [orderCompleted, setOrderCompleted] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
@@ -68,16 +68,40 @@ const CheckoutPage = () => {
     });
   }, [cartItems]);
 
-  // Calcul du résumé de commande
+  // ✅ Fonction pour calculer les frais de livraison selon les nouvelles règles
+  const calculateShipping = (subtotal: number, method: string, country: string): number => {
+    const isFranceMetro = country === "France";
+    
+    if (!isFranceMetro) {
+      // Pour DOM-TOM, Europe, International : frais calculés au poids (on met 0 pour l'instant)
+      return 0;
+    }
+    
+    // France métropolitaine
+    const FREE_THRESHOLD = 65;
+    
+    if (subtotal >= FREE_THRESHOLD) {
+      return 0; // Livraison gratuite dès 65€
+    }
+    
+    // Tarifs selon la méthode
+    switch (method) {
+      case "colissimo_domicile":
+        return 7.99;
+      case "colissimo_relais":
+      case "mondial_relay":
+        return 3.99;
+      default:
+        return 0;
+    }
+  };
+
+  // Calcul du résumé de commande avec les nouvelles règles
   const orderSummary = useMemo(() => {
     const subtotal = totalPrice;
    
-    let shipping = 0;
-    if (subtotal < 100) {
-      shipping = shippingMethod === "express" ? 9.99 : 4.99;
-    } else {
-      shipping = shippingMethod === "express" ? 9.99 : 0;
-    }
+    // ✅ Calcul mis à jour avec les nouvelles règles
+    const shipping = calculateShipping(subtotal, shippingMethod, formData.country);
    
     const taxRate = formData.country === "France" ? 0.20 : 0.19;
     const tax = subtotal * taxRate;
@@ -181,6 +205,8 @@ const CheckoutPage = () => {
           setShippingMethod={setShippingMethod}
           onBack={() => setCurrentStep(1)}
           onNext={() => setCurrentStep(3)}
+          country={formData.country} // ✅ Ajouté
+          subtotal={orderSummary.subtotal} // ✅ Ajouté
         />
       )}
       {currentStep === 3 && (
