@@ -1,9 +1,10 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle, AlertCircle, Eye, EyeOff, Lock, ShieldCheck } from "lucide-react";
 
-const ResetPasswordPage = () => {
+// Composant interne qui utilise useSearchParams
+const ResetPasswordForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -356,6 +357,25 @@ const ResetPasswordPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Fallback de chargement
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-100 flex items-center justify-center p-4">
+    <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="w-12 h-12 border-4 border-red-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p className="text-stone-600">Chargement...</p>
+    </div>
+  </div>
+);
+
+// Composant principal avec Suspense
+const ResetPasswordPage = () => {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 };
 

@@ -9,6 +9,7 @@ import Header from '@/components/common/Header';
 import { useAuth } from '@/context/AuthContext';
 import { useOrders } from '@/hooks/orders/useOrders';
 import Footer from '@/components/common/Footer';
+import Link from 'next/link';
 
 const ProfilePage = () => {
   const { user, loading: authLoading, logout } = useAuth();
@@ -219,9 +220,9 @@ const ProfilePage = () => {
                   <Package className="w-16 h-16 text-stone-300 mx-auto mb-4" />
                   <h3 className="text-xl font-serif text-neutral-900 mb-2">Aucune commande</h3>
                   <p className="text-stone-600 mb-6">Vous n'avez pas encore passé de commande</p>
-                  <a href="/collections" className="bg-red-900 text-white px-6 py-3 rounded-md hover:bg-red-800 transition-colors inline-block">
+                  <Link href="/collections" className="bg-red-900 text-white px-6 py-3 rounded-md hover:bg-red-800 transition-colors inline-block">
                     Découvrir nos produits
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 orders.map((order) => (
