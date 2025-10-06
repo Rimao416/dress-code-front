@@ -22,6 +22,7 @@ const CustomInput = ({
   error,
 }: any) => {
   const [show, setShow] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const inputType = type === "password" && show ? "text" : type;
 
   return (

@@ -62,7 +62,6 @@ model User {
   admin                Admin?                @relation("UserAdmin")
   client               Client?               @relation("UserClient")
   twoFactorCodes       TwoFactorCode?
-  passwordResetTokens  PasswordResetToken[]
   loginAttempts        LoginAttempt[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
@@ -134,13 +133,16 @@ model TwoFactorCode {
 
 model PasswordResetToken {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String   // On utilise l'email directement au lieu de userId
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+  
+  @@index([email])
+  @@index([token])
   @@map("password_reset_tokens")
 }
+
 
 model PasswordResetAttempt {
   id        String   @id @default(cuid())
