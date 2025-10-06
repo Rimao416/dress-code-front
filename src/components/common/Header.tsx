@@ -15,6 +15,7 @@ import { HeaderIcons } from '../Header/HeaderIcons';
 import { MobileMenu } from '../Header/MobileMenu';
 import { DropdownContent } from '../Header/DropdownContent'; // IMPORTANT: Ajoutez cet import
 import { useCartSidebarStore } from '@/store/useCartSidebarStore';
+import Image from 'next/image';
 
 const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
   const [isNavbarHovered, setIsNavbarHovered] = useState(false);
@@ -169,14 +170,18 @@ const Header: React.FC<HeaderProps> = ({ forceScrolledStyle = false }) => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex-shrink-0">
-              <Link
-                href="/"
-                className={`text-2xl font-serif tracking-tight transition-colors duration-300 ${
-                  shouldApplyScrolledStyle ? 'text-neutral-900' : 'text-white'
-                }`}
-              >
-                DressCode
-              </Link>
+              <Link href="/" className="flex items-center">
+  <Image
+    src="/dresscode_logo.svg"
+    alt="DressCode Logo"
+    width={40}   // ajuste selon la taille que tu veux
+    height={40}   // idem
+    priority      // pour que le logo soit chargé immédiatement
+    className={`transition-colors duration-300 ${
+      shouldApplyScrolledStyle ? "brightness-100" : "brightness-0 invert"
+    }`}
+  />
+</Link>
             </div>
             <DesktopNavigation
               navigationData={navigationData}

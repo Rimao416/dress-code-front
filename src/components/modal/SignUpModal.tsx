@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { X, Loader2, CheckCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -370,9 +371,13 @@ const submit = async () => {
               >
                 <X className="h-5 w-5" />
               </button>
-              <h2 className="text-3xl font-serif text-neutral-900 pt-2">
-                DressCode
-              </h2>
+                <Image 
+                             src="/dresscode_logo.svg"
+                             alt="DressCode"
+                             width={100}
+                             height={100}
+                             className="mx-auto"
+                           />
               <div className="flex items-center gap-2 justify-center mt-3">
                 <div className="w-8 h-px bg-red-900"></div>
                 <h3 className="text-sm font-medium tracking-widest text-red-900 uppercase">
@@ -433,9 +438,13 @@ const submit = async () => {
 
               <div className="relative max-w-md mx-auto space-y-8">
                 <div className="space-y-3">
-                  <h2 className="text-4xl lg:text-5xl font-serif text-neutral-900">
-                    DressCode
-                  </h2>
+                   <Image 
+                                src="/dresscode_logo.svg"
+                                alt="DressCode"
+                                width={100}
+                                height={100}
+                                className="mx-auto"
+                              />
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-px bg-red-900"></div>
                     <h3 className="text-lg font-medium tracking-widest text-red-900 uppercase">
