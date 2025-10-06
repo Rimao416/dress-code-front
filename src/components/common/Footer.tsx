@@ -1,9 +1,9 @@
 import React from 'react';
 import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react';
+import Link from 'next/link';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-
   return (
     <footer className="relative bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-950 text-white overflow-hidden">
       {/* Éléments décoratifs */}
@@ -23,24 +23,30 @@ const Footer = () => {
               Votre destination pour l'élégance intemporelle. Découvrez des pièces uniques qui racontent votre histoire.
             </p>
             <div className="flex gap-3">
-              <a
-                href="#"
-                className="w-10 h-10 bg-white/5 hover:bg-red-900/80 rounded-full flex items-center justify-center transition-all duration-200 border border-white/10 hover:border-red-900"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
+              <Link
+                href="https://www.instagram.com/dress_codevaulx"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/5 hover:bg-red-900/80 rounded-full flex items-center justify-center transition-all duration-200 border border-white/10 hover:border-red-900"
               >
                 <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                href="https://www.snapchat.com/add/dress_codevaulx"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/5 hover:bg-red-900/80 rounded-full flex items-center justify-center transition-all duration-200 border border-white/10 hover:border-red-900"
               >
-                <Twitter className="w-4 h-4" />
-              </a>
+                <span className="text-xs font-bold">SC</span>
+              </Link>
+              <Link
+                href="https://www.tiktok.com/@dresscode69120"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/5 hover:bg-red-900/80 rounded-full flex items-center justify-center transition-all duration-200 border border-white/10 hover:border-red-900"
+              >
+                <span className="text-xs font-bold">TT</span>
+              </Link>
             </div>
           </div>
 
@@ -52,13 +58,13 @@ const Footer = () => {
             <ul className="space-y-3">
               {['Nouveautés', 'Collections', 'Tendances', 'Offres spéciales', 'Notre histoire'].map((item) => (
                 <li key={item}>
-                  <a
+                  <Link
                     href="#"
                     className="text-sm text-stone-400 hover:text-red-900 transition-colors duration-200 flex items-center gap-2 group"
                   >
                     <span className="w-0 group-hover:w-2 h-px bg-red-900 transition-all duration-200"></span>
                     {item}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -72,49 +78,47 @@ const Footer = () => {
             <ul className="space-y-3">
               {['Contactez-nous', 'Livraison & Retours', 'Guide des tailles', 'FAQ', 'Programme fidélité'].map((item) => (
                 <li key={item}>
-                  <a
+                  <Link
                     href="#"
                     className="text-sm text-stone-400 hover:text-red-900 transition-colors duration-200 flex items-center gap-2 group"
                   >
                     <span className="w-0 group-hover:w-2 h-px bg-red-900 transition-all duration-200"></span>
                     {item}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Colonne 4 - Contact */}
-       <div className="space-y-6" id="contact-section">
-  <h4 className="text-sm font-semibold tracking-widest uppercase text-stone-200">
-    Contact
-  </h4>
+          <div className="space-y-6" id="contact-section">
+            <h4 className="text-sm font-semibold tracking-widest uppercase text-stone-200">
+              Contact
+            </h4>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-red-900 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-stone-400 leading-relaxed">
-                  123 Avenue de l'Élégance<br />
-                  75008 Paris, France
+                  14 rue Émile Zola<br />
+                  69120 Vaulx-en-Velin, France
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-red-900 flex-shrink-0" />
-                <a href="tel:+33123456789" className="text-sm text-stone-400 hover:text-red-900 transition-colors">
-                  +33 1 23 45 67 89
-                </a>
+                <Link href="tel:0478951007" className="text-sm text-stone-400 hover:text-red-900 transition-colors">
+                  04 78 95 10 07
+                </Link>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-red-900 flex-shrink-0" />
-                <a href="mailto:contact@dresscode.fr" className="text-sm text-stone-400 hover:text-red-900 transition-colors">
-                  contact@dresscode.fr
-                </a>
+                <Link href="mailto:dresscode69120@yahoo.com" className="text-sm text-stone-400 hover:text-red-900 transition-colors">
+                  dresscode69120@yahoo.com
+                </Link>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Newsletter */}
-      
         {/* Bas du footer */}
         <div className="pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -122,18 +126,16 @@ const Footer = () => {
               © {currentYear} DressCode. Tous droits réservés.
             </p>
             <div className="flex flex-wrap gap-6 text-xs text-stone-500">
-              <a href="#" className="hover:text-red-900 transition-colors">
+              <Link href="#" className="hover:text-red-900 transition-colors">
                 Conditions générales
-              </a>
-              <a href="#" className="hover:text-red-900 transition-colors">
+              </Link>
+              <Link href="#" className="hover:text-red-900 transition-colors">
                 Politique de confidentialité
-              </a>
-              <a href="#" className="hover:text-red-900 transition-colors">
+              </Link>
+              <Link href="#" className="hover:text-red-900 transition-colors">
                 Mentions légales
-              </a>
-              <a href="#" className="hover:text-red-900 transition-colors">
-                Cookies
-              </a>
+              </Link>
+
             </div>
           </div>
         </div>
