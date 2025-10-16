@@ -157,56 +157,56 @@ export const testimonials = [
   },
   {
     id: 7,
-    name: 'Karima',
+    name: 'Marah',
     role: 'Cliente sur Facebook',
     avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&q=80',
     rating: 5,
-    text: 'Après des années à chercher des produits adaptés à ma peau sensible, j\'ai enfin trouvé ! Aucune irritation, que du bonheur.',
+    text: 'on y trouve des vêtements que l’on ne trouve pas ailleurs, les patrons sont très sympathiques',
     date: 'Il y a 2 mois'
   },
   {
     id: 8,
-    name: 'Sophie',
+    name: 'Françoise',
     role: 'Cliente vérifiée',
     avatar: 'https://images.unsplash.com/photo-1491349174775-aaafddd81942?w=100&q=80',
     rating: 5,
-    text: 'Le sérum est incroyable ! Ma peau a retrouvé son éclat en seulement une semaine. Je recommande à 100%.',
+    text: 'en rentrant dans la boutique, on veut tout acheter.. les collections sont uniques et les prix très abordables',
     date: 'Il y a 5 jours'
   },
   {
     id: 9,
-    name: 'Leila',
+    name: 'Julia',
     role: 'Cliente sur Instagram',
     avatar: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=100&q=80',
     rating: 5,
-    text: 'Je suis complètement addict ! Les produits sentent divinement bon et les résultats sont visibles rapidement.',
+    text: 'la qualité des vêtements est top, on trouve tous les styles',
     date: 'Il y a 1 semaine'
   },
   {
     id: 10,
-    name: 'Yasmina',
+    name: 'Farida',
     role: 'Cliente vérifiée',
     avatar: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=100&q=80',
     rating: 5,
-    text: 'Enfin des produits de qualité dans notre pays. Ma routine skincare est devenue un vrai moment de plaisir.',
+    text: ' rapport qualité prix très correct, belle collection',
     date: 'Il y a 3 semaines'
   },
   {
     id: 11,
-    name: 'Chloé',
+    name: 'Zara',
     role: 'Cliente sur Instagram',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
     rating: 5,
-    text: 'Le masque purifiant a changé ma vie ! Ma peau est nette, sans brillance excessive. Un vrai bonheur.',
+    text: 'beaucoup de choix, une gamme de vêtements très tendance et classique et les prix sont tout à fait correct',
     date: 'Il y a 4 jours'
   },
   {
     id: 12,
-    name: 'Fatima',
+    name: 'Zineb ',
     role: 'Cliente vérifiée',
     avatar: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100&q=80',
     rating: 5,
-    text: 'Livraison rapide, produits impeccables. Ma peau n\'a jamais été aussi belle. Merci pour cette qualité !',
+    text: 'je trouve que les vêtements sont très jolis et à la mode, un grand choix de couleurs et la nouvelle collection est superbe',
     date: 'Il y a 2 semaines'
   },
   {
