@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react';
+import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 const Footer = () => {
@@ -12,7 +12,7 @@ const Footer = () => {
 
       {/* Contenu principal */}
       <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
           {/* Colonne 1 - À propos */}
           <div className="space-y-6">
             <div>
@@ -50,47 +50,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Colonne 2 - Navigation */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-semibold tracking-widest uppercase text-stone-200">
-              Navigation
-            </h4>
-            <ul className="space-y-3">
-              {['Nouveautés', 'Collections', 'Tendances', 'Offres spéciales', 'Notre histoire'].map((item) => (
-                <li key={item}>
-                  <Link
-                    href="#"
-                    className="text-sm text-stone-400 hover:text-red-900 transition-colors duration-200 flex items-center gap-2 group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-px bg-red-900 transition-all duration-200"></span>
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Colonne 3 - Service client */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-semibold tracking-widest uppercase text-stone-200">
-              Service client
-            </h4>
-            <ul className="space-y-3">
-              {['Contactez-nous', 'Livraison & Retours', 'Guide des tailles', 'FAQ', 'Programme fidélité'].map((item) => (
-                <li key={item}>
-                  <Link
-                    href="#"
-                    className="text-sm text-stone-400 hover:text-red-900 transition-colors duration-200 flex items-center gap-2 group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-px bg-red-900 transition-all duration-200"></span>
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Colonne 4 - Contact */}
+          {/* Colonne 2 - Contact */}
           <div className="space-y-6" id="contact-section">
             <h4 className="text-sm font-semibold tracking-widest uppercase text-stone-200">
               Contact
