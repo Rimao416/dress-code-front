@@ -104,137 +104,77 @@ export const testimonials = [
   {
     id: 1,
     name: 'Rania',
-    role: 'Cliente sur Instagram',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
-    rating: 5,
-    text: 'Je suis impressionnée par ces produits, comment on peut avoir des produits aussi riches avec des huiles, des extraits et de la glycérine et obtenir un effet sec velouté. Je commence déjà à voir la différence.',
-    date: 'Il y a 2 semaines'
+    text: 'Je suis impressionnée par ces produits, comment on peut avoir des produits aussi riches avec des huiles, des extraits et de la glycérine et obtenir un effet sec velouté. Je commence déjà à voir la différence.'
   },
   {
     id: 2,
     name: 'Lydia',
-    role: 'Cliente vérifiée',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80',
-    rating: 5,
-    text: 'Magnifiques produits ! Très efficaces, enfin d\'excellents produits sur le marché Algérien. Très fière, merci beaucoup.',
-    date: 'Il y a 1 mois'
+    text: 'Magnifiques produits ! Très efficaces, enfin d\'excellents produits sur le marché Algérien. Très fière, merci beaucoup.'
   },
   {
     id: 3,
     name: 'Célia Assani',
-    role: 'Cliente sur Instagram',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
-    rating: 5,
-    text: 'Elle est incroyable ✨ le masque !!! Le résultat sur ma peau, j\'ai hâte de partager ça !',
-    date: 'Il y a 3 semaines'
+    text: 'Elle est incroyable ✨ le masque !!! Le résultat sur ma peau, j\'ai hâte de partager ça !'
   },
   {
     id: 4,
     name: 'Sarah',
-    role: 'Cliente vérifiée',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80',
-    rating: 5,
-    text: 'Je viens de tester les produits et je dois dire que je suis vraiment ravie 😊 les textures sont agréables, les parfums subtils, et surtout, ma peau a bien réagi; elle est plus douce, et plus lumineuse 🔥',
-    date: 'Il y a 1 semaine'
+    text: 'Je viens de tester les produits et je dois dire que je suis vraiment ravie 😊 les textures sont agréables, les parfums subtils, et surtout, ma peau a bien réagi; elle est plus douce, et plus lumineuse 🔥'
   },
   {
     id: 5,
     name: 'Amina',
-    role: 'Cliente sur Instagram',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
-    rating: 5,
-    text: 'La gamme est incroyable, ça fait deux semaines que je l\'utilise. J\'ai une peau tellement parfaite, hâte de voir le résultat final.',
-    date: 'Il y a 2 semaines'
+    text: 'La gamme est incroyable, ça fait deux semaines que je l\'utilise. J\'ai une peau tellement parfaite, hâte de voir le résultat final.'
   },
   {
     id: 6,
     name: 'Nadia',
-    role: 'Cliente vérifiée',
-    avatar: 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&q=80',
-    rating: 5,
-    text: 'Produits exceptionnels ! Ma peau n\'a jamais été aussi hydratée et radieuse. La crème de nuit est un véritable miracle.',
-    date: 'Il y a 3 jours'
+    text: 'Produits exceptionnels ! Ma peau n\'a jamais été aussi hydratée et radieuse. La crème de nuit est un véritable miracle.'
   },
   {
     id: 7,
     name: 'Marah',
-    role: 'Cliente sur Facebook',
-    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&q=80',
-    rating: 5,
-    text: 'on y trouve des vêtements que l’on ne trouve pas ailleurs, les patrons sont très sympathiques',
-    date: 'Il y a 2 mois'
+    text: 'on y trouve des vêtements que l\'on ne trouve pas ailleurs, les patrons sont très sympathiques'
   },
   {
     id: 8,
     name: 'Françoise',
-    role: 'Cliente vérifiée',
-    avatar: 'https://images.unsplash.com/photo-1491349174775-aaafddd81942?w=100&q=80',
-    rating: 5,
-    text: 'en rentrant dans la boutique, on veut tout acheter.. les collections sont uniques et les prix très abordables',
-    date: 'Il y a 5 jours'
+    text: 'en rentrant dans la boutique, on veut tout acheter.. les collections sont uniques et les prix très abordables'
   },
   {
     id: 9,
     name: 'Julia',
-    role: 'Cliente sur Instagram',
-    avatar: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=100&q=80',
-    rating: 5,
-    text: 'la qualité des vêtements est top, on trouve tous les styles',
-    date: 'Il y a 1 semaine'
+    text: 'la qualité des vêtements est top, on trouve tous les styles'
   },
   {
     id: 10,
     name: 'Farida',
-    role: 'Cliente vérifiée',
-    avatar: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=100&q=80',
-    rating: 5,
-    text: ' rapport qualité prix très correct, belle collection',
-    date: 'Il y a 3 semaines'
+    text: 'rapport qualité prix très correct, belle collection'
   },
   {
     id: 11,
     name: 'Zara',
-    role: 'Cliente sur Instagram',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
-    rating: 5,
-    text: 'beaucoup de choix, une gamme de vêtements très tendance et classique et les prix sont tout à fait correct',
-    date: 'Il y a 4 jours'
+    text: 'beaucoup de choix, une gamme de vêtements très tendance et classique et les prix sont tout à fait correct'
   },
   {
     id: 12,
-    name: 'Zineb ',
-    role: 'Cliente vérifiée',
-    avatar: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100&q=80',
-    rating: 5,
-    text: 'je trouve que les vêtements sont très jolis et à la mode, un grand choix de couleurs et la nouvelle collection est superbe',
-    date: 'Il y a 2 semaines'
+    name: 'Zineb',
+    text: 'je trouve que les vêtements sont très jolis et à la mode, un grand choix de couleurs et la nouvelle collection est superbe'
   },
   {
     id: 13,
     name: 'Inès',
-    role: 'Cliente sur Facebook',
-    avatar: 'https://images.unsplash.com/photo-1516726817505-f5ed825624d8?w=100&q=80',
-    rating: 5,
-    text: 'Texture légère, absorption rapide, résultat bluffant ! Je ne peux plus me passer de ces produits.',
-    date: 'Il y a 1 mois'
+    text: 'Texture légère, absorption rapide, résultat bluffant ! Je ne peux plus me passer de ces produits.'
   },
   {
     id: 14,
     name: 'Myriam',
-    role: 'Cliente vérifiée',
-    avatar: 'https://images.unsplash.com/photo-1542596768-5d1d21f1cf98?w=100&q=80',
-    rating: 5,
-    text: 'Même ma dermatologue a remarqué l\'amélioration de ma peau. Des produits vraiment professionnels.',
-    date: 'Il y a 3 semaines'
+    text: 'Même ma dermatologue a remarqué l\'amélioration de ma peau. Des produits vraiment professionnels.'
   },
   {
     id: 15,
     name: 'Zahra',
-    role: 'Cliente sur Instagram',
-    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&q=80',
-    rating: 5,
-    text: 'Je suis conquise ! Les produits valent chaque centime. Ma peau est hydratée 24h/24 sans être grasse.',
-    date: 'Il y a 6 jours'
+    text: 'Je suis conquise ! Les produits valent chaque centime. Ma peau est hydratée 24h/24 sans être grasse.'
   }
 ];
 

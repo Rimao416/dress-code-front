@@ -1,40 +1,32 @@
 "use client"
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import type { Swiper as SwiperType } from 'swiper';
 import { testimonials } from '@/constant/data';
 
+// Type pour un témoignage
+type Testimonial = {
+  id: number;
+  name: string;
+  text: string;
+};
+
 const TestimonialsSection = () => {
-  const swiperRef = useRef<SwiperType | null>(null);
-  const [isBeginning, setIsBeginning] = useState(true);
-  const [isEnd, setIsEnd] = useState(false);
-
-  const handlePrev = () => swiperRef.current?.slidePrev();
-  const handleNext = () => swiperRef.current?.slideNext();
-
-  const handleSwiper = (swiper: SwiperType) => {
-    swiperRef.current = swiper;
-    setIsBeginning(swiper.isBeginning);
-    setIsEnd(swiper.isEnd);
-  };
-
-  const handleSlideChange = (swiper: SwiperType) => {
-    setIsBeginning(swiper.isBeginning);
-    setIsEnd(swiper.isEnd);
-  };
-
-  // Détermine si on utilise le mode "danse" (10+ témoignages)
+  const [currentIndex, setCurrentIndex] = useState(0);
   const useDanceMode = testimonials.length >= 10;
 
-  // Sépare les témoignages en deux rangées pour le mode danse
-  // On prend 5 éléments pour chaque rangée
   const topRowTestimonials = testimonials.slice(0, 5);
   const bottomRowTestimonials = testimonials.slice(5, 10);
 
-  const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
-    <div className="group relative bg-white rounded-lg p-6 lg:p-7 shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200/60 hover:border-red-900/20 flex flex-col w-[280px] lg:w-[320px]">
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? Math.max(0, testimonials.length - 3) : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev >= testimonials.length - 3 ? 0 : prev + 1));
+  };
+
+  const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => (
+    <div className="group relative bg-white rounded-lg p-6 lg:p-7 shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200/60 hover:border-red-900/20 flex flex-col w-[280px] lg:w-[320px] h-full">
       {/* Icône quote décorative */}
       <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-br from-red-900 to-red-800 rounded-full flex items-center justify-center shadow-lg opacity-90 group-hover:scale-110 transition-transform duration-300">
         <Quote className="h-5 w-5 text-white" />
@@ -43,35 +35,16 @@ const TestimonialsSection = () => {
       {/* Élément décoratif */}
       <div className="absolute top-0 right-0 w-16 h-16 bg-stone-100 rounded-bl-[40px] opacity-50"></div>
 
-      {/* Note étoiles */}
-      <div className="flex gap-1 mb-4 relative z-10">
-        {[...Array(testimonial.rating)].map((_, i) => (
-          <Star key={i} className="h-4 w-4 text-red-900 fill-red-900" />
-        ))}
-      </div>
-
       {/* Texte du témoignage */}
-      <p className="text-neutral-700 text-sm lg:text-base leading-relaxed mb-6 flex-grow relative z-10">
+      <p className="text-neutral-700 text-sm lg:text-base leading-relaxed mb-6 flex-grow relative z-10 pt-4">
         "{testimonial.text}"
       </p>
 
-      {/* Profil client */}
-      <div className="flex items-center gap-3 pt-4 border-t border-stone-200/60 relative z-10">
-        <div className="relative">
-          <img
-            src={testimonial.avatar}
-            alt={testimonial.name}
-            className="w-12 h-12 rounded-full object-cover border-2 border-stone-200"
-          />
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-red-900 rounded-full border-2 border-white"></div>
-        </div>
-        <div className="flex-grow">
-          <h4 className="font-semibold text-neutral-900 text-sm">
-            {testimonial.name}
-          </h4>
-          <p className="text-xs text-neutral-500">{testimonial.role}</p>
-        </div>
-        <span className="text-xs text-neutral-400">{testimonial.date}</span>
+      {/* Nom du client */}
+      <div className="pt-4 border-t border-stone-200/60 relative z-10">
+        <h4 className="font-semibold text-neutral-900 text-base">
+          {testimonial.name}
+        </h4>
       </div>
 
       {/* Accent décoratif en bas */}
@@ -113,13 +86,13 @@ const TestimonialsSection = () => {
         {/* Mode Swiper (moins de 10 témoignages) */}
         {!useDanceMode && (
           <>
-            {/* Navigation desktop */}
-            <div className="hidden lg:flex justify-end gap-2 mb-8">
+            {/* Navigation */}
+            <div className="flex justify-center lg:justify-end gap-2 mb-8">
               <button
                 onClick={handlePrev}
-                disabled={isBeginning}
+                disabled={currentIndex === 0}
                 className={`p-3 rounded-full border transition-all duration-200 ${
-                  isBeginning
+                  currentIndex === 0
                     ? 'border-stone-200 text-neutral-300 cursor-not-allowed'
                     : 'border-stone-300 text-neutral-700 hover:bg-white hover:border-neutral-400 hover:shadow-sm'
                 }`}
@@ -129,9 +102,9 @@ const TestimonialsSection = () => {
               </button>
               <button
                 onClick={handleNext}
-                disabled={isEnd}
+                disabled={currentIndex >= testimonials.length - 3}
                 className={`p-3 rounded-full border transition-all duration-200 ${
-                  isEnd
+                  currentIndex >= testimonials.length - 3
                     ? 'border-stone-200 text-neutral-300 cursor-not-allowed'
                     : 'border-stone-300 text-neutral-700 hover:bg-white hover:border-neutral-400 hover:shadow-sm'
                 }`}
@@ -141,64 +114,23 @@ const TestimonialsSection = () => {
               </button>
             </div>
 
-            {/* Swiper Testimonials */}
-            <Swiper
-              modules={[Navigation, Pagination, Autoplay]}
-              spaceBetween={24}
-              slidesPerView={1}
-              breakpoints={{
-                640: { slidesPerView: 1.5, spaceBetween: 20 },
-                768: { slidesPerView: 2, spaceBetween: 24 },
-                1024: { slidesPerView: 2.5, spaceBetween: 24 },
-                1280: { slidesPerView: 3, spaceBetween: 28 },
-              }}
-              autoplay={{
-                delay: 5000,
-                disableOnInteraction: false,
-                pauseOnMouseEnter: true
-              }}
-              onSwiper={handleSwiper}
-              onSlideChange={handleSlideChange}
-              className="!pb-4"
-            >
-              {testimonials.map((testimonial) => (
-                <SwiperSlide key={testimonial.id}>
-                  <TestimonialCard testimonial={testimonial} />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-            {/* Navigation mobile */}
-            <div className="flex lg:hidden justify-center gap-2 mt-8">
-              <button
-                onClick={handlePrev}
-                disabled={isBeginning}
-                className={`p-3 rounded-full border transition-all duration-200 ${
-                  isBeginning
-                    ? 'border-stone-200 text-neutral-300'
-                    : 'border-stone-300 text-neutral-700 hover:bg-white hover:shadow-sm'
-                }`}
-                aria-label="Témoignage précédent"
+            {/* Grille de témoignages */}
+            <div className="overflow-hidden">
+              <div 
+                className="flex gap-6 transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(-${currentIndex * (320 + 24)}px)` }}
               >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={handleNext}
-                disabled={isEnd}
-                className={`p-3 rounded-full border transition-all duration-200 ${
-                  isEnd
-                    ? 'border-stone-200 text-neutral-300'
-                    : 'border-stone-300 text-neutral-700 hover:bg-white hover:shadow-sm'
-                }`}
-                aria-label="Témoignage suivant"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
+                {testimonials.map((testimonial) => (
+                  <div key={testimonial.id} className="flex-shrink-0">
+                    <TestimonialCard testimonial={testimonial} />
+                  </div>
+                ))}
+              </div>
             </div>
           </>
         )}
 
-        {/* Mode Danse (10+ témoignages) - Disposition en grille décalée */}
+        {/* Mode Danse (10+ témoignages) */}
         {useDanceMode && (
           <div className="space-y-6">
             <style>{`
@@ -248,7 +180,7 @@ const TestimonialsSection = () => {
               }
             `}</style>
 
-            {/* Rangée du haut - 5 cartes alignées */}
+            {/* Rangée du haut */}
             <div className="testimonial-row overflow-hidden">
               <div className="flex gap-5 animate-scroll-right">
                 {[...topRowTestimonials, ...topRowTestimonials].map((testimonial, index) => (
@@ -259,7 +191,7 @@ const TestimonialsSection = () => {
               </div>
             </div>
 
-            {/* Rangée du bas - 5 cartes décalées vers la droite */}
+            {/* Rangée du bas */}
             <div className="testimonial-row overflow-hidden">
               <div className="flex gap-5 animate-scroll-left" style={{ marginLeft: '50px' }}>
                 {[...bottomRowTestimonials, ...bottomRowTestimonials].map((testimonial, index) => (
@@ -271,7 +203,6 @@ const TestimonialsSection = () => {
             </div>
           </div>
         )}
-
       </div>
     </section>
   );
