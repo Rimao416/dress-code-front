@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { X, Loader2, CheckCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import Link from "next/link";
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -162,19 +163,13 @@ function FormContent({
         </p>
         <p className="text-xs text-neutral-500">
           En créant un compte, j'accepte les{" "}
-          <a
-            href="#"
+          <Link
+            href="/legal"
             className="text-red-900 hover:underline font-medium"
           >
             Conditions d'utilisation
-          </a>
+          </Link>
           . J'ai lu la{" "}
-          <a
-            href="#"
-            className="text-red-900 hover:underline font-medium"
-          >
-            Politique de confidentialité
-          </a>
           .
         </p>
       </div>

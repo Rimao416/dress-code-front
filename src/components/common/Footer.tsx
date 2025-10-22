@@ -126,16 +126,15 @@ const Footer = () => {
               © {currentYear} DressCode. Tous droits réservés.
             </p>
             <div className="flex flex-wrap gap-6 text-xs text-stone-500">
-              <Link href="#" className="hover:text-red-900 transition-colors">
+              <Link href="/legal?tab=conditions" className="hover:text-red-900 transition-colors">
                 Conditions générales
               </Link>
-              <Link href="#" className="hover:text-red-900 transition-colors">
+              <Link href="/legal?tab=confidentialite" className="hover:text-red-900 transition-colors">
                 Politique de confidentialité
               </Link>
-              <Link href="#" className="hover:text-red-900 transition-colors">
+              <Link href="/legal?tab=mentions" className="hover:text-red-900 transition-colors">
                 Mentions légales
               </Link>
-
             </div>
           </div>
         </div>
