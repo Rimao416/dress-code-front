@@ -101,41 +101,8 @@ export const occasionReadySection = {
 };
 
 export const testimonials = [
-  {
-    id: 1,
-    name: 'Rania',
-    text: 'Je suis impressionnée par ces produits, comment on peut avoir des produits aussi riches avec des huiles, des extraits et de la glycérine et obtenir un effet sec velouté. Je commence déjà à voir la différence.'
-  },
-  {
-    id: 2,
-    name: 'Lydia',
-    text: 'Magnifiques produits ! Très efficaces, enfin d\'excellents produits sur le marché Algérien. Très fière, merci beaucoup.'
-  },
-  {
-    id: 3,
-    name: 'Célia Assani',
-    text: 'Elle est incroyable ✨ le masque !!! Le résultat sur ma peau, j\'ai hâte de partager ça !'
-  },
-  {
-    id: 4,
-    name: 'Sarah',
-    text: 'Je viens de tester les produits et je dois dire que je suis vraiment ravie 😊 les textures sont agréables, les parfums subtils, et surtout, ma peau a bien réagi; elle est plus douce, et plus lumineuse 🔥'
-  },
-  {
-    id: 5,
-    name: 'Amina',
-    text: 'La gamme est incroyable, ça fait deux semaines que je l\'utilise. J\'ai une peau tellement parfaite, hâte de voir le résultat final.'
-  },
-  {
-    id: 6,
-    name: 'Nadia',
-    text: 'Produits exceptionnels ! Ma peau n\'a jamais été aussi hydratée et radieuse. La crème de nuit est un véritable miracle.'
-  },
-  {
-    id: 7,
-    name: 'Marah',
-    text: 'on y trouve des vêtements que l\'on ne trouve pas ailleurs, les patrons sont très sympathiques'
-  },
+ 
+ 
   {
     id: 8,
     name: 'Françoise',
@@ -161,21 +128,7 @@ export const testimonials = [
     name: 'Zineb',
     text: 'je trouve que les vêtements sont très jolis et à la mode, un grand choix de couleurs et la nouvelle collection est superbe'
   },
-  {
-    id: 13,
-    name: 'Inès',
-    text: 'Texture légère, absorption rapide, résultat bluffant ! Je ne peux plus me passer de ces produits.'
-  },
-  {
-    id: 14,
-    name: 'Myriam',
-    text: 'Même ma dermatologue a remarqué l\'amélioration de ma peau. Des produits vraiment professionnels.'
-  },
-  {
-    id: 15,
-    name: 'Zahra',
-    text: 'Je suis conquise ! Les produits valent chaque centime. Ma peau est hydratée 24h/24 sans être grasse.'
-  }
+ 
 ];
 
 
